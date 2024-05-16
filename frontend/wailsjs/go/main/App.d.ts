@@ -12,8 +12,6 @@ export function GetFeedList():Promise<Array<backend.FeedsInfo>>;
 
 export function GetHistory():Promise<Array<backend.FeedContentsInfo>>;
 
-export function InitDatabase():Promise<void>;
-
 export function SetFeedList(arg1:Array<backend.FeedsInfo>):Promise<void>;
 
 export function SetHistory(arg1:Array<backend.FeedContentsInfo>):Promise<void>;

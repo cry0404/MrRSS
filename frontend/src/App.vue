@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue'
-import { InitDatabase } from '../wailsjs/go/main/App'
+// import { InitDatabase } from '../wailsjs/go/main/App'
 import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n()
 
 onMounted(async () => {
   if (!localStorage.getItem('locale')) {
-    localStorage.setItem('locale', 'en')
+    localStorage.setItem('locale', 'en-US')
   }
   locale.value = localStorage.getItem('locale') as string
 
@@ -16,7 +16,7 @@ onMounted(async () => {
   }
   document.documentElement.className = localStorage.getItem('theme') as string
   
-  await InitDatabase()
+  // await InitDatabase()
 })
 </script>
 

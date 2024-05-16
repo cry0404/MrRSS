@@ -57,7 +57,7 @@ func GetDbFilePath(dbName string) string {
 		dbFilePath = fmt.Sprintf("data/%s", dbName)
 	} else {
 		configDir, _ := os.UserConfigDir()
-		dbFilePath = filepath.Join(configDir, "MrRSS", "database", dbName)
+		dbFilePath = filepath.Join(configDir, "MrRSS", "data", dbName)
 	}
 	return dbFilePath
 }

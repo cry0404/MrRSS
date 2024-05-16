@@ -97,14 +97,14 @@ Section
     !insertmacro wails.writeUninstaller
 
     SetOutPath "$AppData\${INFO_PRODUCTNAME}\data"
-    File /r "resources\*.db"
+    File /r "resources\eula.txt"
 SectionEnd
 
 Section "uninstall"
     # !insertmacro wails.setShellContext
     SetShellVarContext current
 
-    RMDir /r "$AppData\${INFO_PRODUCTNAME}" # Remove the AppData folder
+    # RMDir /r "$AppData\${INFO_PRODUCTNAME}" # Remove the AppData folder
 
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
 

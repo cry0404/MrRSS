@@ -16,7 +16,7 @@ const goToSettings = () => {
 <template>
   <nav>
     <div class="util">
-      <button class="btn" :title="$t('Home.RssListButton.filter')">
+      <button class="btn" :title="$t('Home.RssListButton.filter')" disabled>
         <Icon icon="material-symbols:filter-list" />
       </button>
     </div>
@@ -25,7 +25,7 @@ const goToSettings = () => {
         <Icon v-if="!isRefreshing" icon="material-symbols:refresh" />
         <Icon v-else icon="material-symbols:error" disabled="true" />
       </button>
-      <button class="btn" :title="$t('Home.RssListButton.translate')">
+      <button class="btn" :title="$t('Home.RssListButton.translate')" disabled>
         <Icon icon="material-symbols:g-translate" />
       </button>
       <button class="btn" @click="$emit('delete-history-content')" :title="$t('Home.RssListButton.deleteHistory')">

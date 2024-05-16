@@ -34,9 +34,9 @@ func GetFeedContent(db *sql.DB) []backend.FeedContentsInfo {
 		return result[i].Time > result[j].Time
 	})
 
-	for _, item := range result {
-		if history.CheckInHistory(db, item) {
-			item.Readed = history.GetHistoryReaded(db, item)
+	for i := range result {
+		if history.CheckInHistory(db, result[i]) {
+			result[i].Readed = history.GetHistoryReaded(db, result[i])
 		}
 	}
 

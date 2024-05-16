@@ -86,7 +86,7 @@ onMounted(() => {
       <Icon icon="material-symbols:forms-add-on" />
     </button>
   </form>
-  <ul>
+  <ul v-if="feedList && feedList.length > 0">
     <li v-for="feed in feedList" :key="feed.Link">
       <div class="img">
         <img :src="`https://www.google.com/s2/favicons?domain=${feed.Link}`" alt="favicon" />
@@ -98,6 +98,7 @@ onMounted(() => {
       </button>
     </li>
   </ul>
+  <div v-else class="NoFeedList">{{ $t('Settings.RssSettings.noFeedList') }}</div>
 </template>
 
 <style lang="scss" scoped>

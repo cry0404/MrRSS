@@ -34,7 +34,8 @@
       "add": "Add Feed",
       "delete": "Delete Feed",
       "wechat": "WeChat Public Account",
-      "username": "Username"
+      "username": "Username",
+      "noFeedList": "No feed list, add one now!"
     },
     "PreferenceSettings": {
       "language": "Language",

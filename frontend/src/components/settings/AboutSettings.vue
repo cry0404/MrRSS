@@ -9,11 +9,11 @@ import { Icon } from '@iconify/vue';
   </div>
   <img src="../../assets/images/appicon.png" class="logo" :alt="$t('Settings.AboutSettings.appLogo')" />
   <div class="version">
-    <button class="btn" :title="$t('Settings.AboutSettings.checkUpdate')">
+    <button class="btn" :title="$t('Settings.AboutSettings.checkUpdate')" disabled >
       <Icon icon="material-symbols:deployed-code-update-outline" />
     </button>
     <p>
-      {{ $t('Settings.AboutSettings.version', {version: '0.1.0'}) }}
+      {{ $t('Settings.AboutSettings.version', {version: '0.2.0'}) }}
     </p>
   </div>
   <div class="copyright">

@@ -34,7 +34,8 @@
       "add": "添加订阅",
       "delete": "删除订阅",
       "wechat": "微信公众号",
-      "username": "用户名"
+      "username": "用户名",
+      "noFeedList": "还没有订阅，快去添加吧！"
     },
     "PreferenceSettings": {
       "language": "语言",

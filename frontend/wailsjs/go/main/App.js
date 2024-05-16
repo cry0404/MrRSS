@@ -22,10 +22,6 @@ export function GetHistory() {
   return window['go']['main']['App']['GetHistory']();
 }
 
-export function InitDatabase() {
-  return window['go']['main']['App']['InitDatabase']();
-}
-
 export function SetFeedList(arg1) {
   return window['go']['main']['App']['SetFeedList'](arg1);
 }

@@ -22,5 +22,14 @@
     &:hover {
       background-color: var(--color-btn-hover-bg);
     }
+
+    &:disabled {
+      cursor: not-allowed;
+      color: var(--color-btn-disabled);
+
+      &:hover {
+        background-color: var(--color-btn-bg);
+      }
+    }
   }
 }

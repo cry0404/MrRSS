@@ -28,6 +28,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
+/*
 func (a *App) InitDatabase() {
 	feeds := []backend.FeedsInfo{
 		{Link: "https://www.kawabangga.com/feed", Category: "RSS/Atom"},
@@ -37,6 +38,7 @@ func (a *App) InitDatabase() {
 	}
 	feed.SetFeedList(a.db, feeds)
 }
+*/
 
 func (a *App) GetFeedList() []backend.FeedsInfo {
 	return feed.GetFeedList(a.db)
