@@ -101,7 +101,13 @@ fi
 # Create AppImage
 echo "Creating AppImage..."
 rm -f "${BUILD_DIR}/${APPIMAGE_NAME}"
-ARCH=x86_64 "${APPIMAGETOOL}" "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}"
+# Use --appimage-extract-and-run if FUSE is not available (e.g., in CI environments)
+if [ -n "${CI}" ] || ! [ -e /dev/fuse ]; then
+    echo "FUSE not available, using --appimage-extract-and-run mode"
+    ARCH=x86_64 "${APPIMAGETOOL}" --appimage-extract-and-run "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}"
+else
+    ARCH=x86_64 "${APPIMAGETOOL}" "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}"
+fi
 
 # Clean up
 rm -rf "build/appimage"
