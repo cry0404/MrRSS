@@ -162,13 +162,13 @@ jobs:
           # Determine expected artifact names for this platform/arch
           if [ "${{ matrix.platform }}" = "windows" ]; then
             INSTALLER="MrRSS-${VERSION}-windows-${{ matrix.arch }}-installer.exe"
-            PACKAGE="MrRSS-${VERSION}-windows-${{ matrix.arch }}.zip"
+            PACKAGE=""  # No package for Windows
           elif [ "${{ matrix.platform }}" = "linux" ]; then
             INSTALLER="MrRSS-${VERSION}-linux-${{ matrix.arch }}.AppImage"
             PACKAGE="MrRSS-${VERSION}-linux-${{ matrix.arch }}.tar.gz"
           elif [ "${{ matrix.platform }}" = "darwin" ]; then
             INSTALLER="MrRSS-${VERSION}-darwin-${{ matrix.arch }}.dmg"
-            PACKAGE="MrRSS-${VERSION}-darwin-${{ matrix.arch }}.zip"
+            PACKAGE=""  # No package for macOS
           fi
           
           # Check if release has these assets
@@ -179,14 +179,19 @@ jobs:
           
           echo "Checking for existing assets..."
           echo "Expected installer: $INSTALLER"
-          echo "Expected package: $PACKAGE"
+          if [ -n "$PACKAGE" ]; then
+            echo "Expected package: $PACKAGE"
+          fi
           echo "Found assets:"
           echo "$ASSETS"
           
           # Check if any of our artifacts exist
           SKIP_BUILD="false"
-          if echo "$ASSETS" | grep -q "$INSTALLER" || echo "$ASSETS" | grep -q "$PACKAGE"; then
-            echo "Artifacts for ${{ matrix.platform }}-${{ matrix.arch }} already exist in release"
+          if echo "$ASSETS" | grep -q "$INSTALLER"; then
+            echo "Installer for ${{ matrix.platform }}-${{ matrix.arch }} already exists in release"
+            SKIP_BUILD="true"
+          elif [ -n "$PACKAGE" ] && echo "$ASSETS" | grep -q "$PACKAGE"; then
+            echo "Package for ${{ matrix.platform }}-${{ matrix.arch }} already exists in release"
             SKIP_BUILD="true"
           fi
           
@@ -369,6 +374,9 @@ jobs:
       - name: Create installer (Linux)
         if: steps.check_artifacts.outputs.skip_build == 'false' && matrix.platform == 'linux'
         run: |
+          # Clean up any cached appimagetool to ensure correct architecture is downloaded
+          rm -f build/appimagetool-*.AppImage
+          
           chmod +x build/linux/create-appimage.sh
           ARCH=${{ matrix.arch }} ./build/linux/create-appimage.sh || echo "AppImage creation failed, will use tar.gz"
         continue-on-error: true
@@ -391,30 +399,6 @@ jobs:
             exit 1
           fi
       
-      - name: Package application (Windows - zip fallback)
-        if: steps.check_artifacts.outputs.skip_build == 'false' && matrix.platform == 'windows'
-        run: |
-          cd build/bin
-          if (Test-Path "MrRSS.exe") {
-            Compress-Archive -Path MrRSS.exe -DestinationPath MrRSS-${{ needs.create-release.outputs.version }}-windows-${{ matrix.arch }}.zip
-          } else {
-            Write-Error "MrRSS.exe not found"
-            exit 1
-          }
-        shell: pwsh
-      
-      - name: Package application (macOS - zip fallback)
-        if: steps.check_artifacts.outputs.skip_build == 'false' && matrix.platform == 'darwin'
-        run: |
-          cd build/bin
-          if [ -d "MrRSS.app" ]; then
-            # Create a zip of the .app bundle
-            zip -r MrRSS-${{ needs.create-release.outputs.version }}-darwin-${{ matrix.arch }}.zip MrRSS.app
-          else
-            echo "Error: MrRSS.app not found"
-            exit 1
-          fi
-      
       - name: Collect artifacts
         if: steps.check_artifacts.outputs.skip_build == 'false'
         id: collect_artifacts
@@ -434,24 +418,16 @@ jobs:
             if [ -f "$installer" ]; then
               artifacts="$artifacts$installer,"
             fi
+            # Check for tar.gz fallback
+            package="MrRSS-${{ needs.create-release.outputs.version }}-linux-${{ matrix.arch }}.tar.gz"
+            if [ -f "$package" ]; then
+              artifacts="$artifacts$package,"
+            fi
           elif [ "${{ matrix.platform }}" = "darwin" ]; then
             installer="MrRSS-${{ needs.create-release.outputs.version }}-darwin-${{ matrix.arch }}.dmg"
             if [ -f "$installer" ]; then
               artifacts="$artifacts$installer,"
             fi
-          fi
-          
-          # Check for package
-          if [ "${{ matrix.platform }}" = "windows" ]; then
-            package="MrRSS-${{ needs.create-release.outputs.version }}-windows-${{ matrix.arch }}.zip"
-          elif [ "${{ matrix.platform }}" = "darwin" ]; then
-            package="MrRSS-${{ needs.create-release.outputs.version }}-darwin-${{ matrix.arch }}.zip"
-          else
-            package="MrRSS-${{ needs.create-release.outputs.version }}-linux-${{ matrix.arch }}.tar.gz"
-          fi
-          
-          if [ -f "$package" ]; then
-            artifacts="$artifacts$package,"
           fi
           
           echo "artifacts=$artifacts" >> $GITHUB_OUTPUT

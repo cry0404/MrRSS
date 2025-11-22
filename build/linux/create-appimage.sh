@@ -16,6 +16,8 @@ APP_NAME="MrRSS"
 VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' wails.json 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "1.1.0")
 # Get architecture from environment variable or default to amd64
 ARCH=${ARCH:-amd64}
+echo "Target architecture: ${ARCH}"
+echo "System architecture: $(uname -m)"
 APP_PUBLISHER="MrRSS Team"
 APP_URL="https://github.com/WCY-dt/MrRSS"
 APP_DESCRIPTION="A Modern, Cross-Platform Desktop RSS Reader"
@@ -107,15 +109,33 @@ APPIMAGETOOL_ARCH="x86_64"
 if [ "${ARCH}" = "arm64" ]; then
     APPIMAGETOOL_ARCH="aarch64"
 fi
+echo "Determining appimagetool architecture..."
+echo "ARCH variable: ${ARCH}"
+echo "APPIMAGETOOL_ARCH will be: ${APPIMAGETOOL_ARCH}"
 APPIMAGETOOL="build/appimagetool-${APPIMAGETOOL_ARCH}.AppImage"
+
+# Clean up wrong architecture appimagetool if exists
+if [ "${APPIMAGETOOL_ARCH}" = "aarch64" ] && [ -f "build/appimagetool-x86_64.AppImage" ]; then
+    echo "Removing x86_64 appimagetool (need aarch64)..."
+    rm -f build/appimagetool-x86_64.AppImage
+elif [ "${APPIMAGETOOL_ARCH}" = "x86_64" ] && [ -f "build/appimagetool-aarch64.AppImage" ]; then
+    echo "Removing aarch64 appimagetool (need x86_64)..."
+    rm -f build/appimagetool-aarch64.AppImage
+fi
+
 if [ ! -f "${APPIMAGETOOL}" ]; then
     echo "Downloading appimagetool for ${APPIMAGETOOL_ARCH}..."
-    if ! wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage" -O "${APPIMAGETOOL}"; then
-        echo "Error: Failed to download appimagetool"
+    APPIMAGETOOL_URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${APPIMAGETOOL_ARCH}.AppImage"
+    echo "URL: ${APPIMAGETOOL_URL}"
+    if ! wget -q "${APPIMAGETOOL_URL}" -O "${APPIMAGETOOL}"; then
+        echo "Error: Failed to download appimagetool for ${APPIMAGETOOL_ARCH}"
         echo "Please download it manually from: https://github.com/AppImage/AppImageKit/releases"
         exit 1
     fi
     chmod +x "${APPIMAGETOOL}"
+    echo "Downloaded and made executable: ${APPIMAGETOOL}"
+    # Verify the architecture of downloaded file
+    file "${APPIMAGETOOL}" || true
 fi
 
 # Verify appimagetool is executable
@@ -130,6 +150,9 @@ fi
 
 # Create AppImage
 echo "Creating AppImage..."
+echo "Current architecture: ${ARCH}"
+echo "AppImage tool architecture: ${APPIMAGETOOL_ARCH}"
+echo "System architecture: $(uname -m)"
 rm -f "${BUILD_DIR}/${APPIMAGE_NAME}"
 # Use --appimage-extract-and-run if FUSE is not available (e.g., in CI environments)
 # Set ARCH environment variable for appimagetool
@@ -142,9 +165,16 @@ fi
 
 if [ -n "${CI}" ] || ! [ -e /dev/fuse ]; then
     echo "FUSE not available, using --appimage-extract-and-run mode"
-    ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" --appimage-extract-and-run "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}"
+    if ! ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" --appimage-extract-and-run "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}" 2>&1; then
+        echo "Error: AppImage creation failed"
+        echo "This might be due to architecture mismatch or missing dependencies"
+        exit 1
+    fi
 else
-    ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}"
+    if ! ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}" 2>&1; then
+        echo "Error: AppImage creation failed"
+        exit 1
+    fi
 fi
 
 # Clean up
