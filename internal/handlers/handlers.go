@@ -466,22 +466,41 @@ func (h *Handler) HandleCheckUpdates(w http.ResponseWriter, r *http.Request) {
 	for _, asset := range release.Assets {
 		name := strings.ToLower(asset.Name)
 		
-		// Match platform-specific installer/package
-		if platform == "windows" && strings.Contains(name, "windows") && strings.HasSuffix(name, "-installer.exe") {
-			downloadURL = asset.BrowserDownloadURL
-			assetName = asset.Name
-			assetSize = asset.Size
-			break
-		} else if platform == "linux" && strings.Contains(name, "linux") && strings.HasSuffix(name, ".appimage") {
-			downloadURL = asset.BrowserDownloadURL
-			assetName = asset.Name
-			assetSize = asset.Size
-			break
-		} else if platform == "darwin" && strings.Contains(name, "darwin") && strings.HasSuffix(name, ".dmg") {
-			downloadURL = asset.BrowserDownloadURL
-			assetName = asset.Name
-			assetSize = asset.Size
-			break
+		// Match platform-specific installer/package with architecture
+		// Asset naming convention: MrRSS-{version}-{platform}-{arch}-installer.{ext}
+		platformArch := platform + "-" + arch
+		
+		if platform == "windows" {
+			// For Windows, prefer installer.exe, fallback to .zip
+			if strings.Contains(name, platformArch) && strings.HasSuffix(name, "-installer.exe") {
+				downloadURL = asset.BrowserDownloadURL
+				assetName = asset.Name
+				assetSize = asset.Size
+				break
+			}
+		} else if platform == "linux" {
+			// For Linux, prefer .AppImage, fallback to .tar.gz
+			if strings.Contains(name, platformArch) && strings.HasSuffix(name, ".appimage") {
+				downloadURL = asset.BrowserDownloadURL
+				assetName = asset.Name
+				assetSize = asset.Size
+				break
+			}
+		} else if platform == "darwin" {
+			// For macOS, try exact arch match first (amd64/arm64), then universal
+			if strings.Contains(name, platformArch) && strings.HasSuffix(name, ".dmg") {
+				downloadURL = asset.BrowserDownloadURL
+				assetName = asset.Name
+				assetSize = asset.Size
+				break
+			}
+			// Fallback to universal build for darwin
+			if strings.Contains(name, "darwin-universal") && strings.HasSuffix(name, ".dmg") {
+				downloadURL = asset.BrowserDownloadURL
+				assetName = asset.Name
+				assetSize = asset.Size
+				// Don't break, continue looking for exact match
+			}
 		}
 	}
 
