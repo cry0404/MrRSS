@@ -369,10 +369,13 @@ func (h *Handler) HandleSettings(w http.ResponseWriter, r *http.Request) {
 
 		if req.StartupOnBoot != "" {
 			// Get current value to check if it changed
-			currentValue, _ := h.DB.GetSetting("startup_on_boot")
-			
-			// Only apply if the value changed
-			if currentValue != req.StartupOnBoot {
+			currentValue, err := h.DB.GetSetting("startup_on_boot")
+			if err != nil {
+				log.Printf("Failed to get startup_on_boot setting: %v", err)
+				// If we can't read the current value, save the new value but don't apply it
+				h.DB.SetSetting("startup_on_boot", req.StartupOnBoot)
+			} else if currentValue != req.StartupOnBoot {
+				// Only apply if the value changed
 				h.DB.SetSetting("startup_on_boot", req.StartupOnBoot)
 				
 				// Apply the startup setting
