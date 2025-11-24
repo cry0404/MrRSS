@@ -208,10 +208,11 @@ export const store = reactive({
                     isRunning: data.is_running
                 };
 
-                // Progressive refresh: update articles whenever progress advances
+                // Progressive refresh: update articles and unread counts whenever progress advances
                 if (data.current > lastCurrent) {
                     lastCurrent = data.current;
                     this.fetchArticles();
+                    this.fetchUnreadCounts();
                 }
 
                 if (!data.is_running) {

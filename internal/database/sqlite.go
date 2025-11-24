@@ -96,7 +96,8 @@ func initSchema(db *sql.DB) error {
 		description TEXT,
 		category TEXT DEFAULT '',
 		image_url TEXT DEFAULT '',
-		last_updated DATETIME
+		last_updated DATETIME,
+		last_error TEXT DEFAULT ''
 	);
 
 	CREATE TABLE IF NOT EXISTS articles (
@@ -142,6 +143,7 @@ func runMigrations(db *sql.DB) error {
 	// SQLite doesn't support IF NOT EXISTS for ALTER TABLE, so we ignore errors if columns already exist
 	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN content TEXT DEFAULT ''`)
 	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN is_hidden BOOLEAN DEFAULT 0`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN last_error TEXT DEFAULT ''`)
 	
 	return nil
 }
@@ -166,7 +168,7 @@ func (db *DB) DeleteFeed(id int64) error {
 
 func (db *DB) GetFeeds() ([]models.Feed, error) {
 	db.WaitForReady()
-	rows, err := db.Query("SELECT id, title, url, description, category, image_url, last_updated FROM feeds")
+	rows, err := db.Query("SELECT id, title, url, description, category, image_url, last_updated, last_error FROM feeds")
 	if err != nil {
 		return nil, err
 	}
@@ -175,12 +177,13 @@ func (db *DB) GetFeeds() ([]models.Feed, error) {
 	var feeds []models.Feed
 	for rows.Next() {
 		var f models.Feed
-		var category, imageURL sql.NullString
-		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Description, &category, &imageURL, &f.LastUpdated); err != nil {
+		var category, imageURL, lastError sql.NullString
+		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Description, &category, &imageURL, &f.LastUpdated, &lastError); err != nil {
 			return nil, err
 		}
 		f.Category = category.String
 		f.ImageURL = imageURL.String
+		f.LastError = lastError.String
 		feeds = append(feeds, f)
 	}
 	return feeds, nil
@@ -304,6 +307,12 @@ func (db *DB) UpdateFeedCategory(id int64, category string) error {
 func (db *DB) UpdateFeedImage(id int64, imageURL string) error {
 	db.WaitForReady()
 	_, err := db.Exec("UPDATE feeds SET image_url = ? WHERE id = ?", imageURL, id)
+	return err
+}
+
+func (db *DB) UpdateFeedError(id int64, errorMsg string) error {
+	db.WaitForReady()
+	_, err := db.Exec("UPDATE feeds SET last_error = ? WHERE id = ?", errorMsg, id)
 	return err
 }
 

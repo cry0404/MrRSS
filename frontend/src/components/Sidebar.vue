@@ -40,6 +40,30 @@ const tree = computed(() => {
 
 const openCategories = ref(new Set());
 
+// Compute unread counts for categories
+const categoryUnreadCounts = computed(() => {
+    const counts = {};
+    if (!store.feeds || !store.unreadCounts.feedCounts) return counts;
+    
+    store.feeds.forEach(feed => {
+        if (feed.category) {
+            const unreadCount = store.unreadCounts.feedCounts[feed.id] || 0;
+            if (unreadCount > 0) {
+                // Add to the direct category
+                counts[feed.category] = (counts[feed.category] || 0) + unreadCount;
+            }
+        }
+    });
+    
+    // Calculate uncategorized count
+    const uncategorizedFeeds = store.feeds.filter(f => !f.category);
+    counts['uncategorized'] = uncategorizedFeeds.reduce((sum, feed) => {
+        return sum + (store.unreadCounts.feedCounts[feed.id] || 0);
+    }, 0);
+    
+    return counts;
+});
+
 // Auto-expand all categories by default when they are first loaded
 watch(() => tree.value.categories, (newCategories) => {
     if (newCategories) {
@@ -122,13 +146,22 @@ async function handleFeedAction(action, feed) {
 function onCategoryContextMenu(e, categoryName) {
     e.preventDefault();
     e.stopPropagation();
+    
+    const items = [
+        { label: store.i18n.t('markAllAsReadFeed'), action: 'markAllRead', icon: 'ph-check-circle' }
+    ];
+    
+    // Only add rename option if not uncategorized
+    if (categoryName !== 'uncategorized') {
+        items.push({ separator: true });
+        items.push({ label: store.i18n.t('renameCategory'), action: 'rename', icon: 'ph-pencil' });
+    }
+    
     window.dispatchEvent(new CustomEvent('open-context-menu', {
         detail: {
             x: e.clientX,
             y: e.clientY,
-            items: [
-                { label: store.i18n.t('renameCategory'), action: 'rename', icon: 'ph-pencil' }
-            ],
+            items: items,
             data: categoryName,
             callback: handleCategoryAction
         }
@@ -136,7 +169,23 @@ function onCategoryContextMenu(e, categoryName) {
 }
 
 async function handleCategoryAction(action, categoryName) {
-    if (action === 'rename') {
+    if (action === 'markAllRead') {
+        // Get all feeds in this category
+        let feedsInCategory;
+        if (categoryName === 'uncategorized') {
+            feedsInCategory = store.feeds.filter(f => !f.category);
+        } else {
+            feedsInCategory = store.feeds.filter(f => 
+                f.category === categoryName || f.category.startsWith(categoryName + '/')
+            );
+        }
+        
+        // Mark all articles in these feeds as read
+        const promises = feedsInCategory.map(feed => store.markAllAsRead(feed.id));
+        await Promise.all(promises);
+        
+        window.showToast(store.i18n.t('markedAllAsRead'), 'success');
+    } else if (action === 'rename') {
         const newName = prompt('Enter new category name:', categoryName);
         if (newName && newName !== categoryName) {
             const feedsToUpdate = store.feeds.filter(f => f.category === categoryName || f.category.startsWith(categoryName + '/'));
@@ -206,6 +255,7 @@ async function handleCategoryAction(action, categoryName) {
                     <span class="flex-1 flex items-center gap-2" @click="store.setCategory(name)">
                         <i class="ph ph-folder"></i> {{ name }}
                     </span>
+                    <span v-if="categoryUnreadCounts[name] > 0" class="unread-badge mr-1">{{ categoryUnreadCounts[name] }}</span>
                     <i class="ph ph-caret-down p-1 cursor-pointer transition-transform" 
                        :class="{ 'rotate-180': isCategoryOpen(name) }"
                        @click.stop="toggleCategory(name)"></i>
@@ -219,6 +269,7 @@ async function handleCategoryAction(action, categoryName) {
                             <img :src="feed.image_url || getFavicon(feed.url)" class="w-full h-full object-contain" @error="$event.target.style.display='none'">
                         </div>
                         <span class="truncate flex-1">{{ feed.title }}</span>
+                        <i v-if="feed.last_error" class="ph ph-warning-circle text-yellow-500 text-xs shrink-0" :title="feed.last_error"></i>
                         <span v-if="store.unreadCounts.feedCounts[feed.id] > 0" class="unread-badge">{{ store.unreadCounts.feedCounts[feed.id] }}</span>
                     </div>
                 </div>
@@ -226,10 +277,11 @@ async function handleCategoryAction(action, categoryName) {
 
             <!-- Uncategorized -->
              <div v-if="tree.uncategorized.length > 0" class="mb-1">
-                <div class="category-header" @click="toggleCategory('uncategorized')">
+                <div class="category-header" @click="toggleCategory('uncategorized')" @contextmenu="onCategoryContextMenu($event, 'uncategorized')">
                      <span class="flex-1 flex items-center gap-2">
                         <i class="ph ph-folder-dashed"></i> {{ store.i18n.t('uncategorized') }}
                     </span>
+                    <span v-if="categoryUnreadCounts['uncategorized'] > 0" class="unread-badge mr-1">{{ categoryUnreadCounts['uncategorized'] }}</span>
                     <i class="ph ph-caret-down p-1 cursor-pointer transition-transform" 
                        :class="{ 'rotate-180': isCategoryOpen('uncategorized') }"></i>
                 </div>
@@ -242,6 +294,7 @@ async function handleCategoryAction(action, categoryName) {
                             <img :src="feed.image_url || getFavicon(feed.url)" class="w-full h-full object-contain" @error="$event.target.style.display='none'">
                         </div>
                         <span class="truncate flex-1">{{ feed.title }}</span>
+                        <i v-if="feed.last_error" class="ph ph-warning-circle text-yellow-500 text-xs shrink-0" :title="feed.last_error"></i>
                         <span v-if="store.unreadCounts.feedCounts[feed.id] > 0" class="unread-badge">{{ store.unreadCounts.feedCounts[feed.id] }}</span>
                     </div>
                 </div>
@@ -288,6 +341,6 @@ async function handleCategoryAction(action, categoryName) {
     @apply flex-1 flex items-center justify-center gap-2 p-2.5 text-text-secondary rounded-lg text-xl hover:bg-bg-tertiary hover:text-text-primary transition-colors;
 }
 .unread-badge {
-    @apply bg-accent text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] px-1.5 flex items-center justify-center;
+    @apply bg-text-secondary bg-opacity-20 text-text-secondary text-[10px] font-medium rounded-full min-w-[16px] h-[16px] px-1 flex items-center justify-center;
 }
 </style>
