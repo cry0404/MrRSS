@@ -238,20 +238,36 @@ watch(() => props.show, (newShow, oldShow) => {
                                     </div>
 
                                     <!-- Recent Articles -->
-                                    <div v-if="feed.recent_articles && feed.recent_articles.length > 0" class="mt-3">
-                                        <p class="text-xs font-semibold text-text-secondary mb-3 uppercase tracking-wide flex items-center gap-1">
-                                            <PhRss :size="12" />
-                                            {{ store.i18n.t('recentArticles') }}
-                                        </p>
-                                        <div class="space-y-2">
+                                    <div v-if="feed.recent_articles && feed.recent_articles.length > 0" class="mt-4">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1.5">
+                                                <PhRss :size="14" class="text-accent" />
+                                                {{ store.i18n.t('recentArticles') }}
+                                            </p>
+                                            <span class="text-xs text-text-tertiary bg-bg-tertiary px-2 py-0.5 rounded-full">
+                                                {{ feed.recent_articles.length }}
+                                            </span>
+                                        </div>
+                                        <div class="space-y-2.5">
                                             <div v-for="(article, aIndex) in feed.recent_articles" :key="aIndex" 
-                                                 class="flex flex-col gap-1 p-2 rounded-lg bg-bg-secondary hover:bg-bg-tertiary transition-colors group">
-                                                <span class="text-sm text-text-primary font-medium line-clamp-2 group-hover:text-accent transition-colors">
-                                                    {{ article.title || article }}
-                                                </span>
-                                                <span v-if="article.date" class="text-xs text-text-tertiary">
-                                                    {{ article.date }}
-                                                </span>
+                                                 class="relative flex flex-col gap-2 p-3 rounded-xl bg-gradient-to-br from-bg-secondary to-bg-tertiary hover:from-bg-tertiary hover:to-bg-secondary border border-border hover:border-accent/30 transition-all duration-200 group shadow-sm hover:shadow-md">
+                                                <!-- Article number badge -->
+                                                <div class="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                                    {{ aIndex + 1 }}
+                                                </div>
+                                                <div class="flex items-start gap-2 ml-4">
+                                                    <div class="flex-1 min-w-0">
+                                                        <h4 class="text-sm text-text-primary font-semibold line-clamp-2 group-hover:text-accent transition-colors leading-snug">
+                                                            {{ article.title || article }}
+                                                        </h4>
+                                                        <div v-if="article.date" class="flex items-center gap-1.5 mt-1.5">
+                                                            <div class="w-1 h-1 rounded-full bg-accent"></div>
+                                                            <span class="text-xs text-text-tertiary font-medium">
+                                                                {{ article.date }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

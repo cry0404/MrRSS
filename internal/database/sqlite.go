@@ -160,8 +160,23 @@ func runMigrations(db *sql.DB) error {
 
 func (db *DB) AddFeed(feed *models.Feed) error {
 	db.WaitForReady()
-	query := `INSERT OR IGNORE INTO feeds (title, url, link, description, category, image_url, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	_, err := db.Exec(query, feed.Title, feed.URL, feed.Link, feed.Description, feed.Category, feed.ImageURL, time.Now())
+	
+	// Check if feed already exists
+	var existingID int64
+	err := db.QueryRow("SELECT id FROM feeds WHERE url = ?", feed.URL).Scan(&existingID)
+	
+	if err == sql.ErrNoRows {
+		// Feed doesn't exist, insert new
+		query := `INSERT INTO feeds (title, url, link, description, category, image_url, last_updated) VALUES (?, ?, ?, ?, ?, ?, ?)`
+		_, err := db.Exec(query, feed.Title, feed.URL, feed.Link, feed.Description, feed.Category, feed.ImageURL, time.Now())
+		return err
+	} else if err != nil {
+		return err
+	}
+	
+	// Feed exists, update it
+	query := `UPDATE feeds SET title = ?, link = ?, description = ?, category = ?, image_url = ?, last_updated = ? WHERE id = ?`
+	_, err = db.Exec(query, feed.Title, feed.Link, feed.Description, feed.Category, feed.ImageURL, time.Now(), existingID)
 	return err
 }
 
@@ -216,6 +231,26 @@ func (db *DB) GetFeedByID(id int64) (*models.Feed, error) {
 	f.LastError = lastError.String
 	
 	return &f, nil
+}
+
+// GetAllFeedURLs returns a set of all subscribed RSS feed URLs for deduplication
+func (db *DB) GetAllFeedURLs() (map[string]bool, error) {
+	db.WaitForReady()
+	rows, err := db.Query("SELECT url FROM feeds")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	urls := make(map[string]bool)
+	for rows.Next() {
+		var url string
+		if err := rows.Scan(&url); err != nil {
+			return nil, err
+		}
+		urls[url] = true
+	}
+	return urls, rows.Err()
 }
 
 func (db *DB) SaveArticle(article *models.Article) error {

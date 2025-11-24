@@ -1060,6 +1060,13 @@ func (h *Handler) HandleDiscoverBlogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get all existing feed URLs for deduplication
+	subscribedURLs, err := h.DB.GetAllFeedURLs()
+	if err != nil {
+		log.Printf("Error getting subscribed URLs: %v", err)
+		subscribedURLs = make(map[string]bool) // Continue with empty set
+	}
+
 	// Discover blogs with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
@@ -1072,13 +1079,23 @@ func (h *Handler) HandleDiscoverBlogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Filter out already-subscribed feeds
+	filtered := make([]discovery.DiscoveredBlog, 0)
+	for _, blog := range discovered {
+		if !subscribedURLs[blog.RSSFeed] {
+			filtered = append(filtered, blog)
+		} else {
+			log.Printf("Filtering out already-subscribed feed: %s (%s)", blog.Name, blog.RSSFeed)
+		}
+	}
+
 	// Mark the feed as discovered
 	if err := h.DB.MarkFeedDiscovered(req.FeedID); err != nil {
 		log.Printf("Error marking feed as discovered: %v", err)
 	}
 
-	log.Printf("Discovered %d blogs", len(discovered))
-	json.NewEncoder(w).Encode(discovered)
+	log.Printf("Discovered %d blogs, %d after filtering", len(discovered), len(filtered))
+	json.NewEncoder(w).Encode(filtered)
 }
 
 // HandleDiscoverAllFeeds discovers feeds from all subscriptions that haven't been discovered yet
@@ -1093,6 +1110,13 @@ func (h *Handler) HandleDiscoverAllFeeds(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	// Get all existing feed URLs for deduplication
+	subscribedURLs, err := h.DB.GetAllFeedURLs()
+	if err != nil {
+		log.Printf("Error getting subscribed URLs: %v", err)
+		subscribedURLs = make(map[string]bool) // Continue with empty set
 	}
 
 	// Filter feeds that haven't been discovered yet
@@ -1137,9 +1161,17 @@ discoveryLoop:
 			continue
 		}
 
-		if len(discovered) > 0 {
-			allDiscovered[feed.Title] = discovered
-			discoveredCount += len(discovered)
+		// Filter out already-subscribed feeds
+		filtered := make([]discovery.DiscoveredBlog, 0)
+		for _, blog := range discovered {
+			if !subscribedURLs[blog.RSSFeed] {
+				filtered = append(filtered, blog)
+			}
+		}
+
+		if len(filtered) > 0 {
+			allDiscovered[feed.Title] = filtered
+			discoveredCount += len(filtered)
 		}
 
 		// Mark the feed as discovered
