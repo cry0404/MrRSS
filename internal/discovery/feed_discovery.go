@@ -93,7 +93,7 @@ func (s *Service) fetchHTML(ctx context.Context, urlStr string) (*goquery.Docume
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", "MrRSS/1.0 (Blog Discovery Bot)")
+	req.Header.Set("User-Agent", "MrRSS (Blog Discovery Bot)")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
