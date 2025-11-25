@@ -1,0 +1,236 @@
+package database
+
+import (
+	"context"
+	"database/sql"
+	"log"
+
+	"MrRSS/internal/models"
+)
+
+// SaveArticle saves a single article to the database.
+func (db *DB) SaveArticle(article *models.Article) error {
+	db.WaitForReady()
+	query := `INSERT OR IGNORE INTO articles (feed_id, title, url, image_url, published_at, translated_title, content, is_read, is_favorite, is_hidden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	_, err := db.Exec(query, article.FeedID, article.Title, article.URL, article.ImageURL, article.PublishedAt, article.TranslatedTitle, article.Content, article.IsRead, article.IsFavorite, article.IsHidden)
+	return err
+}
+
+// SaveArticles saves multiple articles in a transaction.
+func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) error {
+	db.WaitForReady()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.PrepareContext(ctx, `INSERT OR IGNORE INTO articles (feed_id, title, url, image_url, published_at, translated_title, content, is_read, is_favorite, is_hidden) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, article := range articles {
+		// Check context before each insert
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
+		_, err := stmt.ExecContext(ctx, article.FeedID, article.Title, article.URL, article.ImageURL, article.PublishedAt, article.TranslatedTitle, article.Content, article.IsRead, article.IsFavorite, article.IsHidden)
+		if err != nil {
+			log.Println("Error saving article in batch:", err)
+			// Continue even if one fails
+		}
+	}
+
+	return tx.Commit()
+}
+
+// GetArticles retrieves articles with filtering, pagination, and sorting.
+func (db *DB) GetArticles(filter string, feedID int64, category string, showHidden bool, limit, offset int) ([]models.Article, error) {
+	db.WaitForReady()
+	baseQuery := `
+		SELECT a.id, a.feed_id, a.title, a.url, a.image_url, a.content, a.published_at, a.is_read, a.is_favorite, a.is_hidden, a.translated_title, f.title 
+		FROM articles a 
+		JOIN feeds f ON a.feed_id = f.id 
+	`
+	var args []interface{}
+	whereClauses := []string{}
+
+	// Always filter hidden articles unless showHidden is true
+	if !showHidden {
+		whereClauses = append(whereClauses, "a.is_hidden = 0")
+	}
+
+	if filter == "unread" {
+		whereClauses = append(whereClauses, "a.is_read = 0")
+	} else if filter == "favorites" {
+		whereClauses = append(whereClauses, "a.is_favorite = 1")
+	}
+
+	if feedID > 0 {
+		whereClauses = append(whereClauses, "a.feed_id = ?")
+		args = append(args, feedID)
+	}
+
+	if category != "" {
+		// Simple prefix match for category hierarchy
+		whereClauses = append(whereClauses, "(f.category = ? OR f.category LIKE ?)")
+		args = append(args, category, category+"/%")
+	}
+
+	query := baseQuery
+	if len(whereClauses) > 0 {
+		query += " WHERE " + whereClauses[0]
+		for i := 1; i < len(whereClauses); i++ {
+			query += " AND " + whereClauses[i]
+		}
+	}
+	query += " ORDER BY a.published_at DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var articles []models.Article
+	for rows.Next() {
+		var a models.Article
+		var imageURL, content, translatedTitle sql.NullString
+		if err := rows.Scan(&a.ID, &a.FeedID, &a.Title, &a.URL, &imageURL, &content, &a.PublishedAt, &a.IsRead, &a.IsFavorite, &a.IsHidden, &translatedTitle, &a.FeedTitle); err != nil {
+			log.Println("Error scanning article:", err)
+			continue
+		}
+		a.ImageURL = imageURL.String
+		a.Content = content.String
+		a.TranslatedTitle = translatedTitle.String
+		articles = append(articles, a)
+	}
+	return articles, nil
+}
+
+// MarkArticleRead marks an article as read or unread.
+func (db *DB) MarkArticleRead(id int64, read bool) error {
+	db.WaitForReady()
+	isRead := 0
+	if read {
+		isRead = 1
+	}
+	_, err := db.Exec("UPDATE articles SET is_read = ? WHERE id = ?", isRead, id)
+	return err
+}
+
+// ToggleFavorite toggles the favorite status of an article.
+func (db *DB) ToggleFavorite(id int64) error {
+	db.WaitForReady()
+	// First get current state
+	var isFav bool
+	err := db.QueryRow("SELECT is_favorite FROM articles WHERE id = ?", id).Scan(&isFav)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("UPDATE articles SET is_favorite = ? WHERE id = ?", !isFav, id)
+	return err
+}
+
+// UpdateArticleTranslation updates the translated_title field for an article.
+func (db *DB) UpdateArticleTranslation(id int64, translatedTitle string) error {
+	db.WaitForReady()
+	_, err := db.Exec("UPDATE articles SET translated_title = ? WHERE id = ?", translatedTitle, id)
+	return err
+}
+
+// ClearAllTranslations clears all translated titles from articles.
+func (db *DB) ClearAllTranslations() error {
+	db.WaitForReady()
+	_, err := db.Exec("UPDATE articles SET translated_title = ''")
+	return err
+}
+
+// ToggleArticleHidden toggles the is_hidden status of an article.
+func (db *DB) ToggleArticleHidden(id int64) error {
+	db.WaitForReady()
+	// First get current state
+	var isHidden bool
+	err := db.QueryRow("SELECT is_hidden FROM articles WHERE id = ?", id).Scan(&isHidden)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("UPDATE articles SET is_hidden = ? WHERE id = ?", !isHidden, id)
+	return err
+}
+
+// UpdateArticleContent updates the content field for an article.
+func (db *DB) UpdateArticleContent(id int64, content string) error {
+	db.WaitForReady()
+	_, err := db.Exec("UPDATE articles SET content = ? WHERE id = ?", content, id)
+	return err
+}
+
+// GetTotalUnreadCount returns the total number of unread articles.
+func (db *DB) GetTotalUnreadCount() (int, error) {
+	db.WaitForReady()
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM articles WHERE is_read = 0 AND is_hidden = 0").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetUnreadCountByFeed returns the number of unread articles for a specific feed.
+func (db *DB) GetUnreadCountByFeed(feedID int64) (int, error) {
+	db.WaitForReady()
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM articles WHERE feed_id = ? AND is_read = 0 AND is_hidden = 0", feedID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetUnreadCountsForAllFeeds returns a map of feed_id to unread count.
+func (db *DB) GetUnreadCountsForAllFeeds() (map[int64]int, error) {
+	db.WaitForReady()
+	rows, err := db.Query(`
+		SELECT feed_id, COUNT(*) 
+		FROM articles 
+		WHERE is_read = 0 AND is_hidden = 0 
+		GROUP BY feed_id
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	counts := make(map[int64]int)
+	for rows.Next() {
+		var feedID int64
+		var count int
+		if err := rows.Scan(&feedID, &count); err != nil {
+			log.Println("Error scanning unread count:", err)
+			continue
+		}
+		counts[feedID] = count
+	}
+	return counts, rows.Err()
+}
+
+// MarkAllAsReadForFeed marks all articles in a feed as read.
+func (db *DB) MarkAllAsReadForFeed(feedID int64) error {
+	db.WaitForReady()
+	_, err := db.Exec("UPDATE articles SET is_read = 1 WHERE feed_id = ? AND is_hidden = 0", feedID)
+	return err
+}
+
+// MarkAllAsRead marks all articles as read.
+func (db *DB) MarkAllAsRead() error {
+	db.WaitForReady()
+	_, err := db.Exec("UPDATE articles SET is_read = 1 WHERE is_hidden = 0")
+	return err
+}
