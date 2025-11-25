@@ -1358,19 +1358,6 @@ discoveryLoop:
 	})
 }
 
-// BatchDiscoveryState represents the state of batch discovery
-type BatchDiscoveryState struct {
-	IsRunning      bool                                  `json:"is_running"`
-	IsComplete     bool                                  `json:"is_complete"`
-	Error          string                                `json:"error,omitempty"`
-	CurrentFeed    string                                `json:"current_feed"`
-	CurrentIndex   int                                   `json:"current_index"`
-	TotalFeeds     int                                   `json:"total_feeds"`
-	FoundCount     int                                   `json:"found_count"`
-	Progress       discovery.Progress                    `json:"progress"`
-	Feeds          map[string][]discovery.DiscoveredBlog `json:"feeds,omitempty"`
-}
-
 // HandleStartBatchDiscovery starts batch discovery in the background
 func (h *Handler) HandleStartBatchDiscovery(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
