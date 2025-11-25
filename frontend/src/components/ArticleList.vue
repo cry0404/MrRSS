@@ -21,6 +21,9 @@ const showFilterModal = ref(false);
 const activeFilters = ref([]);
 const filteredArticlesFromServer = ref([]);
 const isFilterLoading = ref(false);
+const filterPage = ref(1);
+const filterHasMore = ref(true);
+const filterTotal = ref(0);
 
 const props = defineProps(['isSidebarOpen']);
 const emit = defineEmits(['toggleSidebar']);
@@ -151,7 +154,12 @@ onBeforeUnmount(() => {
 function handleScroll(e) {
     const { scrollTop, clientHeight, scrollHeight } = e.target;
     if (scrollTop + clientHeight >= scrollHeight - 200) {
-        store.loadMore();
+        // If filters are active, load more filtered results, otherwise use store's loadMore
+        if (activeFilters.value.length > 0) {
+            loadMoreFilteredArticles();
+        } else {
+            store.loadMore();
+        }
     }
 }
 
@@ -199,45 +207,78 @@ const filteredArticles = computed(() => {
     return articles;
 });
 
-// Fetch filtered articles from server
-async function fetchFilteredArticles(filters) {
+// Fetch filtered articles from server with pagination
+async function fetchFilteredArticles(filters, append = false) {
     if (filters.length === 0) {
         filteredArticlesFromServer.value = [];
+        filterPage.value = 1;
+        filterHasMore.value = true;
+        filterTotal.value = 0;
         return;
     }
     
     isFilterLoading.value = true;
     try {
+        const page = append ? filterPage.value : 1;
         const res = await fetch('/api/articles/filter', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ conditions: filters })
+            body: JSON.stringify({ 
+                conditions: filters,
+                page: page,
+                limit: 50
+            })
         });
         
         if (res.ok) {
             const data = await res.json();
-            filteredArticlesFromServer.value = data || [];
+            const articles = data.articles || [];
+            
+            if (append) {
+                filteredArticlesFromServer.value = [...filteredArticlesFromServer.value, ...articles];
+            } else {
+                filteredArticlesFromServer.value = articles;
+                filterPage.value = 1;
+            }
+            
+            filterHasMore.value = data.has_more;
+            filterTotal.value = data.total;
         } else {
             console.error('Error fetching filtered articles');
-            filteredArticlesFromServer.value = [];
+            if (!append) {
+                filteredArticlesFromServer.value = [];
+            }
         }
     } catch (e) {
         console.error('Error fetching filtered articles:', e);
-        filteredArticlesFromServer.value = [];
+        if (!append) {
+            filteredArticlesFromServer.value = [];
+        }
     } finally {
         isFilterLoading.value = false;
     }
 }
 
+// Load more filtered articles
+async function loadMoreFilteredArticles() {
+    if (isFilterLoading.value || !filterHasMore.value) return;
+    
+    filterPage.value++;
+    await fetchFilteredArticles(activeFilters.value, true);
+}
+
 // Filter handlers
 async function handleApplyFilters(filters) {
     activeFilters.value = filters;
-    await fetchFilteredArticles(filters);
+    await fetchFilteredArticles(filters, false);
 }
 
 function clearAllFilters() {
     activeFilters.value = [];
     filteredArticlesFromServer.value = [];
+    filterPage.value = 1;
+    filterHasMore.value = true;
+    filterTotal.value = 0;
 }
 
 function onArticleContextMenu(e, article) {

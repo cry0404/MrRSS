@@ -118,6 +118,17 @@ function toggleNegate(index) {
     conditions.value[index].negate = !conditions.value[index].negate;
 }
 
+// Track which dropdown is open
+const openDropdownIndex = ref(null);
+
+function toggleDropdown(index) {
+    if (openDropdownIndex.value === index) {
+        openDropdownIndex.value = null;
+    } else {
+        openDropdownIndex.value = index;
+    }
+}
+
 function toggleMultiSelectValue(index, val) {
     const condition = conditions.value[index];
     const idx = condition.values.indexOf(val);
@@ -128,8 +139,28 @@ function toggleMultiSelectValue(index, val) {
     }
 }
 
+// Get display text for multi-select values
+function getMultiSelectDisplayText(condition, labelKey) {
+    if (!condition.values || condition.values.length === 0) {
+        return store.i18n.t(labelKey);
+    }
+    
+    if (condition.values.length === 1) {
+        return condition.values[0];
+    }
+    
+    // Show first item and count of remaining
+    const firstItem = condition.values[0];
+    const remaining = condition.values.length - 1;
+    return `${firstItem} ${store.i18n.t('andNMore', { count: remaining })}`;
+}
+
 function clearFilters() {
     conditions.value = [];
+    openDropdownIndex.value = null;
+    // Auto-apply when clearing filters
+    emit('apply', []);
+    emit('close');
 }
 
 function applyFilters() {
@@ -233,14 +264,20 @@ function close() {
                                            v-model="condition.value" 
                                            class="date-field w-full">
                                     
-                                    <!-- Multi-select for feed name -->
-                                    <div v-else-if="condition.field === 'feed_name'" class="multi-select-container">
-                                        <div class="multi-select-dropdown" role="listbox" :aria-label="store.i18n.t('feedName')">
+                                    <!-- Multi-select dropdown for feed name -->
+                                    <div v-else-if="condition.field === 'feed_name'" class="dropdown-container">
+                                        <button type="button" 
+                                                @click="toggleDropdown(index)"
+                                                class="dropdown-trigger">
+                                            <span class="dropdown-text truncate">{{ getMultiSelectDisplayText(condition, 'feedName') }}</span>
+                                            <span class="dropdown-arrow">▼</span>
+                                        </button>
+                                        <div v-if="openDropdownIndex === index" class="dropdown-menu" role="listbox" :aria-label="store.i18n.t('feedName')">
                                             <div v-for="name in feedNames" :key="name" 
-                                                 @click="toggleMultiSelectValue(index, name)"
+                                                 @click.stop="toggleMultiSelectValue(index, name)"
                                                  role="option"
                                                  :aria-selected="condition.values.includes(name)"
-                                                 :class="['multi-select-option', condition.values.includes(name) ? 'selected' : '']">
+                                                 :class="['dropdown-option', condition.values.includes(name) ? 'selected' : '']">
                                                 <input type="checkbox" 
                                                        :checked="condition.values.includes(name)" 
                                                        class="checkbox-input"
@@ -252,25 +289,22 @@ function close() {
                                                 {{ store.i18n.t('noArticles') }}
                                             </div>
                                         </div>
-                                        <div v-if="condition.values.length > 0" class="selected-tags">
-                                            <span v-for="val in condition.values" :key="val" class="tag">
-                                                {{ val }}
-                                                <button @click.stop="toggleMultiSelectValue(index, val)" 
-                                                        class="tag-remove" 
-                                                        :aria-label="store.i18n.t('removeCondition') + ': ' + val"
-                                                        :title="store.i18n.t('removeCondition')">&times;</button>
-                                            </span>
-                                        </div>
                                     </div>
                                     
-                                    <!-- Multi-select for category -->
-                                    <div v-else-if="condition.field === 'feed_category'" class="multi-select-container">
-                                        <div class="multi-select-dropdown" role="listbox" :aria-label="store.i18n.t('feedCategory')">
+                                    <!-- Multi-select dropdown for category -->
+                                    <div v-else-if="condition.field === 'feed_category'" class="dropdown-container">
+                                        <button type="button" 
+                                                @click="toggleDropdown(index)"
+                                                class="dropdown-trigger">
+                                            <span class="dropdown-text truncate">{{ getMultiSelectDisplayText(condition, 'feedCategory') }}</span>
+                                            <span class="dropdown-arrow">▼</span>
+                                        </button>
+                                        <div v-if="openDropdownIndex === index" class="dropdown-menu" role="listbox" :aria-label="store.i18n.t('feedCategory')">
                                             <div v-for="cat in feedCategories" :key="cat" 
-                                                 @click="toggleMultiSelectValue(index, cat)"
+                                                 @click.stop="toggleMultiSelectValue(index, cat)"
                                                  role="option"
                                                  :aria-selected="condition.values.includes(cat)"
-                                                 :class="['multi-select-option', condition.values.includes(cat) ? 'selected' : '']">
+                                                 :class="['dropdown-option', condition.values.includes(cat) ? 'selected' : '']">
                                                 <input type="checkbox" 
                                                        :checked="condition.values.includes(cat)" 
                                                        class="checkbox-input"
@@ -281,15 +315,6 @@ function close() {
                                             <div v-if="feedCategories.length === 0" class="text-text-secondary text-sm p-2">
                                                 {{ store.i18n.t('noArticles') }}
                                             </div>
-                                        </div>
-                                        <div v-if="condition.values.length > 0" class="selected-tags">
-                                            <span v-for="val in condition.values" :key="val" class="tag">
-                                                {{ val }}
-                                                <button @click.stop="toggleMultiSelectValue(index, val)" 
-                                                        class="tag-remove" 
-                                                        :aria-label="store.i18n.t('removeCondition') + ': ' + val"
-                                                        :title="store.i18n.t('removeCondition')">&times;</button>
-                                            </span>
                                         </div>
                                     </div>
                                     
@@ -381,31 +406,32 @@ function close() {
     @apply bg-red-500/10 border-red-500 text-red-500;
 }
 
-/* Multi-select styling */
-.multi-select-container {
+/* Dropdown multi-select styling */
+.dropdown-container {
     @apply relative;
 }
-.multi-select-dropdown {
-    @apply border border-border rounded-md bg-bg-primary max-h-32 overflow-y-auto;
+.dropdown-trigger {
+    @apply w-full p-2 border border-border rounded-md bg-bg-primary text-text-primary text-sm;
+    @apply flex items-center justify-between cursor-pointer hover:border-accent transition-colors;
 }
-.multi-select-option {
-    @apply flex items-center gap-2 px-2 py-1.5 cursor-pointer text-sm text-text-primary hover:bg-bg-tertiary;
+.dropdown-text {
+    @apply flex-1 text-left;
 }
-.multi-select-option.selected {
+.dropdown-arrow {
+    @apply text-text-secondary text-xs ml-2;
+}
+.dropdown-menu {
+    @apply absolute top-full left-0 right-0 mt-1 border border-border rounded-md bg-bg-primary;
+    @apply max-h-40 overflow-y-auto z-10 shadow-lg;
+}
+.dropdown-option {
+    @apply flex items-center gap-2 px-3 py-2 cursor-pointer text-sm text-text-primary hover:bg-bg-tertiary;
+}
+.dropdown-option.selected {
     background-color: rgba(59, 130, 246, 0.1);
 }
 .checkbox-input {
     @apply w-4 h-4 accent-accent cursor-pointer;
-}
-.selected-tags {
-    @apply flex flex-wrap gap-1 mt-1;
-}
-.tag {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs text-accent rounded-full;
-    background-color: rgba(59, 130, 246, 0.2);
-}
-.tag-remove {
-    @apply cursor-pointer hover:text-red-500 font-bold bg-transparent border-none p-0 text-base leading-none;
 }
 
 .animate-fade-in {

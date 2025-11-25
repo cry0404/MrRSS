@@ -26,6 +26,17 @@ type FilterCondition struct {
 // FilterRequest represents the request body for filtered articles
 type FilterRequest struct {
 	Conditions []FilterCondition `json:"conditions"`
+	Page       int               `json:"page"`
+	Limit      int               `json:"limit"`
+}
+
+// FilterResponse represents the response for filtered articles with pagination info
+type FilterResponse struct {
+	Articles   []models.Article `json:"articles"`
+	Total      int              `json:"total"`
+	Page       int              `json:"page"`
+	Limit      int              `json:"limit"`
+	HasMore    bool             `json:"has_more"`
 }
 
 // HandleArticles returns articles with filtering and pagination.
@@ -293,6 +304,16 @@ func (h *Handler) HandleFilteredArticles(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Set default pagination values
+	page := req.Page
+	if page < 1 {
+		page = 1
+	}
+	limit := req.Limit
+	if limit < 1 {
+		limit = 50
+	}
+
 	// Get show_hidden_articles setting
 	showHiddenStr, _ := h.DB.GetSetting("show_hidden_articles")
 	showHidden := showHiddenStr == "true"
@@ -330,7 +351,34 @@ func (h *Handler) HandleFilteredArticles(w http.ResponseWriter, r *http.Request)
 		articles = filteredArticles
 	}
 
-	json.NewEncoder(w).Encode(articles)
+	// Apply pagination
+	total := len(articles)
+	offset := (page - 1) * limit
+	end := offset + limit
+
+	// Handle edge cases for pagination
+	var paginatedArticles []models.Article
+	if offset >= total {
+		// No more articles to show
+		paginatedArticles = []models.Article{}
+	} else {
+		if end > total {
+			end = total
+		}
+		paginatedArticles = articles[offset:end]
+	}
+	
+	hasMore := end < total
+
+	response := FilterResponse{
+		Articles: paginatedArticles,
+		Total:    total,
+		Page:     page,
+		Limit:    limit,
+		HasMore:  hasMore,
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
 
 // evaluateArticleConditions evaluates all filter conditions for an article

@@ -263,6 +263,7 @@ export const translations = {
         filterValue: 'Value',
         removeCondition: 'Remove',
         filtersActive: '{count} filter(s) active',
+        andNMore: 'and {count} more',
     },
     zh: {
         // App
@@ -528,6 +529,7 @@ export const translations = {
         filterValue: '值',
         removeCondition: '删除',
         filtersActive: '已启用 {count} 个过滤条件',
+        andNMore: '等 {count} 个',
     }
 };
 
