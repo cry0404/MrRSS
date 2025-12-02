@@ -1,6 +1,6 @@
-// Package handlers contains the HTTP handlers for the application.
+// Package core contains the main Handler struct and core HTTP handlers for the application.
 // It defines the Handler struct which holds dependencies like the database and fetcher.
-package handlers
+package core
 
 import (
 	"sync"
@@ -37,9 +37,9 @@ type Handler struct {
 	DiscoveryService *discovery.Service
 
 	// Discovery state tracking for polling-based progress
-	discoveryMu          sync.RWMutex
-	singleDiscoveryState *DiscoveryState
-	batchDiscoveryState  *DiscoveryState
+	DiscoveryMu          sync.RWMutex
+	SingleDiscoveryState *DiscoveryState
+	BatchDiscoveryState  *DiscoveryState
 }
 
 // NewHandler creates a new Handler with the given dependencies.

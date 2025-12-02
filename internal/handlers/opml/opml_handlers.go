@@ -1,4 +1,4 @@
-package handlers
+package opml
 
 import (
 	"context"
@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"strings"
 
+	"MrRSS/internal/handlers/core"
 	"MrRSS/internal/opml"
 )
 
 // HandleOPMLImport handles OPML file import.
-func (h *Handler) HandleOPMLImport(w http.ResponseWriter, r *http.Request) {
+func HandleOPMLImport(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	log.Printf("HandleOPMLImport: ContentLength: %d", r.ContentLength)
 	contentType := r.Header.Get("Content-Type")
 	log.Printf("HandleOPMLImport: Content-Type: %s", contentType)
@@ -57,7 +58,7 @@ func (h *Handler) HandleOPMLImport(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleOPMLExport handles OPML file export.
-func (h *Handler) HandleOPMLExport(w http.ResponseWriter, r *http.Request) {
+func HandleOPMLExport(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	feeds, err := h.DB.GetFeeds()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

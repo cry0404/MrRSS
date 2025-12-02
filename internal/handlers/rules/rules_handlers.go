@@ -1,14 +1,15 @@
-package handlers
+package rules
 
 import (
 	"encoding/json"
 	"net/http"
 
+	"MrRSS/internal/handlers/core"
 	"MrRSS/internal/rules"
 )
 
 // HandleApplyRule applies a rule to matching articles
-func (h *Handler) HandleApplyRule(w http.ResponseWriter, r *http.Request) {
+func HandleApplyRule(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

@@ -1,0 +1,225 @@
+package discovery
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+
+	"MrRSS/internal/discovery"
+	"MrRSS/internal/handlers/core"
+)
+
+// HandleDiscoverBlogs discovers blogs from a feed's friend links.
+func HandleDiscoverBlogs(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		FeedID int64 `json:"feed_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get the specific feed by ID
+	targetFeed, err := h.DB.GetFeedByID(req.FeedID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Feed not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Get all existing feed URLs for deduplication
+	subscribedURLs, err := h.DB.GetAllFeedURLs()
+	if err != nil {
+		log.Printf("Error getting subscribed URLs: %v", err)
+		subscribedURLs = make(map[string]bool) // Continue with empty set
+	}
+
+	// Discover blogs with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	log.Printf("Starting blog discovery for feed: %s (%s)", targetFeed.Title, targetFeed.URL)
+	discovered, err := h.DiscoveryService.DiscoverFromFeed(ctx, targetFeed.URL)
+	if err != nil {
+		log.Printf("Error discovering blogs: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to discover blogs: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Filter out already-subscribed feeds
+	filtered := make([]discovery.DiscoveredBlog, 0)
+	for _, blog := range discovered {
+		if !subscribedURLs[blog.RSSFeed] {
+			filtered = append(filtered, blog)
+		} else {
+			log.Printf("Filtering out already-subscribed feed: %s (%s)", blog.Name, blog.RSSFeed)
+		}
+	}
+
+	// Mark the feed as discovered
+	if err := h.DB.MarkFeedDiscovered(req.FeedID); err != nil {
+		log.Printf("Error marking feed as discovered: %v", err)
+	}
+
+	log.Printf("Discovered %d blogs, %d after filtering", len(discovered), len(filtered))
+	json.NewEncoder(w).Encode(filtered)
+}
+
+// HandleStartSingleDiscovery starts a single feed discovery in the background.
+func HandleStartSingleDiscovery(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		FeedID int64 `json:"feed_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Check if a discovery is already running
+	h.DiscoveryMu.Lock()
+	if h.SingleDiscoveryState != nil && h.SingleDiscoveryState.IsRunning {
+		h.DiscoveryMu.Unlock()
+		http.Error(w, "Discovery already in progress", http.StatusConflict)
+		return
+	}
+
+	// Initialize state
+	h.SingleDiscoveryState = &core.DiscoveryState{
+		IsRunning:  true,
+		IsComplete: false,
+		Progress: discovery.Progress{
+			Stage:   "starting",
+			Message: "Starting discovery",
+		},
+	}
+	h.DiscoveryMu.Unlock()
+
+	// Get the specific feed by ID
+	targetFeed, err := h.DB.GetFeedByID(req.FeedID)
+	if err != nil {
+		h.DiscoveryMu.Lock()
+		h.SingleDiscoveryState.IsRunning = false
+		h.SingleDiscoveryState.IsComplete = true
+		h.SingleDiscoveryState.Error = "Feed not found"
+		h.DiscoveryMu.Unlock()
+		http.Error(w, "Feed not found", http.StatusNotFound)
+		return
+	}
+
+	// Get all existing feed URLs for deduplication
+	subscribedURLs, err := h.DB.GetAllFeedURLs()
+	if err != nil {
+		log.Printf("Error getting subscribed URLs: %v", err)
+		subscribedURLs = make(map[string]bool)
+	}
+
+	// Start discovery in background
+	go func() {
+		// Create a progress callback that updates the state
+		progressCb := func(progress discovery.Progress) {
+			h.DiscoveryMu.Lock()
+			if h.SingleDiscoveryState != nil {
+				h.SingleDiscoveryState.Progress = progress
+			}
+			h.DiscoveryMu.Unlock()
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), core.SingleFeedDiscoveryTimeout)
+		defer cancel()
+
+		log.Printf("Starting background discovery for feed: %s (%s)", targetFeed.Title, targetFeed.URL)
+		discovered, err := h.DiscoveryService.DiscoverFromFeedWithProgress(ctx, targetFeed.URL, progressCb)
+
+		h.DiscoveryMu.Lock()
+		defer h.DiscoveryMu.Unlock()
+
+		if h.SingleDiscoveryState == nil {
+			return
+		}
+
+		h.SingleDiscoveryState.IsRunning = false
+		h.SingleDiscoveryState.IsComplete = true
+
+		if err != nil {
+			log.Printf("Error discovering blogs: %v", err)
+			h.SingleDiscoveryState.Error = err.Error()
+			return
+		}
+
+		// Filter out already-subscribed feeds
+		filtered := make([]discovery.DiscoveredBlog, 0)
+		for _, blog := range discovered {
+			if !subscribedURLs[blog.RSSFeed] {
+				filtered = append(filtered, blog)
+			}
+		}
+
+		h.SingleDiscoveryState.Feeds = filtered
+
+		// Mark the feed as discovered
+		if err := h.DB.MarkFeedDiscovered(req.FeedID); err != nil {
+			log.Printf("Error marking feed as discovered: %v", err)
+		}
+
+		log.Printf("Discovery complete: found %d blogs", len(filtered))
+	}()
+
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(map[string]string{"status": "started"})
+}
+
+// HandleGetSingleDiscoveryProgress returns the current progress of single feed discovery.
+func HandleGetSingleDiscoveryProgress(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	h.DiscoveryMu.RLock()
+	state := h.SingleDiscoveryState
+	h.DiscoveryMu.RUnlock()
+
+	if state == nil {
+		json.NewEncoder(w).Encode(&core.DiscoveryState{
+			IsRunning:  false,
+			IsComplete: false,
+		})
+		return
+	}
+
+	json.NewEncoder(w).Encode(state)
+}
+
+// HandleClearSingleDiscovery clears the single feed discovery state.
+func HandleClearSingleDiscovery(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	h.DiscoveryMu.Lock()
+	h.SingleDiscoveryState = nil
+	h.DiscoveryMu.Unlock()
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "cleared"})
+}

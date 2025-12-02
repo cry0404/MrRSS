@@ -3,7 +3,7 @@ import { useAppStore } from '@/stores/app';
 import { useI18n } from 'vue-i18n';
 import { ref, onMounted, watch, type Ref } from 'vue';
 import { PhLightning, PhPlus } from '@phosphor-icons/vue';
-import RuleEditorModal from '../rules/RuleEditorModal.vue';
+import RuleEditorModal from '../../rules/RuleEditorModal.vue';
 import RuleItem from './RuleItem.vue';
 import type { Condition } from '@/composables/rules/useRuleOptions';
 

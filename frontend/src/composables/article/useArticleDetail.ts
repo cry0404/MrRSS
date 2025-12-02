@@ -35,12 +35,6 @@ export function useArticleDetail() {
   const userPreferredMode = ref<ViewMode | null>(null); // Remember user's manual choice
   const imageViewerSrc = ref<string | null>(null);
   const imageViewerAlt = ref('');
-  const imageContextMenu = ref<{ show: boolean; x: number; y: number; src: string }>({
-    show: false,
-    x: 0,
-    y: 0,
-    src: '',
-  });
 
   // Watch for article changes and apply view mode
   watch(
@@ -176,12 +170,36 @@ export function useArticleDetail() {
       // Right click - show context menu for saving
       img.addEventListener('contextmenu', (e: MouseEvent) => {
         e.preventDefault();
-        imageContextMenu.value = {
-          show: true,
-          x: e.clientX,
-          y: e.clientY,
-          src: img.src,
-        };
+        // Use global context menu system
+        window.dispatchEvent(
+          new CustomEvent('open-context-menu', {
+            detail: {
+              x: e.clientX,
+              y: e.clientY,
+              items: [
+                {
+                  label: t('viewImage'),
+                  action: 'view',
+                  icon: 'PhMagnifyingGlassPlus',
+                },
+                {
+                  label: t('downloadImage'),
+                  action: 'download',
+                  icon: 'PhDownloadSimple',
+                },
+              ],
+              data: { src: img.src },
+              callback: (action: string, data: { src: string }) => {
+                if (action === 'view') {
+                  imageViewerSrc.value = data.src;
+                  imageViewerAlt.value = '';
+                } else if (action === 'download') {
+                  downloadImage(data.src);
+                }
+              },
+            },
+          })
+        );
       });
     });
   }
@@ -189,10 +207,6 @@ export function useArticleDetail() {
   function closeImageViewer() {
     imageViewerSrc.value = null;
     imageViewerAlt.value = '';
-  }
-
-  function closeImageContextMenu() {
-    imageContextMenu.value.show = false;
   }
 
   // Download image from URL
@@ -315,7 +329,6 @@ export function useArticleDetail() {
     isLoadingContent,
     imageViewerSrc,
     imageViewerAlt,
-    imageContextMenu,
     locale,
 
     // Functions
@@ -325,7 +338,6 @@ export function useArticleDetail() {
     openOriginal,
     toggleContentView,
     closeImageViewer,
-    closeImageContextMenu,
     downloadImage,
 
     // Translations

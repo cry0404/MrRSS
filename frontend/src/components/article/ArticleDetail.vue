@@ -4,8 +4,6 @@ import { useArticleDetail } from '@/composables/article/useArticleDetail';
 import ArticleToolbar from './ArticleToolbar.vue';
 import ArticleContent from './ArticleContent.vue';
 import ImageViewer from '../common/ImageViewer.vue';
-import ContextMenu from '../common/ContextMenu.vue';
-import type { ContextMenuItem } from '../common/ContextMenu.vue';
 
 const {
   article,
@@ -14,41 +12,14 @@ const {
   isLoadingContent,
   imageViewerSrc,
   imageViewerAlt,
-  imageContextMenu,
   close,
   toggleRead,
   toggleFavorite,
   openOriginal,
   toggleContentView,
   closeImageViewer,
-  closeImageContextMenu,
-  downloadImage,
   t,
 } = useArticleDetail();
-
-// Context menu items for image
-const imageContextMenuItems: ContextMenuItem[] = [
-  {
-    label: t('viewImage'),
-    action: 'view',
-    icon: 'PhMagnifyingGlassPlus',
-  },
-  {
-    label: t('downloadImage'),
-    action: 'download',
-    icon: 'PhDownloadSimple',
-  },
-];
-
-function handleImageContextMenuAction(action: string) {
-  if (action === 'view') {
-    imageViewerSrc.value = imageContextMenu.value.src;
-    imageViewerAlt.value = '';
-  } else if (action === 'download') {
-    downloadImage(imageContextMenu.value.src);
-  }
-  closeImageContextMenu();
-}
 </script>
 
 <template>
@@ -101,16 +72,6 @@ function handleImageContextMenuAction(action: string) {
       :src="imageViewerSrc"
       :alt="imageViewerAlt"
       @close="closeImageViewer"
-    />
-
-    <!-- Image Context Menu -->
-    <ContextMenu
-      v-if="imageContextMenu.show"
-      :items="imageContextMenuItems"
-      :x="imageContextMenu.x"
-      :y="imageContextMenu.y"
-      @close="closeImageContextMenu"
-      @action="handleImageContextMenuAction"
     />
   </main>
 </template>

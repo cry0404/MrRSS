@@ -1,13 +1,15 @@
-package handlers
+package translation
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"MrRSS/internal/handlers/core"
 )
 
 // HandleTranslateArticle translates an article's title.
-func (h *Handler) HandleTranslateArticle(w http.ResponseWriter, r *http.Request) {
+func HandleTranslateArticle(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -50,7 +52,7 @@ func (h *Handler) HandleTranslateArticle(w http.ResponseWriter, r *http.Request)
 }
 
 // HandleClearTranslations clears all translated titles from the database.
-func (h *Handler) HandleClearTranslations(w http.ResponseWriter, r *http.Request) {
+func HandleClearTranslations(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -68,7 +70,7 @@ func (h *Handler) HandleClearTranslations(w http.ResponseWriter, r *http.Request
 
 // HandleTranslateText translates any text to the target language.
 // This is used for translating content, summaries, etc.
-func (h *Handler) HandleTranslateText(w http.ResponseWriter, r *http.Request) {
+func HandleTranslateText(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

@@ -1,15 +1,16 @@
-package handlers
+package settings
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 
+	"MrRSS/internal/handlers/core"
 	"MrRSS/internal/utils"
 )
 
 // HandleSettings handles GET and POST requests for application settings.
-func (h *Handler) HandleSettings(w http.ResponseWriter, r *http.Request) {
+func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		interval, _ := h.DB.GetSetting("update_interval")

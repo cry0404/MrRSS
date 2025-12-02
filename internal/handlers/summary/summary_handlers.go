@@ -1,4 +1,4 @@
-package handlers
+package summary
 
 import (
 	"context"
@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"MrRSS/internal/handlers/core"
 	"MrRSS/internal/summary"
 )
 
 // HandleSummarizeArticle generates a summary for an article's content.
-func (h *Handler) HandleSummarizeArticle(w http.ResponseWriter, r *http.Request) {
+func HandleSummarizeArticle(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -42,7 +43,7 @@ func (h *Handler) HandleSummarizeArticle(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Get the article content
-	content, err := h.getArticleContent(req.ArticleID)
+	content, err := getArticleContent(h, req.ArticleID)
 	if err != nil {
 		log.Printf("Error getting article content for summary: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -70,7 +71,7 @@ func (h *Handler) HandleSummarizeArticle(w http.ResponseWriter, r *http.Request)
 }
 
 // getArticleContent fetches the content of an article by ID
-func (h *Handler) getArticleContent(articleID int64) (string, error) {
+func getArticleContent(h *core.Handler, articleID int64) (string, error) {
 	// Get show_hidden_articles setting to include all articles
 	allArticles, err := h.DB.GetArticles("", 0, "", true, 50000, 0)
 	if err != nil {

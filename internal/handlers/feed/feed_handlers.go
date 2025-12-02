@@ -1,4 +1,4 @@
-package handlers
+package feed
 
 import (
 	"context"
@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"MrRSS/internal/handlers/core"
 )
 
 // HandleFeeds returns all feeds.
-func (h *Handler) HandleFeeds(w http.ResponseWriter, r *http.Request) {
+func HandleFeeds(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	feeds, err := h.DB.GetFeeds()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -19,7 +21,7 @@ func (h *Handler) HandleFeeds(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleAddFeed adds a new feed subscription.
-func (h *Handler) HandleAddFeed(w http.ResponseWriter, r *http.Request) {
+func HandleAddFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		URL        string `json:"url"`
 		Category   string `json:"category"`
@@ -48,7 +50,7 @@ func (h *Handler) HandleAddFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleDeleteFeed deletes a feed subscription.
-func (h *Handler) HandleDeleteFeed(w http.ResponseWriter, r *http.Request) {
+func HandleDeleteFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	id, _ := strconv.ParseInt(idStr, 10, 64)
 	if err := h.DB.DeleteFeed(id); err != nil {
@@ -59,7 +61,7 @@ func (h *Handler) HandleDeleteFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleUpdateFeed updates a feed's properties.
-func (h *Handler) HandleUpdateFeed(w http.ResponseWriter, r *http.Request) {
+func HandleUpdateFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		ID         int64  `json:"id"`
 		Title      string `json:"title"`
@@ -80,7 +82,7 @@ func (h *Handler) HandleUpdateFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleRefreshFeed refreshes a single feed by ID.
-func (h *Handler) HandleRefreshFeed(w http.ResponseWriter, r *http.Request) {
+func HandleRefreshFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

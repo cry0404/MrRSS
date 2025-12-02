@@ -17,7 +17,17 @@ import (
 
 	"MrRSS/internal/database"
 	"MrRSS/internal/feed"
-	"MrRSS/internal/handlers"
+	article "MrRSS/internal/handlers/article"
+	handlers "MrRSS/internal/handlers/core"
+	discovery "MrRSS/internal/handlers/discovery"
+	feedhandlers "MrRSS/internal/handlers/feed"
+	opml "MrRSS/internal/handlers/opml"
+	rules "MrRSS/internal/handlers/rules"
+	script "MrRSS/internal/handlers/script"
+	settings "MrRSS/internal/handlers/settings"
+	summary "MrRSS/internal/handlers/summary"
+	translationhandlers "MrRSS/internal/handlers/translation"
+	update "MrRSS/internal/handlers/update"
 	"MrRSS/internal/translation"
 	"MrRSS/internal/utils"
 )
@@ -84,45 +94,45 @@ func main() {
 	// API Routes
 	log.Println("Setting up API routes...")
 	apiMux := http.NewServeMux()
-	apiMux.HandleFunc("/api/feeds", h.HandleFeeds)
-	apiMux.HandleFunc("/api/feeds/add", h.HandleAddFeed)
-	apiMux.HandleFunc("/api/feeds/delete", h.HandleDeleteFeed)
-	apiMux.HandleFunc("/api/feeds/update", h.HandleUpdateFeed)
-	apiMux.HandleFunc("/api/feeds/refresh", h.HandleRefreshFeed)
-	apiMux.HandleFunc("/api/feeds/discover", h.HandleDiscoverBlogs)
-	apiMux.HandleFunc("/api/feeds/discover-all", h.HandleDiscoverAllFeeds)
-	apiMux.HandleFunc("/api/feeds/discover/start", h.HandleStartSingleDiscovery)
-	apiMux.HandleFunc("/api/feeds/discover/progress", h.HandleGetSingleDiscoveryProgress)
-	apiMux.HandleFunc("/api/feeds/discover/clear", h.HandleClearSingleDiscovery)
-	apiMux.HandleFunc("/api/feeds/discover-all/start", h.HandleStartBatchDiscovery)
-	apiMux.HandleFunc("/api/feeds/discover-all/progress", h.HandleGetBatchDiscoveryProgress)
-	apiMux.HandleFunc("/api/feeds/discover-all/clear", h.HandleClearBatchDiscovery)
-	apiMux.HandleFunc("/api/articles", h.HandleArticles)
-	apiMux.HandleFunc("/api/articles/filter", h.HandleFilteredArticles)
-	apiMux.HandleFunc("/api/articles/read", h.HandleMarkRead)
-	apiMux.HandleFunc("/api/articles/favorite", h.HandleToggleFavorite)
-	apiMux.HandleFunc("/api/articles/cleanup", h.HandleCleanupArticles)
-	apiMux.HandleFunc("/api/articles/translate", h.HandleTranslateArticle)
-	apiMux.HandleFunc("/api/articles/translate-text", h.HandleTranslateText)
-	apiMux.HandleFunc("/api/articles/clear-translations", h.HandleClearTranslations)
-	apiMux.HandleFunc("/api/articles/toggle-hide", h.HandleToggleHideArticle)
-	apiMux.HandleFunc("/api/articles/content", h.HandleGetArticleContent)
-	apiMux.HandleFunc("/api/articles/unread-counts", h.HandleGetUnreadCounts)
-	apiMux.HandleFunc("/api/articles/mark-all-read", h.HandleMarkAllAsRead)
-	apiMux.HandleFunc("/api/articles/summarize", h.HandleSummarizeArticle)
-	apiMux.HandleFunc("/api/settings", h.HandleSettings)
-	apiMux.HandleFunc("/api/refresh", h.HandleRefresh)
-	apiMux.HandleFunc("/api/progress", h.HandleProgress)
-	apiMux.HandleFunc("/api/opml/import", h.HandleOPMLImport)
-	apiMux.HandleFunc("/api/opml/export", h.HandleOPMLExport)
-	apiMux.HandleFunc("/api/check-updates", h.HandleCheckUpdates)
-	apiMux.HandleFunc("/api/download-update", h.HandleDownloadUpdate)
-	apiMux.HandleFunc("/api/install-update", h.HandleInstallUpdate)
-	apiMux.HandleFunc("/api/version", h.HandleVersion)
-	apiMux.HandleFunc("/api/rules/apply", h.HandleApplyRule)
-	apiMux.HandleFunc("/api/scripts/dir", h.HandleGetScriptsDir)
-	apiMux.HandleFunc("/api/scripts/open", h.HandleOpenScriptsDir)
-	apiMux.HandleFunc("/api/scripts/list", h.HandleListScripts)
+	apiMux.HandleFunc("/api/feeds", func(w http.ResponseWriter, r *http.Request) { feedhandlers.HandleFeeds(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/add", func(w http.ResponseWriter, r *http.Request) { feedhandlers.HandleAddFeed(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/delete", func(w http.ResponseWriter, r *http.Request) { feedhandlers.HandleDeleteFeed(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/update", func(w http.ResponseWriter, r *http.Request) { feedhandlers.HandleUpdateFeed(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/refresh", func(w http.ResponseWriter, r *http.Request) { feedhandlers.HandleRefreshFeed(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover", func(w http.ResponseWriter, r *http.Request) { discovery.HandleDiscoverBlogs(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover-all", func(w http.ResponseWriter, r *http.Request) { discovery.HandleDiscoverAllFeeds(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover/start", func(w http.ResponseWriter, r *http.Request) { discovery.HandleStartSingleDiscovery(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover/progress", func(w http.ResponseWriter, r *http.Request) { discovery.HandleGetSingleDiscoveryProgress(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover/clear", func(w http.ResponseWriter, r *http.Request) { discovery.HandleClearSingleDiscovery(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover-all/start", func(w http.ResponseWriter, r *http.Request) { discovery.HandleStartBatchDiscovery(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover-all/progress", func(w http.ResponseWriter, r *http.Request) { discovery.HandleGetBatchDiscoveryProgress(h, w, r) })
+	apiMux.HandleFunc("/api/feeds/discover-all/clear", func(w http.ResponseWriter, r *http.Request) { discovery.HandleClearBatchDiscovery(h, w, r) })
+	apiMux.HandleFunc("/api/articles", func(w http.ResponseWriter, r *http.Request) { article.HandleArticles(h, w, r) })
+	apiMux.HandleFunc("/api/articles/filter", func(w http.ResponseWriter, r *http.Request) { article.HandleFilteredArticles(h, w, r) })
+	apiMux.HandleFunc("/api/articles/read", func(w http.ResponseWriter, r *http.Request) { article.HandleMarkRead(h, w, r) })
+	apiMux.HandleFunc("/api/articles/favorite", func(w http.ResponseWriter, r *http.Request) { article.HandleToggleFavorite(h, w, r) })
+	apiMux.HandleFunc("/api/articles/cleanup", func(w http.ResponseWriter, r *http.Request) { article.HandleCleanupArticles(h, w, r) })
+	apiMux.HandleFunc("/api/articles/translate", func(w http.ResponseWriter, r *http.Request) { translationhandlers.HandleTranslateArticle(h, w, r) })
+	apiMux.HandleFunc("/api/articles/translate-text", func(w http.ResponseWriter, r *http.Request) { translationhandlers.HandleTranslateText(h, w, r) })
+	apiMux.HandleFunc("/api/articles/clear-translations", func(w http.ResponseWriter, r *http.Request) { translationhandlers.HandleClearTranslations(h, w, r) })
+	apiMux.HandleFunc("/api/articles/toggle-hide", func(w http.ResponseWriter, r *http.Request) { article.HandleToggleHideArticle(h, w, r) })
+	apiMux.HandleFunc("/api/articles/content", func(w http.ResponseWriter, r *http.Request) { article.HandleGetArticleContent(h, w, r) })
+	apiMux.HandleFunc("/api/articles/unread-counts", func(w http.ResponseWriter, r *http.Request) { article.HandleGetUnreadCounts(h, w, r) })
+	apiMux.HandleFunc("/api/articles/mark-all-read", func(w http.ResponseWriter, r *http.Request) { article.HandleMarkAllAsRead(h, w, r) })
+	apiMux.HandleFunc("/api/articles/summarize", func(w http.ResponseWriter, r *http.Request) { summary.HandleSummarizeArticle(h, w, r) })
+	apiMux.HandleFunc("/api/settings", func(w http.ResponseWriter, r *http.Request) { settings.HandleSettings(h, w, r) })
+	apiMux.HandleFunc("/api/refresh", func(w http.ResponseWriter, r *http.Request) { article.HandleRefresh(h, w, r) })
+	apiMux.HandleFunc("/api/progress", func(w http.ResponseWriter, r *http.Request) { article.HandleProgress(h, w, r) })
+	apiMux.HandleFunc("/api/opml/import", func(w http.ResponseWriter, r *http.Request) { opml.HandleOPMLImport(h, w, r) })
+	apiMux.HandleFunc("/api/opml/export", func(w http.ResponseWriter, r *http.Request) { opml.HandleOPMLExport(h, w, r) })
+	apiMux.HandleFunc("/api/check-updates", func(w http.ResponseWriter, r *http.Request) { update.HandleCheckUpdates(h, w, r) })
+	apiMux.HandleFunc("/api/download-update", func(w http.ResponseWriter, r *http.Request) { update.HandleDownloadUpdate(h, w, r) })
+	apiMux.HandleFunc("/api/install-update", func(w http.ResponseWriter, r *http.Request) { update.HandleInstallUpdate(h, w, r) })
+	apiMux.HandleFunc("/api/version", func(w http.ResponseWriter, r *http.Request) { update.HandleVersion(h, w, r) })
+	apiMux.HandleFunc("/api/rules/apply", func(w http.ResponseWriter, r *http.Request) { rules.HandleApplyRule(h, w, r) })
+	apiMux.HandleFunc("/api/scripts/dir", func(w http.ResponseWriter, r *http.Request) { script.HandleGetScriptsDir(h, w, r) })
+	apiMux.HandleFunc("/api/scripts/open", func(w http.ResponseWriter, r *http.Request) { script.HandleOpenScriptsDir(h, w, r) })
+	apiMux.HandleFunc("/api/scripts/list", func(w http.ResponseWriter, r *http.Request) { script.HandleListScripts(h, w, r) })
 
 	// Static Files
 	log.Println("Setting up static files...")

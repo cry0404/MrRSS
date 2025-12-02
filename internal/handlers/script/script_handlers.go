@@ -1,4 +1,4 @@
-package handlers
+package script
 
 import (
 	"encoding/json"
@@ -9,11 +9,12 @@ import (
 	"runtime"
 	"strings"
 
+	"MrRSS/internal/handlers/core"
 	"MrRSS/internal/utils"
 )
 
 // HandleGetScriptsDir returns the path to the scripts directory
-func (h *Handler) HandleGetScriptsDir(w http.ResponseWriter, r *http.Request) {
+func HandleGetScriptsDir(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -31,7 +32,7 @@ func (h *Handler) HandleGetScriptsDir(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleOpenScriptsDir opens the scripts directory in the system file explorer
-func (h *Handler) HandleOpenScriptsDir(w http.ResponseWriter, r *http.Request) {
+func HandleOpenScriptsDir(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -69,7 +70,7 @@ func (h *Handler) HandleOpenScriptsDir(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleListScripts returns a list of available scripts in the scripts directory
-func (h *Handler) HandleListScripts(w http.ResponseWriter, r *http.Request) {
+func HandleListScripts(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

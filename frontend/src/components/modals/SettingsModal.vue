@@ -2,11 +2,11 @@
 import { useAppStore } from '@/stores/app';
 import { useI18n } from 'vue-i18n';
 import { ref, onMounted, type Ref } from 'vue';
-import GeneralTab from './settings/GeneralTab.vue';
-import FeedsTab from './settings/FeedsTab.vue';
-import ShortcutsTab from './settings/ShortcutsTab.vue';
-import RulesTab from './settings/RulesTab.vue';
-import AboutTab from './settings/AboutTab.vue';
+import GeneralTab from './settings/general/GeneralTab.vue';
+import FeedsTab from './settings/feeds/FeedsTab.vue';
+import ShortcutsTab from './settings/shortcuts/ShortcutsTab.vue';
+import RulesTab from './settings/rules/RulesTab.vue';
+import AboutTab from './settings/about/AboutTab.vue';
 import DiscoverAllFeedsModal from './discovery/DiscoverAllFeedsModal.vue';
 import { PhGear } from '@phosphor-icons/vue';
 import type { TabName } from '@/types/settings';
