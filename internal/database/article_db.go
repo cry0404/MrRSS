@@ -297,3 +297,10 @@ func (db *DB) MarkAllAsRead() error {
 	_, err := db.Exec("UPDATE articles SET is_read = 1 WHERE is_hidden = 0")
 	return err
 }
+
+// ClearReadLater removes all articles from the read later list.
+func (db *DB) ClearReadLater() error {
+	db.WaitForReady()
+	_, err := db.Exec("UPDATE articles SET is_read_later = 0 WHERE is_read_later = 1")
+	return err
+}

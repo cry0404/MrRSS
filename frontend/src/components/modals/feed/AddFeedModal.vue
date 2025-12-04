@@ -112,24 +112,24 @@ async function openScriptsFolder() {
 
 <template>
   <div
-    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4"
     @click.self="close"
     data-modal-open="true"
   >
     <div
-      class="bg-bg-primary w-full max-w-md rounded-2xl shadow-2xl border border-border overflow-hidden animate-fade-in"
+      class="bg-bg-primary w-full max-w-md h-full sm:h-auto sm:max-h-[90vh] flex flex-col rounded-none sm:rounded-2xl shadow-2xl border border-border overflow-hidden animate-fade-in"
     >
-      <div class="p-5 border-b border-border flex justify-between items-center">
-        <h3 class="text-lg font-semibold m-0">{{ t('addNewFeed') }}</h3>
+      <div class="p-3 sm:p-5 border-b border-border flex justify-between items-center shrink-0">
+        <h3 class="text-base sm:text-lg font-semibold m-0">{{ t('addNewFeed') }}</h3>
         <span
           @click="close"
           class="text-2xl cursor-pointer text-text-secondary hover:text-text-primary"
           >&times;</span
         >
       </div>
-      <div class="p-6">
-        <div class="mb-4">
-          <label class="block mb-1.5 font-semibold text-sm text-text-secondary"
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div class="mb-3 sm:mb-4">
+          <label class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
             >{{ t('title') }} ({{ t('optional') }})</label
           >
           <input
@@ -141,10 +141,11 @@ async function openScriptsFolder() {
         </div>
 
         <!-- URL Input (default mode) -->
-        <div v-if="feedType === 'url'" class="mb-4">
-          <label class="block mb-1.5 font-semibold text-sm text-text-secondary">{{
-            t('rssUrl')
-          }}</label>
+        <div v-if="feedType === 'url'" class="mb-3 sm:mb-4">
+          <label
+            class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
+            >{{ t('rssUrl') }}</label
+          >
           <input
             v-model="url"
             type="text"
@@ -155,7 +156,7 @@ async function openScriptsFolder() {
             <button
               type="button"
               @click="feedType = 'script'"
-              class="text-sm text-accent hover:underline"
+              class="text-xs sm:text-sm text-accent hover:underline"
             >
               {{ t('useCustomScript') }}
             </button>
@@ -163,10 +164,11 @@ async function openScriptsFolder() {
         </div>
 
         <!-- Script Selection (advanced mode) -->
-        <div v-else class="mb-4">
-          <label class="block mb-1.5 font-semibold text-sm text-text-secondary">{{
-            t('selectScript')
-          }}</label>
+        <div v-else class="mb-3 sm:mb-4">
+          <label
+            class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
+            >{{ t('selectScript') }}</label
+          >
           <div v-if="availableScripts.length > 0" class="mb-2">
             <select v-model="scriptPath" class="input-field">
               <option value="">{{ t('selectScriptPlaceholder') }}</option>
@@ -177,24 +179,24 @@ async function openScriptsFolder() {
           </div>
           <div
             v-else
-            class="text-sm text-text-secondary bg-bg-secondary rounded-md p-3 border border-border"
+            class="text-xs sm:text-sm text-text-secondary bg-bg-secondary rounded-md p-2 sm:p-3 border border-border"
           >
             <p class="mb-2">{{ t('noScriptsFound') }}</p>
           </div>
-          <div class="flex items-center justify-between mt-2">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 gap-2">
             <button
               type="button"
               @click="feedType = 'url'"
-              class="text-sm text-accent hover:underline"
+              class="text-xs sm:text-sm text-accent hover:underline"
             >
               {{ t('useRssUrl') }}
             </button>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
               <a
                 href="https://github.com/WCY-dt/MrRSS/blob/main/docs/CUSTOM_SCRIPTS.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="text-sm text-accent hover:underline flex items-center gap-1"
+                class="text-xs sm:text-sm text-accent hover:underline flex items-center gap-1"
               >
                 <PhBookOpen :size="14" />
                 {{ t('scriptDocumentation') }}
@@ -202,7 +204,7 @@ async function openScriptsFolder() {
               <button
                 type="button"
                 @click="openScriptsFolder"
-                class="text-sm text-accent hover:underline flex items-center gap-1"
+                class="text-xs sm:text-sm text-accent hover:underline flex items-center gap-1"
               >
                 <PhCode :size="14" />
                 {{ t('openScriptsFolder') }}
@@ -211,10 +213,11 @@ async function openScriptsFolder() {
           </div>
         </div>
 
-        <div class="mb-4">
-          <label class="block mb-1.5 font-semibold text-sm text-text-secondary">{{
-            t('categoryOptional')
-          }}</label>
+        <div class="mb-3 sm:mb-4">
+          <label
+            class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
+            >{{ t('categoryOptional') }}</label
+          >
           <input
             v-model="category"
             type="text"
@@ -224,13 +227,15 @@ async function openScriptsFolder() {
         </div>
 
         <!-- Hide from Timeline Toggle -->
-        <div class="mb-4">
+        <div class="mb-3 sm:mb-4">
           <label class="flex items-center justify-between cursor-pointer">
             <div>
-              <span class="font-semibold text-sm text-text-secondary">{{
+              <span class="font-semibold text-xs sm:text-sm text-text-secondary">{{
                 t('hideFromTimeline')
               }}</span>
-              <p class="text-xs text-text-secondary mt-0.5">{{ t('hideFromTimelineDesc') }}</p>
+              <p class="text-[10px] sm:text-xs text-text-secondary mt-0.5">
+                {{ t('hideFromTimelineDesc') }}
+              </p>
             </div>
             <input
               type="checkbox"
@@ -240,8 +245,12 @@ async function openScriptsFolder() {
           </label>
         </div>
       </div>
-      <div class="p-5 border-t border-border bg-bg-secondary text-right">
-        <button @click="addFeed" :disabled="isSubmitting || !isFormValid" class="btn-primary">
+      <div class="p-3 sm:p-5 border-t border-border bg-bg-secondary text-right shrink-0">
+        <button
+          @click="addFeed"
+          :disabled="isSubmitting || !isFormValid"
+          class="btn-primary text-sm sm:text-base"
+        >
           {{ isSubmitting ? t('adding') : t('addSubscription') }}
         </button>
       </div>
@@ -251,10 +260,10 @@ async function openScriptsFolder() {
 
 <style scoped>
 .input-field {
-  @apply w-full p-2.5 border border-border rounded-md bg-bg-secondary text-text-primary text-sm focus:border-accent focus:outline-none transition-colors;
+  @apply w-full p-2 sm:p-2.5 border border-border rounded-md bg-bg-secondary text-text-primary text-xs sm:text-sm focus:border-accent focus:outline-none transition-colors;
 }
 .btn-primary {
-  @apply bg-accent text-white border-none px-5 py-2.5 rounded-lg cursor-pointer font-semibold hover:bg-accent-hover transition-colors disabled:opacity-70;
+  @apply bg-accent text-white border-none px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg cursor-pointer font-semibold hover:bg-accent-hover transition-colors disabled:opacity-70;
 }
 .animate-fade-in {
   animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);

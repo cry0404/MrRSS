@@ -2,7 +2,14 @@
 import { useAppStore } from '@/stores/app';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onBeforeUnmount, watch, type Ref } from 'vue';
-import { PhCheckCircle, PhArrowClockwise, PhList, PhSpinner, PhFunnel } from '@phosphor-icons/vue';
+import {
+  PhCheckCircle,
+  PhArrowClockwise,
+  PhList,
+  PhSpinner,
+  PhFunnel,
+  PhTrash,
+} from '@phosphor-icons/vue';
 import ArticleFilterModal from '../modals/filter/ArticleFilterModal.vue';
 import ArticleItem from './ArticleItem.vue';
 import { useArticleTranslation } from '@/composables/article/useArticleTranslation';
@@ -84,6 +91,8 @@ onMounted(async () => {
   window.addEventListener('default-view-mode-changed', onDefaultViewModeChanged as EventListener);
   // Listen for refresh articles events
   window.addEventListener('refresh-articles', onRefreshArticles);
+  // Listen for toggle filter events (from keyboard shortcut)
+  window.addEventListener('toggle-filter', onToggleFilter);
 });
 
 // Watch for articles changes during refresh to maintain scroll position
@@ -123,6 +132,7 @@ onBeforeUnmount(() => {
     onDefaultViewModeChanged as EventListener
   );
   window.removeEventListener('refresh-articles', onRefreshArticles);
+  window.removeEventListener('toggle-filter', onToggleFilter);
 });
 
 interface CustomEventDetail {
@@ -154,6 +164,10 @@ function onTranslationSettingsChanged(e: Event): void {
 
 function onRefreshArticles(): void {
   store.fetchArticles();
+}
+
+function onToggleFilter(): void {
+  showFilterModal.value = !showFilterModal.value;
 }
 
 // Article selection and interaction
@@ -221,6 +235,18 @@ async function markAllAsRead(): Promise<void> {
   await store.markAllAsRead();
   window.showToast(t('markedAllAsRead'), 'success');
 }
+
+async function clearReadLater(): Promise<void> {
+  try {
+    const res = await fetch('/api/articles/clear-read-later', { method: 'POST' });
+    if (res.ok) {
+      await store.fetchArticles();
+      window.showToast(t('clearedReadLater'), 'success');
+    }
+  } catch (e) {
+    console.error('Error clearing read later:', e);
+  }
+}
 </script>
 
 <template>
@@ -228,9 +254,18 @@ async function markAllAsRead(): Promise<void> {
     class="article-list flex flex-col w-full border-r border-border bg-bg-primary shrink-0 h-full"
   >
     <div class="p-2 sm:p-4 border-b border-border bg-bg-primary">
-      <div class="flex items-center justify-between mb-2 sm:mb-3">
+      <div class="flex items-center justify-between sm:mb-2">
         <h3 class="m-0 text-base sm:text-lg font-semibold">{{ t('articles') }}</h3>
         <div class="flex items-center gap-1 sm:gap-2">
+          <!-- Clear Read Later button - only shown when viewing Read Later list -->
+          <button
+            v-if="store.currentFilter === 'readLater'"
+            @click="clearReadLater"
+            class="text-text-secondary hover:text-red-500 hover:bg-bg-tertiary p-1 sm:p-1.5 rounded transition-colors"
+            :title="t('clearReadLater')"
+          >
+            <PhTrash :size="20" class="sm:w-6 sm:h-6" />
+          </button>
           <button
             @click="markAllAsRead"
             class="text-text-secondary hover:text-text-primary hover:bg-bg-tertiary p-1 sm:p-1.5 rounded transition-colors"

@@ -64,25 +64,31 @@ function getMultiSelectDisplayText(): string {
 </script>
 
 <template>
-  <div class="condition-row bg-bg-secondary border border-border rounded-lg p-3">
+  <div class="condition-row bg-bg-secondary border border-border rounded-lg p-2 sm:p-3">
     <div class="flex flex-wrap gap-2 items-end">
       <!-- NOT toggle button -->
       <div class="flex-shrink-0">
-        <label class="block text-xs text-text-secondary mb-1">&nbsp;</label>
+        <label class="block text-[10px] sm:text-xs text-text-secondary mb-1">&nbsp;</label>
         <button
           @click="emit('update:negate')"
           :class="['not-btn', condition.negate ? 'active' : '']"
           :title="t('not')"
         >
-          <PhProhibit :size="16" />
-          <span class="text-xs font-medium">{{ t('not') }}</span>
+          <PhProhibit :size="14" class="sm:w-4 sm:h-4" />
+          <span class="text-[10px] sm:text-xs font-medium">{{ t('not') }}</span>
         </button>
       </div>
 
       <!-- Field selector -->
-      <div class="flex-1 min-w-[130px]">
-        <label class="block text-xs text-text-secondary mb-1">{{ t('filterField') }}</label>
-        <select :value="condition.field" @change="handleFieldChange" class="select-field w-full">
+      <div class="flex-1 min-w-[100px] sm:min-w-[130px]">
+        <label class="block text-[10px] sm:text-xs text-text-secondary mb-1">{{
+          t('filterField')
+        }}</label>
+        <select
+          :value="condition.field"
+          @change="handleFieldChange"
+          class="select-field w-full text-xs sm:text-sm"
+        >
           <option v-for="opt in fieldOptions" :key="opt.value" :value="opt.value">
             {{ t(opt.labelKey) }}
           </option>
@@ -90,12 +96,14 @@ function getMultiSelectDisplayText(): string {
       </div>
 
       <!-- Operator selector (only for article_title) -->
-      <div v-if="needsOperator(condition.field)" class="w-28">
-        <label class="block text-xs text-text-secondary mb-1">{{ t('filterOperator') }}</label>
+      <div v-if="needsOperator(condition.field)" class="w-24 sm:w-28">
+        <label class="block text-[10px] sm:text-xs text-text-secondary mb-1">{{
+          t('filterOperator')
+        }}</label>
         <select
           :value="condition.operator"
           @change="handleOperatorChange"
-          class="select-field w-full"
+          class="select-field w-full text-xs sm:text-sm"
         >
           <option v-for="opt in textOperatorOptions" :key="opt.value" :value="opt.value">
             {{ t(opt.labelKey) }}
@@ -104,8 +112,10 @@ function getMultiSelectDisplayText(): string {
       </div>
 
       <!-- Value input -->
-      <div class="flex-1 min-w-[140px]">
-        <label class="block text-xs text-text-secondary mb-1">{{ t('filterValue') }}</label>
+      <div class="flex-1 min-w-[100px] sm:min-w-[140px]">
+        <label class="block text-[10px] sm:text-xs text-text-secondary mb-1">{{
+          t('filterValue')
+        }}</label>
 
         <!-- Date input -->
         <input
@@ -113,7 +123,7 @@ function getMultiSelectDisplayText(): string {
           type="date"
           :value="condition.value"
           @input="handleValueChange"
-          class="date-field w-full"
+          class="date-field w-full text-xs sm:text-sm"
         />
 
         <!-- Boolean select -->
@@ -121,7 +131,7 @@ function getMultiSelectDisplayText(): string {
           v-else-if="isBooleanField(condition.field)"
           :value="condition.value"
           @change="handleValueChange"
-          class="select-field w-full"
+          class="select-field w-full text-xs sm:text-sm"
         >
           <option v-for="opt in booleanOptions" :key="opt.value" :value="opt.value">
             {{ t(opt.labelKey) }}
@@ -130,7 +140,11 @@ function getMultiSelectDisplayText(): string {
 
         <!-- Multi-select dropdown for feed name -->
         <div v-else-if="condition.field === 'feed_name'" class="dropdown-container">
-          <button type="button" @click="emit('toggle-dropdown')" class="dropdown-trigger">
+          <button
+            type="button"
+            @click="emit('toggle-dropdown')"
+            class="dropdown-trigger text-xs sm:text-sm"
+          >
             <span class="dropdown-text truncate">{{ getMultiSelectDisplayText() }}</span>
             <span class="dropdown-arrow">▼</span>
           </button>
@@ -139,7 +153,10 @@ function getMultiSelectDisplayText(): string {
               v-for="name in feedNames"
               :key="name"
               @click.stop="handleToggleMultiSelectValue(name)"
-              :class="['dropdown-option', condition.values.includes(name) ? 'selected' : '']"
+              :class="[
+                'dropdown-option text-xs sm:text-sm',
+                condition.values.includes(name) ? 'selected' : '',
+              ]"
             >
               <input
                 type="checkbox"
@@ -149,7 +166,7 @@ function getMultiSelectDisplayText(): string {
               />
               <span class="truncate">{{ name }}</span>
             </div>
-            <div v-if="feedNames.length === 0" class="text-text-secondary text-sm p-2">
+            <div v-if="feedNames.length === 0" class="text-text-secondary text-xs sm:text-sm p-2">
               {{ t('noArticles') }}
             </div>
           </div>
@@ -157,7 +174,11 @@ function getMultiSelectDisplayText(): string {
 
         <!-- Multi-select dropdown for category -->
         <div v-else-if="condition.field === 'feed_category'" class="dropdown-container">
-          <button type="button" @click="emit('toggle-dropdown')" class="dropdown-trigger">
+          <button
+            type="button"
+            @click="emit('toggle-dropdown')"
+            class="dropdown-trigger text-xs sm:text-sm"
+          >
             <span class="dropdown-text truncate">{{ getMultiSelectDisplayText() }}</span>
             <span class="dropdown-arrow">▼</span>
           </button>
@@ -167,7 +188,7 @@ function getMultiSelectDisplayText(): string {
               :key="cat"
               @click.stop="handleToggleMultiSelectValue(cat as string)"
               :class="[
-                'dropdown-option',
+                'dropdown-option text-xs sm:text-sm',
                 condition.values.includes(cat as string) ? 'selected' : '',
               ]"
             >
@@ -179,7 +200,10 @@ function getMultiSelectDisplayText(): string {
               />
               <span class="truncate">{{ cat }}</span>
             </div>
-            <div v-if="feedCategories.length === 0" class="text-text-secondary text-sm p-2">
+            <div
+              v-if="feedCategories.length === 0"
+              class="text-text-secondary text-xs sm:text-sm p-2"
+            >
               {{ t('noArticles') }}
             </div>
           </div>
@@ -191,16 +215,16 @@ function getMultiSelectDisplayText(): string {
           type="text"
           :value="condition.value"
           @input="handleValueChange"
-          class="input-field w-full"
+          class="input-field w-full text-xs sm:text-sm"
           :placeholder="t('filterValue')"
         />
       </div>
 
       <!-- Remove button -->
       <div class="flex-shrink-0">
-        <label class="block text-xs text-text-secondary mb-1">&nbsp;</label>
+        <label class="block text-[10px] sm:text-xs text-text-secondary mb-1">&nbsp;</label>
         <button @click="emit('remove')" class="btn-danger-icon" :title="t('removeCondition')">
-          <PhTrash :size="18" />
+          <PhTrash :size="16" class="sm:w-[18px] sm:h-[18px]" />
         </button>
       </div>
     </div>
@@ -209,22 +233,22 @@ function getMultiSelectDisplayText(): string {
 
 <style scoped>
 .input-field {
-  @apply p-2 border border-border rounded-md bg-bg-primary text-text-primary text-sm focus:border-accent focus:outline-none transition-colors;
+  @apply p-1.5 sm:p-2 border border-border rounded-md bg-bg-primary text-text-primary focus:border-accent focus:outline-none transition-colors;
 }
 .select-field {
-  @apply p-2 border border-border rounded-md bg-bg-primary text-text-primary text-sm focus:border-accent focus:outline-none transition-colors cursor-pointer;
+  @apply p-1.5 sm:p-2 border border-border rounded-md bg-bg-primary text-text-primary focus:border-accent focus:outline-none transition-colors cursor-pointer;
 }
 .date-field {
-  @apply p-2 border border-border rounded-md bg-bg-primary text-text-primary text-sm focus:border-accent focus:outline-none transition-colors cursor-pointer;
+  @apply p-1.5 sm:p-2 border border-border rounded-md bg-bg-primary text-text-primary focus:border-accent focus:outline-none transition-colors cursor-pointer;
   color-scheme: light dark;
 }
 .btn-danger-icon {
-  @apply p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer;
+  @apply p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer;
 }
 
 /* NOT button styling */
 .not-btn {
-  @apply flex items-center gap-1 px-2 py-2 rounded-md border transition-all cursor-pointer;
+  @apply flex items-center gap-1 px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-md border transition-all cursor-pointer;
   @apply text-text-secondary bg-bg-primary border-border;
 }
 .not-btn:hover {
@@ -239,14 +263,14 @@ function getMultiSelectDisplayText(): string {
   @apply relative;
 }
 .dropdown-trigger {
-  @apply w-full p-2 border border-border rounded-md bg-bg-primary text-text-primary text-sm;
+  @apply w-full p-1.5 sm:p-2 border border-border rounded-md bg-bg-primary text-text-primary;
   @apply flex items-center justify-between cursor-pointer hover:border-accent transition-colors;
 }
 .dropdown-text {
   @apply flex-1 text-left;
 }
 .dropdown-arrow {
-  @apply text-text-secondary text-xs ml-2;
+  @apply text-text-secondary text-[10px] sm:text-xs ml-2;
 }
 .dropdown-menu {
   @apply absolute left-0 right-0 border border-border rounded-md bg-bg-primary;
@@ -256,12 +280,12 @@ function getMultiSelectDisplayText(): string {
   @apply top-full mt-1;
 }
 .dropdown-option {
-  @apply flex items-center gap-2 px-3 py-2 cursor-pointer text-sm text-text-primary hover:bg-bg-tertiary;
+  @apply flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 cursor-pointer text-text-primary hover:bg-bg-tertiary;
 }
 .dropdown-option.selected {
   background-color: rgba(59, 130, 246, 0.1);
 }
 .checkbox-input {
-  @apply w-4 h-4 accent-accent cursor-pointer;
+  @apply w-3 h-3 sm:w-4 sm:h-4 accent-accent cursor-pointer;
 }
 </style>

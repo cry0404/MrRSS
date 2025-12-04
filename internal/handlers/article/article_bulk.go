@@ -58,6 +58,21 @@ func HandleMarkAllAsRead(h *core.Handler, w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
+// HandleClearReadLater removes all articles from the read later list.
+func HandleClearReadLater(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := h.DB.ClearReadLater()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 // HandleRefresh triggers a refresh of all feeds.
 func HandleRefresh(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	go h.Fetcher.FetchAll(context.Background())

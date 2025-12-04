@@ -61,32 +61,40 @@ function handleKeyDown(e: KeyboardEvent) {
 
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4"
     @click.self="handleCancel"
     data-modal-open="true"
   >
     <div
-      class="bg-bg-primary max-w-md w-full mx-4 rounded-xl shadow-2xl border border-border overflow-hidden animate-fade-in"
+      class="bg-bg-primary max-w-md w-full mx-2 sm:mx-4 rounded-xl shadow-2xl border border-border overflow-hidden animate-fade-in"
     >
-      <div class="p-5 border-b border-border">
-        <h3 class="text-lg font-semibold m-0">{{ title }}</h3>
+      <div class="p-3 sm:p-5 border-b border-border">
+        <h3 class="text-base sm:text-lg font-semibold m-0">{{ title }}</h3>
       </div>
 
-      <div class="p-5">
-        <p v-if="message" class="m-0 mb-3 text-text-primary">{{ message }}</p>
+      <div class="p-3 sm:p-5">
+        <p v-if="message" class="m-0 mb-2 sm:mb-3 text-text-primary text-sm sm:text-base">
+          {{ message }}
+        </p>
         <input
           ref="inputRef"
           v-model="inputValue"
           type="text"
           :placeholder="placeholder"
           @keydown="handleKeyDown"
-          class="input-field w-full"
+          class="input-field w-full text-sm sm:text-base"
         />
       </div>
 
-      <div class="p-5 border-t border-border bg-bg-secondary flex justify-end gap-3">
-        <button @click="handleCancel" class="btn-secondary">{{ cancelText }}</button>
-        <button @click="handleConfirm" class="btn-primary">{{ confirmText }}</button>
+      <div
+        class="p-3 sm:p-5 border-t border-border bg-bg-secondary flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3"
+      >
+        <button @click="handleCancel" class="btn-secondary text-sm sm:text-base">
+          {{ cancelText }}
+        </button>
+        <button @click="handleConfirm" class="btn-primary text-sm sm:text-base">
+          {{ confirmText }}
+        </button>
       </div>
     </div>
   </div>
@@ -99,11 +107,11 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 .btn-primary {
-  @apply bg-accent text-white border-none px-5 py-2.5 rounded-lg cursor-pointer font-semibold hover:bg-accent-hover transition-colors;
+  @apply bg-accent text-white border-none px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg cursor-pointer font-semibold hover:bg-accent-hover transition-colors;
 }
 
 .btn-secondary {
-  @apply bg-transparent border border-border text-text-primary px-5 py-2.5 rounded-lg cursor-pointer font-medium hover:bg-bg-tertiary transition-colors;
+  @apply bg-transparent border border-border text-text-primary px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg cursor-pointer font-medium hover:bg-bg-tertiary transition-colors;
 }
 
 .animate-fade-in {

@@ -286,10 +286,63 @@ export const useAppStore = defineStore('app', () => {
           if (window.showToast) {
             window.showToast(`Update available: v${data.latest_version}`, 'info', 5000);
           }
+
+          // Auto download and install in background
+          autoDownloadAndInstall(data.download_url, data.asset_name);
         }
       }
     } catch (e) {
       console.error('Auto-update check failed:', e);
+      // Silently fail - don't disrupt user experience
+    }
+  }
+
+  async function autoDownloadAndInstall(downloadUrl: string, assetName?: string): Promise<void> {
+    try {
+      // Download the update in background
+      const downloadRes = await fetch('/api/download-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          download_url: downloadUrl,
+          asset_name: assetName,
+        }),
+      });
+
+      if (!downloadRes.ok) {
+        console.error('Auto-download failed');
+        return;
+      }
+
+      const downloadData = await downloadRes.json();
+      if (!downloadData.success || !downloadData.file_path) {
+        console.error('Auto-download failed: Invalid response');
+        return;
+      }
+
+      // Wait a moment to ensure file is fully written
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Install the update
+      const installRes = await fetch('/api/install-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file_path: downloadData.file_path,
+        }),
+      });
+
+      if (!installRes.ok) {
+        console.error('Auto-install failed');
+        return;
+      }
+
+      const installData = await installRes.json();
+      if (installData.success && window.showToast) {
+        window.showToast('Update installed. Restart to apply.', 'success');
+      }
+    } catch (e) {
+      console.error('Auto-update failed:', e);
       // Silently fail - don't disrupt user experience
     }
   }

@@ -33,7 +33,7 @@ const emit = defineEmits<{
     >
       <span class="flex-1 flex items-center gap-2" @click="emit('selectCategory')">
         <PhFolderDashed v-if="isUncategorized" :size="20" />
-        <PhFolder v-else :size="20" />
+        <PhFolder v-else :size="20" :weight="'fill'" />
         {{ name }}
       </span>
       <span v-if="unreadCount > 0" class="unread-badge mr-1">{{ unreadCount }}</span>
@@ -61,17 +61,36 @@ const emit = defineEmits<{
 <style scoped>
 .category-header {
   @apply px-2 sm:px-3 py-1.5 sm:py-2 cursor-pointer font-semibold text-xs sm:text-sm text-text-secondary flex items-center justify-between rounded-md hover:bg-bg-tertiary hover:text-text-primary transition-colors;
+  @apply sticky z-10 bg-bg-secondary;
+  top: -0.375rem; /* matches container's p-1.5 */
+  margin-left: -0.375rem;
+  margin-right: -0.375rem;
+  padding-left: calc(0.5rem + 0.375rem);
+  padding-right: calc(0.75rem + 0.375rem);
+}
+@media (min-width: 640px) {
+  .category-header {
+    top: -0.5rem; /* matches container's sm:p-2 */
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    padding-left: calc(0.75rem + 0.5rem);
+    padding-right: calc(0.75rem + 0.5rem);
+  }
 }
 .category-header.active {
   @apply bg-bg-tertiary text-accent;
 }
 .unread-badge {
   @apply text-[9px] sm:text-[10px] font-semibold rounded-full min-w-[14px] sm:min-w-[16px] h-[14px] sm:h-[16px] px-0.5 sm:px-1 flex items-center justify-center;
-  background-color: rgba(200, 200, 200, 0.3);
-  color: #666666;
+  background-color: rgba(120, 120, 120, 0.25);
+  color: #444444;
 }
+</style>
+
+<style>
 .dark-mode .unread-badge {
-  background-color: rgba(160, 160, 160, 0.25);
-  color: #cccccc;
+  /* This style will be applied to child components, so it can not use scoped */
+  background-color: rgba(100, 100, 100, 0.6) !important;
+  color: #f0f0f0 !important;
 }
 </style>

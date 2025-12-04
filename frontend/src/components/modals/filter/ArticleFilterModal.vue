@@ -85,12 +85,12 @@ function close() {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
     @click.self="close"
     data-modal-open="true"
   >
     <div
-      class="bg-bg-primary w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl border border-border overflow-hidden animate-fade-in"
+      class="bg-bg-primary w-full max-w-2xl h-full sm:h-auto sm:max-h-[90vh] flex flex-col rounded-none sm:rounded-2xl shadow-2xl border-0 sm:border border-border overflow-hidden animate-fade-in"
     >
       <!-- Header -->
       <div class="p-4 sm:p-5 border-b border-border flex justify-between items-center shrink-0">

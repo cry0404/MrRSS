@@ -5,10 +5,10 @@
 
 export const settingsDefaults = {
   // General settings
-  update_interval: 10,
+  update_interval: 30,
   language: 'en-US',
   theme: 'auto',
-  default_view_mode: 'original',
+  default_view_mode: 'rendered',
   startup_on_boot: false,
   show_hidden_articles: false,
 
@@ -19,7 +19,7 @@ export const settingsDefaults = {
   deepl_api_key: '',
 
   // Summary settings
-  summary_enabled: false,
+  summary_enabled: true,
   summary_length: 'medium',
 
   // Cleanup settings

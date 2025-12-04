@@ -80,28 +80,33 @@ onUnmounted(() => {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4"
     @click.self="close"
     data-modal-open="true"
   >
     <div
-      class="bg-bg-primary w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl border border-border flex flex-col"
+      class="bg-bg-primary w-full max-w-4xl h-full sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-2xl shadow-2xl border border-border flex flex-col"
     >
       <!-- Header -->
       <div
-        class="flex justify-between items-center p-6 border-b border-border bg-gradient-to-r from-accent/5 to-transparent"
+        class="flex justify-between items-center p-4 sm:p-6 border-b border-border bg-gradient-to-r from-accent/5 to-transparent shrink-0"
       >
-        <div>
-          <h2 class="text-xl font-bold text-text-primary">{{ t('discoverFeeds') }}</h2>
-          <p class="text-sm text-text-secondary mt-1">{{ t('fromFeed') }}: {{ feed.title }}</p>
+        <div class="min-w-0 flex-1">
+          <h2 class="text-base sm:text-xl font-bold text-text-primary">{{ t('discoverFeeds') }}</h2>
+          <p class="text-xs sm:text-sm text-text-secondary mt-1 truncate">
+            {{ t('fromFeed') }}: {{ feed.title }}
+          </p>
         </div>
-        <button @click="close" class="p-2 hover:bg-bg-tertiary rounded-lg transition-colors">
-          <PhX :size="24" class="text-text-secondary" />
+        <button
+          @click="close"
+          class="p-1.5 sm:p-2 hover:bg-bg-tertiary rounded-lg transition-colors shrink-0 ml-2"
+        >
+          <PhX :size="20" class="sm:w-6 sm:h-6 text-text-secondary" />
         </button>
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-y-auto p-6">
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6">
         <!-- Loading State -->
         <DiscoveryProgress
           v-if="isDiscovering"
@@ -113,26 +118,28 @@ onUnmounted(() => {
         <!-- Error State -->
         <div
           v-else-if="errorMessage"
-          class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-600 dark:text-red-400"
+          class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 sm:p-4 text-red-600 dark:text-red-400 text-sm sm:text-base"
         >
           {{ errorMessage }}
         </div>
 
         <!-- Results -->
         <div v-else-if="discoveredFeeds.length > 0">
-          <div class="mb-4 flex items-center justify-between bg-bg-secondary rounded-lg p-3">
-            <p class="text-sm font-medium text-text-primary">
+          <div
+            class="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-bg-secondary rounded-lg p-2 sm:p-3"
+          >
+            <p class="text-xs sm:text-sm font-medium text-text-primary">
               {{ t('foundFeeds', { count: discoveredFeeds.length }) }}
             </p>
             <button
               @click="selectAll"
-              class="text-sm text-accent hover:text-accent-hover font-medium px-3 py-1 rounded hover:bg-accent/10 transition-colors"
+              class="text-xs sm:text-sm text-accent hover:text-accent-hover font-medium px-2 sm:px-3 py-1 rounded hover:bg-accent/10 transition-colors"
             >
               {{ allSelected ? t('deselectAll') : t('selectAll') }}
             </button>
           </div>
 
-          <div class="space-y-3">
+          <div class="space-y-2 sm:space-y-3">
             <DiscoveredFeedItem
               v-for="(feed, index) in discoveredFeeds"
               :key="index"
@@ -144,35 +151,37 @@ onUnmounted(() => {
         </div>
 
         <!-- Initial State (should not be visible as discovery auto-starts) -->
-        <div v-else class="text-center py-16">
+        <div v-else class="text-center py-12 sm:py-16">
           <div
-            class="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"
+            class="w-12 h-12 sm:w-16 sm:h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3 sm:mb-4"
           ></div>
-          <p class="text-text-secondary text-lg">{{ t('preparing') }}...</p>
+          <p class="text-text-secondary text-base sm:text-lg">{{ t('preparing') }}...</p>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="flex justify-between items-center p-6 border-t border-border bg-bg-secondary/50">
-        <button @click="close" class="btn-secondary" :disabled="isSubscribing">
+      <div
+        class="flex flex-col-reverse sm:flex-row sm:justify-between items-stretch sm:items-center gap-2 sm:gap-3 p-4 sm:p-6 border-t border-border bg-bg-secondary/50 shrink-0"
+      >
+        <button @click="close" class="btn-secondary text-sm sm:text-base" :disabled="isSubscribing">
           {{ t('cancel') }}
         </button>
         <button
           @click="subscribeSelected"
           :disabled="!hasSelection || isSubscribing"
           :class="[
-            'btn-primary flex items-center gap-2',
+            'btn-primary flex items-center justify-center gap-2 text-sm sm:text-base',
             (!hasSelection || isSubscribing) && 'opacity-50 cursor-not-allowed',
           ]"
         >
           <div
             v-if="isSubscribing"
-            class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            class="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
           ></div>
           {{ isSubscribing ? t('subscribing') : t('subscribeSelected') }}
           <span
             v-if="hasSelection && !isSubscribing"
-            class="bg-white/20 px-2 py-0.5 rounded-full text-sm"
+            class="bg-white/20 px-1.5 sm:px-2 py-0.5 rounded-full text-xs sm:text-sm"
             >({{ selectedFeeds.size }})</span
           >
         </button>
@@ -183,10 +192,10 @@ onUnmounted(() => {
 
 <style scoped>
 .btn-primary {
-  @apply px-6 py-2.5 bg-accent text-white rounded-lg hover:bg-accent-hover transition-all font-medium shadow-sm hover:shadow-md;
+  @apply px-4 sm:px-6 py-2 sm:py-2.5 bg-accent text-white rounded-lg hover:bg-accent-hover transition-all font-medium shadow-sm hover:shadow-md;
 }
 
 .btn-secondary {
-  @apply px-6 py-2.5 bg-bg-tertiary text-text-primary rounded-lg hover:opacity-80 transition-all font-medium;
+  @apply px-4 sm:px-6 py-2 sm:py-2.5 bg-bg-tertiary text-text-primary rounded-lg hover:opacity-80 transition-all font-medium;
 }
 </style>
