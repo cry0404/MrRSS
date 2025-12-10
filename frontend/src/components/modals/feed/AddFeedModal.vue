@@ -83,6 +83,16 @@ const isFormValid = computed(() => {
   }
 });
 
+// Validation for URL field
+const isUrlInvalid = computed(() => {
+  return feedType.value === 'url' && !url.value.trim();
+});
+
+// Validation for script field
+const isScriptInvalid = computed(() => {
+  return feedType.value === 'script' && !scriptPath.value.trim();
+});
+
 async function addFeed() {
   if (!isFormValid.value) return;
   isSubmitting.value = true;
