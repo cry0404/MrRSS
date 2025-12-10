@@ -47,6 +47,12 @@ const PLACEHOLDER_SUFFIX = '⟧';
 const LINK_START_PREFIX = '⟪';
 const LINK_END_SUFFIX = '⟫';
 
+/**
+ * Hyperlink map delimiters (used internally during restoration)
+ */
+const HYPERLINK_MAP_START = '__HYPERLINK_MAP__';
+const HYPERLINK_MAP_END = '__HYPERLINK_MAP_END__';
+
 interface PreservedElement {
   placeholder: string;
   outerHTML: string;
@@ -58,6 +64,25 @@ interface HyperlinkInfo {
   endMarker: string;
   href: string;
   attributes: Record<string, string>;
+}
+
+/**
+ * Escape regex special characters in a string
+ */
+function escapeRegexSpecialChars(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Properly escape HTML attribute value
+ */
+function escapeAttributeValue(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 /**
@@ -156,8 +181,8 @@ export function restorePreservedElements(
     const { startMarker, endMarker, attributes } = hyperlinks[i];
 
     // Find the link text between markers
-    const startPattern = startMarker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const endPattern = endMarker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const startPattern = escapeRegexSpecialChars(startMarker);
+    const endPattern = escapeRegexSpecialChars(endMarker);
     const linkRegex = new RegExp(`${startPattern}(.*?)${endPattern}`, 's');
 
     const match = result.match(linkRegex);
@@ -168,35 +193,41 @@ export function restorePreservedElements(
       result = result.replace(linkRegex, uniqueId);
 
       // Store the link HTML for later restoration
-      if (!result.includes('__HYPERLINK_MAP__')) {
-        result = '__HYPERLINK_MAP__' + JSON.stringify({}) + '__HYPERLINK_MAP__' + result;
+      if (!result.includes(HYPERLINK_MAP_START)) {
+        result = HYPERLINK_MAP_START + JSON.stringify({}) + HYPERLINK_MAP_END + result;
       }
 
-      // Build attribute string
+      // Build attribute string with proper escaping
       const attrString = Object.entries(attributes)
-        .map(([key, value]) => `${key}="${value.replace(/"/g, '&quot;')}"`)
+        .map(([key, value]) => `${key}="${escapeAttributeValue(value)}"`)
         .join(' ');
       const linkHTML = `<a ${attrString}>${linkText}</a>`;
 
       // Store in map
-      const mapMatch = result.match(/__HYPERLINK_MAP__(.*?)__HYPERLINK_MAP__/);
+      const mapRegex = new RegExp(
+        `${escapeRegexSpecialChars(HYPERLINK_MAP_START)}(.*?)${escapeRegexSpecialChars(HYPERLINK_MAP_END)}`
+      );
+      const mapMatch = result.match(mapRegex);
       if (mapMatch) {
         const map = JSON.parse(mapMatch[1]);
         map[uniqueId] = linkHTML;
         result = result.replace(
-          /__HYPERLINK_MAP__.*?__HYPERLINK_MAP__/,
-          `__HYPERLINK_MAP__${JSON.stringify(map)}__HYPERLINK_MAP__`
+          mapRegex,
+          `${HYPERLINK_MAP_START}${JSON.stringify(map)}${HYPERLINK_MAP_END}`
         );
       }
     }
   }
 
   // Extract hyperlink map if it exists
-  const mapMatch = result.match(/__HYPERLINK_MAP__(.*?)__HYPERLINK_MAP__/);
+  const mapRegex = new RegExp(
+    `${escapeRegexSpecialChars(HYPERLINK_MAP_START)}(.*?)${escapeRegexSpecialChars(HYPERLINK_MAP_END)}`
+  );
+  const mapMatch = result.match(mapRegex);
   let hyperlinkMap: Record<string, string> = {};
   if (mapMatch) {
     hyperlinkMap = JSON.parse(mapMatch[1]);
-    result = result.replace(/__HYPERLINK_MAP__.*?__HYPERLINK_MAP__/, '');
+    result = result.replace(mapRegex, '');
   }
 
   // Escape HTML in the translated text (except our placeholders)
@@ -219,8 +250,8 @@ export function restorePreservedElements(
       result = result.replace(placeholder, outerHTML);
     } else {
       // Try matching with possible spaces or modifications
-      const escapedPrefix = PLACEHOLDER_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const escapedSuffix = PLACEHOLDER_SUFFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escapedPrefix = escapeRegexSpecialChars(PLACEHOLDER_PREFIX);
+      const escapedSuffix = escapeRegexSpecialChars(PLACEHOLDER_SUFFIX);
       const index = placeholder.slice(1, -1);
       const regex = new RegExp(`${escapedPrefix}\\s*${index}\\s*${escapedSuffix}`, 'g');
       result = result.replace(regex, outerHTML);
@@ -258,6 +289,9 @@ export function getTranslatableText(element: HTMLElement): string {
   // Remove all preserved elements
   const elementsToRemove = clone.querySelectorAll(PRESERVED_SELECTORS.join(','));
   elementsToRemove.forEach((el) => el.remove());
+
+  // Also remove hyperlinks for consistency with hasOnlyPreservedContent
+  clone.querySelectorAll('a').forEach((el) => el.remove());
 
   return clone.textContent?.trim() || '';
 }
