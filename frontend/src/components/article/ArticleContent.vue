@@ -285,12 +285,15 @@ async function translateContentParagraphs(content: string) {
 
   // Re-attach ALL event listeners after translation modifies the DOM
   // This includes unwrapping images from links, attaching image handlers, and link handlers
-  if (props.attachImageEventListeners) {
-    await nextTick();
-    props.attachImageEventListeners();
-  }
+  await reattachImageInteractions();
 
   isTranslatingContent.value = false;
+}
+
+async function reattachImageInteractions() {
+  if (!props.attachImageEventListeners || !props.articleContent) return;
+  await nextTick();
+  props.attachImageEventListeners();
 }
 
 // Watch for article changes and regenerate summary + translations
@@ -355,6 +358,17 @@ onMounted(async () => {
     }
   }
 });
+
+// Ensure image interactions stay attached when content is (re)rendered
+watch(
+  () => props.articleContent,
+  (content) => {
+    if (content) {
+      reattachImageInteractions();
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>

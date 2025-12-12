@@ -289,7 +289,7 @@ export function useArticleDetail() {
   function attachContentEventListeners() {
     // First unwrap images from links
     unwrapImagesFromLinks();
-    
+
     // Then attach image event handlers
     attachImageEventListeners();
 
