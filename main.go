@@ -40,7 +40,10 @@ import (
 var frontendFiles embed.FS
 
 //go:embed build/appicon.png
-var trayIcon []byte
+var trayIconPNG []byte
+
+//go:embed build/windows/icon.ico
+var trayIconICO []byte
 
 type windowState struct {
 	width  int
@@ -48,6 +51,15 @@ type windowState struct {
 	x      int
 	y      int
 	valid  atomic.Bool
+}
+
+// getTrayIcon returns the appropriate icon bytes for the current platform
+func getTrayIcon() []byte {
+	// Windows requires .ico format, other platforms use .png
+	if utils.IsWindows() {
+		return trayIconICO
+	}
+	return trayIconPNG
 }
 
 type CombinedHandler struct {
@@ -113,7 +125,10 @@ func main() {
 	translator := translation.NewDynamicTranslator(db)
 	fetcher := feed.NewFetcher(db, translator)
 	h := handlers.NewHandler(db, fetcher, translator)
-	trayManager := tray.NewManager(h, trayIcon)
+
+	// Use platform-specific icon format
+	trayIconBytes := getTrayIcon()
+	trayManager := tray.NewManager(h, trayIconBytes)
 	var quitRequested atomic.Bool
 	var lastWindowState windowState
 
@@ -205,16 +220,15 @@ func main() {
 		if ctx == nil {
 			return
 		}
-		if size, err := runtime.WindowGetSize(ctx); err == nil {
-			lastWindowState.width = size.W
-			lastWindowState.height = size.H
-			lastWindowState.valid.Store(true)
-		}
-		if pos, err := runtime.WindowGetPosition(ctx); err == nil {
-			lastWindowState.x = pos.X
-			lastWindowState.y = pos.Y
-			lastWindowState.valid.Store(true)
-		}
+
+		w, h := runtime.WindowGetSize(ctx)
+		lastWindowState.width = w
+		lastWindowState.height = h
+
+		x, y := runtime.WindowGetPosition(ctx)
+		lastWindowState.x = x
+		lastWindowState.y = y
+		lastWindowState.valid.Store(true)
 	}
 
 	// Start background scheduler

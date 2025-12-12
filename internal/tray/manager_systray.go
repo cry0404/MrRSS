@@ -59,7 +59,7 @@ func (m *Manager) Start(ctx context.Context, onQuit func(), onShow func()) {
 
 func (m *Manager) run(ctx context.Context, onQuit func(), onShow func()) {
 	if len(m.icon) > 0 {
-		systray.SetTemplateIcon(m.icon, m.icon)
+		systray.SetIcon(m.icon)
 	}
 	labels := m.getLabels()
 
