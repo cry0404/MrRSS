@@ -1,13 +1,7 @@
 name: Pre-release Check
 
 on:
-  push:
-    branches:
-      - 'release/**'
-      - 'pre-release/**'
-      - 'alpha/**'
-      - 'beta/**'
-      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build-check:
