@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated all dependencies to latest versions for security and performance improvements.
+
 ### Fixed
 
 - Fixed the issue where MacOS can not complile correctly for system tray support.
