@@ -12,6 +12,8 @@ jobs:
   build-check:
     name: Build Check ${{ matrix.platform }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
