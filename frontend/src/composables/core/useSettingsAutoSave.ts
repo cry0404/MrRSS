@@ -81,7 +81,9 @@ export function useSettingsAutoSave(settings: Ref<SettingsData> | (() => Setting
       // Note: Validation is used for UI feedback only (showing red borders on invalid fields).
       // We do NOT block saving settings to the backend based on validation.
       // This allows users to save their preferences immediately, even if some fields are invalid.
-      // Invalid settings will simply not be used by features until they are corrected.
+      // The backend saves all provided values to the database without validation.
+      // Features that require valid settings (e.g., translation with API keys) will check
+      // for valid values at runtime and fail gracefully if settings are incomplete/invalid.
 
       // Save to backend
       await fetch('/api/settings', {
