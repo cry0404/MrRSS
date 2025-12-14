@@ -283,6 +283,9 @@ func main() {
 	log.Println("Starting background scheduler...")
 	bgCtx, bgCancel := context.WithCancel(context.Background())
 
+	// Store the app context for single instance callback
+	var appCtx context.Context
+
 	log.Println("Starting Wails...")
 	err = wails.Run(&options.App{
 		Title:    "MrRSS",
@@ -294,6 +297,44 @@ func main() {
 			Handler: combinedHandler,
 		},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 1},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId: "com.mrrss.app",
+			OnSecondInstanceLaunch: func(secondInstanceData options.SecondInstanceData) {
+				log.Printf("Second instance detected, bringing window to front")
+				if appCtx != nil {
+					// Restore window state if it was stored (minimized to tray)
+					if lastWindowState.valid.Load() {
+						width := lastWindowState.width
+						height := lastWindowState.height
+						x := lastWindowState.x
+						y := lastWindowState.y
+
+						// Ensure minimum window size
+						if width < 400 {
+							width = 1024
+						}
+						if height < 300 {
+							height = 768
+						}
+
+						// Ensure window is at least partially on screen
+						if x < -1000 || x > 3000 {
+							x = 100
+						}
+						if y < -1000 || y > 3000 {
+							y = 100
+						}
+
+						log.Printf("Restoring window state: x=%d, y=%d, width=%d, height=%d", x, y, width, height)
+						runtime.WindowSetSize(appCtx, width, height)
+						runtime.WindowSetPosition(appCtx, x, y)
+					}
+					// Show and unminimize the window
+					runtime.WindowShow(appCtx)
+					runtime.WindowUnminimise(appCtx)
+				}
+			},
+		},
 		OnShutdown: func(ctx context.Context) {
 			log.Println("Shutting down...")
 
@@ -324,6 +365,8 @@ func main() {
 		},
 		OnStartup: func(ctx context.Context) {
 			log.Println("App started")
+			// Store context for single instance callback
+			appCtx = ctx
 
 			// Try to restore window state from database
 			restoredFromDB := false
