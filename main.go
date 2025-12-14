@@ -58,6 +58,22 @@ type windowState struct {
 	valid  atomic.Bool
 }
 
+type atomicContext struct {
+	value atomic.Value // stores context.Context
+}
+
+func (ac *atomicContext) Store(ctx context.Context) {
+	ac.value.Store(ctx)
+}
+
+func (ac *atomicContext) Load() context.Context {
+	val := ac.value.Load()
+	if val == nil {
+		return nil
+	}
+	return val.(context.Context)
+}
+
 // getTrayIcon returns the appropriate icon bytes for the current platform
 func getTrayIcon() []byte {
 	// Windows requires .ico format, other platforms use .png
@@ -283,8 +299,8 @@ func main() {
 	log.Println("Starting background scheduler...")
 	bgCtx, bgCancel := context.WithCancel(context.Background())
 
-	// Store the app context for single instance callback
-	var appCtx context.Context
+	// Store the app context for single instance callback (thread-safe)
+	var appCtx atomicContext
 
 	log.Println("Starting Wails...")
 	err = wails.Run(&options.App{
@@ -301,7 +317,8 @@ func main() {
 			UniqueId: "com.mrrss.app",
 			OnSecondInstanceLaunch: func(secondInstanceData options.SecondInstanceData) {
 				log.Printf("Second instance detected, bringing window to front")
-				if appCtx != nil {
+				ctx := appCtx.Load()
+				if ctx != nil {
 					// Restore window state if it was stored (minimized to tray)
 					if lastWindowState.valid.Load() {
 						width := lastWindowState.width
@@ -326,12 +343,12 @@ func main() {
 						}
 
 						log.Printf("Restoring window state: x=%d, y=%d, width=%d, height=%d", x, y, width, height)
-						runtime.WindowSetSize(appCtx, width, height)
-						runtime.WindowSetPosition(appCtx, x, y)
+						runtime.WindowSetSize(ctx, width, height)
+						runtime.WindowSetPosition(ctx, x, y)
 					}
 					// Show and unminimize the window
-					runtime.WindowShow(appCtx)
-					runtime.WindowUnminimise(appCtx)
+					runtime.WindowShow(ctx)
+					runtime.WindowUnminimise(ctx)
 				}
 			},
 		},
@@ -365,8 +382,8 @@ func main() {
 		},
 		OnStartup: func(ctx context.Context) {
 			log.Println("App started")
-			// Store context for single instance callback
-			appCtx = ctx
+			// Store context for single instance callback (thread-safe)
+			appCtx.Store(ctx)
 
 			// Try to restore window state from database
 			restoredFromDB := false
