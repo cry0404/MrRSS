@@ -211,7 +211,11 @@ func main() {
 	log.Println("Starting background scheduler...")
 	bgCtx, bgCancel := context.WithCancel(context.Background())
 
-	// Define encryption key for single instance communication
+	// Encryption key for single instance communication (IPC between app instances).
+	// This key is used to encrypt/decrypt messages between first and subsequent instances.
+	// Note: This is not for sensitive data encryption - it only carries launch arguments.
+	// The key is hardcoded per Wails v3 examples since the data exchanged is not sensitive
+	// (just signals to bring window to front).
 	var encryptionKey = [32]byte{
 		0x1e, 0x1f, 0x1c, 0x1d, 0x1a, 0x1b, 0x18, 0x19,
 		0x16, 0x17, 0x14, 0x15, 0x12, 0x13, 0x10, 0x11,
