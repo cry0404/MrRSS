@@ -75,22 +75,23 @@ textarea,
 }
 
 /* Allow image interactions (click, right-click context menu) in article content */
+/* Using both .prose and .prose-content to cover all cases (main content and translations) */
+.prose img,
 .prose-content img {
   pointer-events: auto !important;
   cursor: pointer !important;
 }
 
 /* Ensure parent elements of images don't block pointer events */
+.prose figure,
+.prose picture,
+.prose a,
+.prose div,
 .prose-content figure,
 .prose-content picture,
 .prose-content a,
 .prose-content div {
   pointer-events: auto;
-}
-
-/* Ensure images in any nested structure can be clicked */
-.prose img {
-  pointer-events: auto !important;
 }
 
 /* Custom Scrollbar */
