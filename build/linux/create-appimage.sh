@@ -13,7 +13,7 @@ set -e
 
 APP_NAME="MrRSS"
 # Get version from wails.json if available, otherwise use default
-VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' wails.json 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "1.3.0-alpha.3")
+VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' wails.json 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "1.3.0-alpha.4")
 # Get architecture from environment variable or default to amd64
 ARCH=${ARCH:-amd64}
 echo "Target architecture: ${ARCH}"
@@ -104,6 +104,14 @@ set -e
 # Copy desktop file to root
 cp "${APPDIR}/usr/share/applications/${APP_NAME}.desktop" "${APPDIR}/"
 
+# Set APPIMAGE_ARCH early for checks
+APPIMAGE_ARCH="${ARCH}"
+if [ "${ARCH}" = "amd64" ]; then
+    APPIMAGE_ARCH="x86_64"
+elif [ "${ARCH}" = "arm64" ]; then
+    APPIMAGE_ARCH="aarch64"
+fi
+
 # Download appimagetool if not present
 APPIMAGETOOL_ARCH="x86_64"
 if [ "${ARCH}" = "arm64" ]; then
@@ -154,14 +162,6 @@ echo "Current architecture: ${ARCH}"
 echo "AppImage tool architecture: ${APPIMAGETOOL_ARCH}"
 echo "System architecture: $(uname -m)"
 rm -f "${BUILD_DIR}/${APPIMAGE_NAME}"
-# Use --appimage-extract-and-run if FUSE is not available (e.g., in CI environments)
-# Set ARCH environment variable for appimagetool
-APPIMAGE_ARCH="${ARCH}"
-if [ "${ARCH}" = "amd64" ]; then
-    APPIMAGE_ARCH="x86_64"
-elif [ "${ARCH}" = "arm64" ]; then
-    APPIMAGE_ARCH="aarch64"
-fi
 
 # Verify binary architecture before creating AppImage
 echo "Verifying binary architecture..."
@@ -169,17 +169,14 @@ BINARY_ARCH=$(file "${APPDIR}/usr/bin/${APP_NAME}" | grep -o 'aarch64\|x86-64\|A
 echo "Binary architecture: ${BINARY_ARCH}"
 echo "Expected AppImage architecture: ${APPIMAGE_ARCH}"
 
-# Additional check: ensure no mixed architecture binaries
-MIXED_ARCH=$(find "${APPDIR}" -type f -executable -exec file {} \; | grep -o 'ELF.*aarch64\|ELF.*x86-64' | sort -u | wc -l)
-if [ "${MIXED_ARCH}" -gt 1 ]; then
-    echo "Warning: Mixed architectures detected in AppDir"
-    find "${APPDIR}" -type f -executable -exec file {} \; | grep 'ELF'
-fi
+# Debug: List ALL files in AppDir with their architecture
+echo "Listing all ELF files in AppDir:"
+find "${APPDIR}" -type f -exec file {} \; 2>/dev/null | grep -E 'ELF|executable|shared' || echo "No ELF files found (besides binary)"
 
 if [ -n "${CI}" ] || ! [ -e /dev/fuse ]; then
     echo "FUSE not available, using --appimage-extract-and-run mode"
-    echo "Running: ARCH=${APPIMAGE_ARCH} ${APPIMAGETOOL} --appimage-extract-and-run ${APPDIR} ${BUILD_DIR}/${APPIMAGE_NAME}"
-    if ! ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" --appimage-extract-and-run --no-appstream "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}" 2>&1; then
+    echo "Running: ARCH=${APPIMAGE_ARCH} ${APPIMAGETOOL} --appimage-extract-and-run --verbose ${APPDIR} ${BUILD_DIR}/${APPIMAGE_NAME}"
+    if ! ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" --appimage-extract-and-run --no-appstream --verbose "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}" 2>&1; then
         echo "Error: AppImage creation failed"
         echo "This might be due to architecture mismatch or missing dependencies"
         echo "Checking AppDir contents..."
@@ -197,8 +194,8 @@ if [ -n "${CI}" ] || ! [ -e /dev/fuse ]; then
         exit 0
     fi
 else
-    echo "Running: ARCH=${APPIMAGE_ARCH} ${APPIMAGETOOL} ${APPDIR} ${BUILD_DIR}/${APPIMAGE_NAME}"
-    if ! ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" --no-appstream "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}" 2>&1; then
+    echo "Running: ARCH=${APPIMAGE_ARCH} ${APPIMAGETOOL} --verbose ${APPDIR} ${BUILD_DIR}/${APPIMAGE_NAME}"
+    if ! ARCH="${APPIMAGE_ARCH}" "${APPIMAGETOOL}" --no-appstream --verbose "${APPDIR}" "${BUILD_DIR}/${APPIMAGE_NAME}" 2>&1; then
         echo "Error: AppImage creation failed"
         echo "Checking AppDir contents..."
         find "${APPDIR}" -type f -exec file {} \; | grep -E 'ELF|shared object' || true

@@ -72,9 +72,9 @@ tasks:
           <key>CFBundlePackageType</key>
           <string>APPL</string>
           <key>CFBundleShortVersionString</key>
-          <string>1.3.0-alpha.3</string>
+          <string>1.3.0-alpha.4</string>
           <key>CFBundleVersion</key>
-          <string>1.3.0-alpha.3</string>
+          <string>1.3.0-alpha.4</string>
           <key>LSMinimumSystemVersion</key>
           <string>10.13</string>
           <key>NSHighResolutionCapable</key>
@@ -96,9 +96,9 @@ tasks:
     summary: Creates a DMG installer
     cmds:
       - |
-        if [ -f "build/macos/create-dmg.sh" ]; then
-          chmod +x build/macos/create-dmg.sh
-          ./build/macos/create-dmg.sh
+        if [ -f "build/darwin/create-dmg.sh" ]; then
+          chmod +x build/darwin/create-dmg.sh
+          ./build/darwin/create-dmg.sh
         else
           echo "Warning: create-dmg.sh not found, skipping DMG creation"
         fi
