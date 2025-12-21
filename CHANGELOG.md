@@ -7,9 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Supported importing feeds with HTML+XPath / XML+XPath type from OPML files. (#264)
+
+### Changed
+
+- Improved error display for customized scripts when adding/editing feeds. (#264)
+
 ### Fixed
 
 - Fixed the issue where different articles display the same content due to incorrect URL matching. (#257)
+- Fixed the issue where import and export of OPML files did not work correctly on macOS. (#263)
+
+### Removed
+
+- Removed single instance lock on Linux platform to avoid D-Bus related issues. (#261)
 
 ## [1.3.5] - 2025-12-20
 

@@ -35,6 +35,18 @@ export interface Feed {
   proxy_enabled?: boolean;
   refresh_interval?: number;
   is_image_mode?: boolean;
+  // XPath support
+  type?: string;
+  xpath_item?: string;
+  xpath_item_title?: string;
+  xpath_item_content?: string;
+  xpath_item_uri?: string;
+  xpath_item_author?: string;
+  xpath_item_timestamp?: string;
+  xpath_item_time_format?: string;
+  xpath_item_thumbnail?: string;
+  xpath_item_categories?: string;
+  xpath_item_uid?: string;
 }
 
 export interface UnreadCounts {

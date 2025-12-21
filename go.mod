@@ -6,10 +6,13 @@ toolchain go1.24.2
 
 require (
 	github.com/PuerkitoBio/goquery v1.11.0
+	github.com/antchfx/htmlquery v1.3.5
+	github.com/antchfx/xmlquery v1.5.0
 	github.com/go-ego/gse v1.0.0
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/wailsapp/wails/v3 v3.0.0-alpha.48
 	golang.org/x/crypto v0.46.0
+	golang.org/x/net v0.47.0
 	modernc.org/sqlite v1.40.1
 )
 
@@ -19,6 +22,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/antchfx/xpath v1.3.5 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
@@ -57,7 +61,6 @@ require (
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
-	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

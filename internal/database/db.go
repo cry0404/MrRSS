@@ -120,12 +120,7 @@ func (db *DB) WaitForReady() {
 }
 
 func initSchema(db *sql.DB) error {
-	// First, run migrations to ensure all columns exist
-	// This must happen BEFORE creating indexes that depend on those columns
-	if err := runMigrations(db); err != nil {
-		return err
-	}
-
+	// First create tables
 	query := `
 	CREATE TABLE IF NOT EXISTS feeds (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -187,7 +182,17 @@ func initSchema(db *sql.DB) error {
 	CREATE INDEX IF NOT EXISTS idx_translation_cache_lookup ON translation_cache(source_text_hash, target_lang, provider);
 	`
 	_, err := db.Exec(query)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Then run migrations to ensure all columns exist
+	// This must happen AFTER creating tables
+	if err := runMigrations(db); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // runMigrations applies database migrations for existing databases
@@ -206,6 +211,19 @@ func runMigrations(db *sql.DB) error {
 
 	// Migration: Add video_url column for YouTube video support
 	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN video_url TEXT DEFAULT ''`)
+
+	// Migration: Add XPath support fields to feeds table
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN type TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_title TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_content TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_uri TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_author TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_timestamp TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_time_format TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_thumbnail TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_categories TEXT DEFAULT ''`)
+	_, _ = db.Exec(`ALTER TABLE feeds ADD COLUMN xpath_item_uid TEXT DEFAULT ''`)
 
 	return nil
 }

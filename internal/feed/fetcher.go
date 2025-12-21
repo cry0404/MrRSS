@@ -239,8 +239,8 @@ Finish:
 }
 
 func (f *Fetcher) FetchFeed(ctx context.Context, feed models.Feed) {
-	// Use ParseFeedWithScript with normal priority for feed refresh
-	parsedFeed, err := f.ParseFeedWithScript(ctx, feed.URL, feed.ScriptPath, false) // Normal priority for refresh
+	// Use ParseFeedWithFeed with normal priority for feed refresh
+	parsedFeed, err := f.ParseFeedWithFeed(ctx, &feed, false) // Normal priority for refresh
 	if err != nil {
 		log.Printf("Error parsing feed %s: %v", feed.URL, err)
 		f.db.UpdateFeedError(feed.ID, err.Error())

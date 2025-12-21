@@ -451,6 +451,50 @@ export interface TranslationMessages {
   detecting: string;
   networkDetectionComplete: string;
   networkDetectionFailed: string;
+
+  // XPath Support
+  xpath: string;
+  useXPath: string;
+  sourceUrl: string;
+  sourceUrlPlaceholder: string;
+  xpathType: string;
+  htmlXpath: string;
+  xmlXpath: string;
+  xpathItem: string;
+  xpathItemPlaceholder: string;
+  xpathItemHelp: string;
+  xpathItemTitle: string;
+  xpathItemTitlePlaceholder: string;
+  xpathItemUri: string;
+  xpathItemUriPlaceholder: string;
+  xpathItemContent: string;
+  xpathItemContentPlaceholder: string;
+  xpathItemAuthor: string;
+  xpathItemAuthorPlaceholder: string;
+  xpathItemTimestamp: string;
+  xpathItemTimestampPlaceholder: string;
+  xpathItemTimeFormat: string;
+  xpathItemTimeFormatPlaceholder: string;
+  xpathItemThumbnail: string;
+  xpathItemThumbnailPlaceholder: string;
+  xpathItemCategories: string;
+  xpathItemCategoriesPlaceholder: string;
+  xpathItemUid: string;
+  xpathItemUidPlaceholder: string;
+  xpathDocumentation: string;
+
+  // Feed Mode Selector
+  rssUrlDescription: string;
+  customScriptDescription: string;
+  xpathDescription: string;
+  currentMode: string;
+  advancedOptions: string;
+  orTry: string;
+  switchTo: string;
+  backToRss: string;
+  backToSimple: string;
+  backToUrl: string;
+  useAdvancedOptions: string;
 }
 
 export type SupportedLocale = 'en-US' | 'zh-CN';

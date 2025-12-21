@@ -54,7 +54,21 @@ func HandleOPMLImport(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	// Import feeds synchronously so they appear in the sidebar immediately
 	var feedIDs []int64
 	for _, f := range feeds {
-		feedID, err := h.Fetcher.ImportSubscription(f.Title, f.URL, f.Category)
+		var feedID int64
+		var err error
+
+		// Check if feed has XPath configuration
+		if f.Type == "HTML+XPath" || f.Type == "XML+XPath" {
+			feedID, err = h.Fetcher.AddXPathSubscription(
+				f.URL, f.Category, f.Title, f.Type,
+				f.XPathItem, f.XPathItemTitle, f.XPathItemContent, f.XPathItemUri,
+				f.XPathItemAuthor, f.XPathItemTimestamp, f.XPathItemTimeFormat,
+				f.XPathItemThumbnail, f.XPathItemCategories, f.XPathItemUid,
+			)
+		} else {
+			feedID, err = h.Fetcher.ImportSubscription(f.Title, f.URL, f.Category)
+		}
+
 		if err != nil {
 			log.Printf("Error importing feed %s: %v", f.Title, err)
 			continue
@@ -146,7 +160,21 @@ func HandleOPMLImportDialog(h *core.Handler, w http.ResponseWriter, r *http.Requ
 	// Import feeds synchronously so they appear in the sidebar immediately
 	var feedIDs []int64
 	for _, f := range feeds {
-		feedID, err := h.Fetcher.ImportSubscription(f.Title, f.URL, f.Category)
+		var feedID int64
+		var err error
+
+		// Check if feed has XPath configuration
+		if f.Type == "HTML+XPath" || f.Type == "XML+XPath" {
+			feedID, err = h.Fetcher.AddXPathSubscription(
+				f.URL, f.Category, f.Title, f.Type,
+				f.XPathItem, f.XPathItemTitle, f.XPathItemContent, f.XPathItemUri,
+				f.XPathItemAuthor, f.XPathItemTimestamp, f.XPathItemTimeFormat,
+				f.XPathItemThumbnail, f.XPathItemCategories, f.XPathItemUid,
+			)
+		} else {
+			feedID, err = h.Fetcher.ImportSubscription(f.Title, f.URL, f.Category)
+		}
+
 		if err != nil {
 			log.Printf("Error importing feed %s: %v", f.Title, err)
 			continue

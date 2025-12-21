@@ -91,22 +91,10 @@ func (h *Handler) GetArticleContent(articleID int64) (string, error) {
 		return "", err
 	}
 
-	var targetFeed *struct {
-		ID         int64
-		URL        string
-		ScriptPath string
-	}
+	var targetFeed *models.Feed
 	for _, f := range feeds {
 		if f.ID == article.FeedID {
-			targetFeed = &struct {
-				ID         int64
-				URL        string
-				ScriptPath string
-			}{
-				ID:         f.ID,
-				URL:        f.URL,
-				ScriptPath: f.ScriptPath,
-			}
+			targetFeed = &f
 			break
 		}
 	}
@@ -124,7 +112,7 @@ func (h *Handler) GetArticleContent(articleID int64) (string, error) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		parsedFeed, err = h.Fetcher.ParseFeedWithScript(ctx, targetFeed.URL, targetFeed.ScriptPath, true) // High priority for content fetching
+		parsedFeed, err = h.Fetcher.ParseFeedWithFeed(ctx, targetFeed, true) // High priority for content fetching
 		if err != nil {
 			return "", err
 		}
