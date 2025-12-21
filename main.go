@@ -580,7 +580,36 @@ func main() {
 	go func() {
 		time.Sleep(2 * time.Second) // Small delay to allow app to start
 		log.Println("Detecting network speed...")
-		detector := network.NewDetector()
+
+		// Get proxy settings
+		proxyEnabled, _ := db.GetSetting("proxy_enabled")
+		proxyType, _ := db.GetSetting("proxy_type")
+		proxyHost, _ := db.GetSetting("proxy_host")
+		proxyPort, _ := db.GetSetting("proxy_port")
+		proxyUsername, _ := db.GetSetting("proxy_username")
+		proxyPassword, _ := db.GetSetting("proxy_password")
+
+		// Create HTTP client with proxy if enabled
+		var httpClient *http.Client
+		if proxyEnabled == "true" {
+			proxyURL := utils.BuildProxyURL(proxyType, proxyHost, proxyPort, proxyUsername, proxyPassword)
+			if proxyURL != "" {
+				client, err := utils.CreateHTTPClient(proxyURL, 10*time.Second)
+				if err != nil {
+					log.Printf("Failed to create HTTP client with proxy: %v", err)
+					// Fall back to default client
+					httpClient = &http.Client{Timeout: 10 * time.Second}
+				} else {
+					httpClient = client
+				}
+			} else {
+				httpClient = &http.Client{Timeout: 10 * time.Second}
+			}
+		} else {
+			httpClient = &http.Client{Timeout: 10 * time.Second}
+		}
+
+		detector := network.NewDetector(httpClient)
 		detectCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel()
 

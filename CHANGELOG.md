@@ -15,15 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Improved error display for customized scripts when adding/editing feeds. (#264)
+- Network connection test now supports proxy settings. (#256)
 
 ### Fixed
 
 - Fixed the issue where different articles display the same content due to incorrect URL matching. (#257)
 - Fixed the issue where import and export of OPML files did not work correctly on macOS. (#263)
+- Fixed the issue where localhost cannot be processed correctly. (#257)
 
 ### Removed
 
-- Removed single instance lock on Linux platform to avoid D-Bus related issues. (#261)
+- Removed single instance lock on Linux platform to avoid D-Bus related issues. (#246)
 
 ## [1.3.5] - 2025-12-20
 

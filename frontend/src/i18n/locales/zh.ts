@@ -653,7 +653,7 @@ const zh: TranslationMessages = {
   freshrssEnabled: '启用 FreshRSS 同步',
   freshrssEnabledDesc: '与 FreshRSS 服务器同步订阅源和文章',
   freshrssServerUrl: '服务器地址',
-  freshrssServerUrlDesc: '您的 FreshRSS 服务器地址',
+  freshrssServerUrlDesc: '您的 FreshRSS 服务器地址（自动添加 /api）',
   freshrssServerUrlPlaceholder: 'https://freshrss.example.com',
   freshrssUsername: '用户名',
   freshrssUsernameDesc: '您的 FreshRSS 用户名',

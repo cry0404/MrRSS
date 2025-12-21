@@ -661,7 +661,7 @@ const en: TranslationMessages = {
   freshrssEnabled: 'Enable FreshRSS Sync',
   freshrssEnabledDesc: 'Sync feeds and articles with a FreshRSS server',
   freshrssServerUrl: 'Server URL',
-  freshrssServerUrlDesc: 'URL of your FreshRSS server',
+  freshrssServerUrlDesc: 'URL of your FreshRSS server (automatically adds /api)',
   freshrssServerUrlPlaceholder: 'https://freshrss.example.com',
   freshrssUsername: 'Username',
   freshrssUsernameDesc: 'Your FreshRSS username',

@@ -46,14 +46,24 @@ func NewFetcher(db *database.DB, translator translation.Translator) *Fetcher {
 		executor = NewScriptExecutor(scriptsDir)
 	}
 
+	// Create HTTP client for feed parsing
+	httpClient, err := CreateHTTPClient("")
+	if err != nil {
+		// Fallback to default client if proxy setup fails
+		httpClient = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	// Create parser with custom HTTP client to support localhost and other endpoints
+	parser := gofeed.NewParser()
+	parser.Client = httpClient
+
 	// Create high priority parser with shorter timeout for content fetching
 	highPriorityParser := gofeed.NewParser()
-	// Note: We can't easily set custom HTTP client on gofeed parser
-	// The priority will be handled at the application level
+	highPriorityParser.Client = httpClient
 
 	return &Fetcher{
 		db:                db,
-		fp:                gofeed.NewParser(),
+		fp:                parser,
 		highPriorityFp:    highPriorityParser,
 		translator:        translator,
 		scriptExecutor:    executor,
