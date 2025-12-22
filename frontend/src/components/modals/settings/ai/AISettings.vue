@@ -177,44 +177,6 @@ onMounted(() => {
     </div>
   </div>
 
-  <!-- AI Features Group -->
-  <div class="setting-group">
-    <label
-      class="font-semibold mb-2 sm:mb-3 text-text-secondary uppercase text-xs tracking-wider flex items-center gap-2"
-    >
-      <PhRobot :size="14" class="sm:w-4 sm:h-4" />
-      {{ t('aiFeatures') }}
-    </label>
-    <div class="text-xs text-text-secondary mb-3 sm:mb-4">
-      {{ t('aiFeaturesDesc') }}
-    </div>
-
-    <!-- AI Chat -->
-    <div class="setting-item">
-      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhChatCircleText :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-        <div class="flex-1 min-w-0">
-          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">{{ t('aiChatEnabled') }}</div>
-          <div class="text-xs text-text-secondary hidden sm:block">
-            {{ t('aiChatEnabledDesc') }}
-          </div>
-        </div>
-      </div>
-      <input
-        :checked="props.settings.ai_chat_enabled"
-        type="checkbox"
-        class="toggle"
-        @change="
-          (e) =>
-            emit('update:settings', {
-              ...props.settings,
-              ai_chat_enabled: (e.target as HTMLInputElement).checked,
-            })
-        "
-      />
-    </div>
-  </div>
-
   <!-- AI Usage Group -->
   <div class="setting-group">
     <!-- AI Usage Display -->
@@ -299,6 +261,41 @@ onMounted(() => {
             emit('update:settings', {
               ...props.settings,
               ai_usage_limit: (e.target as HTMLInputElement).value,
+            })
+        "
+      />
+    </div>
+  </div>
+
+  <!-- AI Features Group -->
+  <div class="setting-group">
+    <label
+      class="font-semibold mb-2 sm:mb-3 text-text-secondary uppercase text-xs tracking-wider flex items-center gap-2"
+    >
+      <PhRobot :size="14" class="sm:w-4 sm:h-4" />
+      {{ t('aiFeatures') }}
+    </label>
+
+    <!-- AI Chat -->
+    <div class="setting-item">
+      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
+        <PhChatCircleText :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
+        <div class="flex-1 min-w-0">
+          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">{{ t('aiChatEnabled') }}</div>
+          <div class="text-xs text-text-secondary hidden sm:block">
+            {{ t('aiChatEnabledDesc') }}
+          </div>
+        </div>
+      </div>
+      <input
+        :checked="props.settings.ai_chat_enabled"
+        type="checkbox"
+        class="toggle"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...props.settings,
+              ai_chat_enabled: (e.target as HTMLInputElement).checked,
             })
         "
       />

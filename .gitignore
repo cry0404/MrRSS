@@ -71,4 +71,5 @@ frontend/cypress/downloads/
 .task/checksum
 
 # Claude
+.claude/
 .plan/
