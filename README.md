@@ -228,6 +228,21 @@ cd frontend
 npm test
 ```
 
+### Server Mode (API-only)
+
+For server deployments and API integration, use the headless server version:
+
+```bash
+# Using Docker (recommended)
+docker run -p 1234:1234 mrrss-server:latest
+
+# Or build from source
+go build -tags server -o mrrss-server .
+./mrrss-server
+```
+
+See [Server Mode Documentation](docs/SERVER_MODE.md) for complete API reference and deployment guide.
+
 </div>
 
 </details>

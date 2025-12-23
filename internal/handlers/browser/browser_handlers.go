@@ -70,7 +70,16 @@ func HandleOpenURL(h *handlers.Handler, w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Open URL using Wails v3 Browser API
-	err = h.App.Browser.OpenURL(req.URL)
+	app, ok := h.App.(interface {
+		Browser() interface{ OpenURL(string) error }
+	})
+	if !ok {
+		log.Printf("Browser integration not available in server mode")
+		http.Error(w, "Browser integration not available in server mode", http.StatusNotImplemented)
+		return
+	}
+
+	err = app.Browser().OpenURL(req.URL)
 	if err != nil {
 		log.Printf("Failed to open URL in browser: %v", err)
 		http.Error(w, "Failed to open URL in browser", http.StatusInternalServerError)

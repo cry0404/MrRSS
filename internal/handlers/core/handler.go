@@ -22,7 +22,6 @@ import (
 	"codeberg.org/readeck/go-readability/v2"
 
 	"github.com/mmcdole/gofeed"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // Discovery timeout constants
@@ -49,7 +48,7 @@ type Handler struct {
 	Translator       translation.Translator
 	AITracker        *aiusage.Tracker
 	DiscoveryService *discovery.Service
-	App              *application.App    // Wails app instance for browser integration
+	App              interface{}         // Wails app instance for browser integration (interface{} to avoid import in server mode)
 	ContentCache     *cache.ContentCache // Cache for article content
 
 	// Discovery state tracking for polling-based progress
@@ -72,7 +71,7 @@ func NewHandler(db *database.DB, fetcher *feed.Fetcher, translator translation.T
 
 // SetApp sets the Wails application instance for browser integration.
 // This is called after app initialization in main.go.
-func (h *Handler) SetApp(app *application.App) {
+func (h *Handler) SetApp(app interface{}) {
 	h.App = app
 }
 

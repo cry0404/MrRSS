@@ -228,6 +228,21 @@ cd frontend
 npm test
 ```
 
+### 服务器模式（仅限 API）
+
+对于服务器部署和 API 集成，请使用无界面服务器版本：
+
+```bash
+# 使用 Docker（推荐）
+docker run -p 1234:1234 mrrss-server:latest
+
+# 或从源码构建
+go build -tags server -o mrrss-server .
+./mrrss-server
+```
+
+请参阅[服务器模式文档](docs/SERVER_MODE.md)以获取完整的 API 参考和部署指南。
+
 </div>
 
 </details>
