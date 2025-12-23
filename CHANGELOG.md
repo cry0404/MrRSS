@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Supported AI setting tests in settings page to verify connectivity and credentials. (#297)
+
 ### Changed
 
 - AI generated summaries are now stored in the database to avoid redundant requests and improve performance. (#295)

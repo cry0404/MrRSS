@@ -37,6 +37,18 @@ export interface TranslationMessages {
   aiTranslationPrompt: string;
   aiTranslationPromptDesc: string;
   aiTranslationPromptPlaceholder: string;
+  aiConfigTest: string;
+  aiConfigTestDesc: string;
+  testAIConfig: string;
+  testing: string;
+  aiTestSuccess: string;
+  aiTestFailed: string;
+  configValid: string;
+  connectionSuccess: string;
+  responseTime: string;
+  lastTest: string;
+  aiConfigAllGood: string;
+  aiConfigurationGuide: string;
   allArticles: string;
   alreadyDiscovered: string;
   analyzingFeed: string;
