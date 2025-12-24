@@ -233,6 +233,9 @@ const en: TranslationMessages = {
   enableFullTextFetch: 'Enable Full-Text Fetching',
   enableFullTextFetchDesc:
     'Allow fetching full article content from original websites when RSS provides only summaries',
+  autoShowAllContent: 'Auto Show All Content',
+  autoShowAllContentDesc:
+    'Automatically display full content for all articles in rendered view mode (may increase loading time)',
   enableTranslation: 'Enable Translation',
   enableTranslationDesc: 'Automatically translate article titles to your preferred language',
   english: 'english',

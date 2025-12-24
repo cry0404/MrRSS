@@ -74,6 +74,7 @@ type Defaults struct {
 	FreshRSSUsername         string `json:"freshrss_username"`
 	FreshRSSAPIPassword      string `json:"freshrss_api_password"`
 	FullTextFetchEnabled     bool   `json:"full_text_fetch_enabled"`
+	AutoShowAllContent       bool   `json:"auto_show_all_content"`
 }
 
 var defaults Defaults
@@ -212,6 +213,8 @@ func GetString(key string) string {
 		return defaults.FreshRSSAPIPassword
 	case "full_text_fetch_enabled":
 		return strconv.FormatBool(defaults.FullTextFetchEnabled)
+	case "auto_show_all_content":
+		return strconv.FormatBool(defaults.AutoShowAllContent)
 	default:
 		return ""
 	}

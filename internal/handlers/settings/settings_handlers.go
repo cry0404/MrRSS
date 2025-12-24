@@ -73,6 +73,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		freshRSSUsername, _ := h.DB.GetSetting("freshrss_username")
 		freshRSSAPIPassword, _ := h.DB.GetEncryptedSetting("freshrss_api_password")
 		fullTextFetchEnabled, _ := h.DB.GetSetting("full_text_fetch_enabled")
+		autoShowAllContent, _ := h.DB.GetSetting("auto_show_all_content")
 		json.NewEncoder(w).Encode(map[string]string{
 			"update_interval":             interval,
 			"refresh_mode":                refreshMode,
@@ -134,6 +135,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			"freshrss_username":           freshRSSUsername,
 			"freshrss_api_password":       freshRSSAPIPassword,
 			"full_text_fetch_enabled":     fullTextFetchEnabled,
+			"auto_show_all_content":       autoShowAllContent,
 		})
 	case http.MethodPost:
 		var req struct {
@@ -196,6 +198,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			FreshRSSUsername         string `json:"freshrss_username"`
 			FreshRSSAPIPassword      string `json:"freshrss_api_password"`
 			FullTextFetchEnabled     string `json:"full_text_fetch_enabled"`
+			AutoShowAllContent       string `json:"auto_show_all_content"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -424,6 +427,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if req.FullTextFetchEnabled != "" {
 			h.DB.SetSetting("full_text_fetch_enabled", req.FullTextFetchEnabled)
+		}
+
+		if req.AutoShowAllContent != "" {
+			h.DB.SetSetting("auto_show_all_content", req.AutoShowAllContent)
 		}
 
 		w.WriteHeader(http.StatusOK)

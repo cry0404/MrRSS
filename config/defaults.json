@@ -63,5 +63,6 @@
   "freshrss_server_url": "",
   "freshrss_username": "",
   "freshrss_api_password": "",
-  "full_text_fetch_enabled": true
+  "full_text_fetch_enabled": true,
+  "auto_show_all_content": false
 }

@@ -63,6 +63,7 @@ export interface SettingsData {
   freshrss_username: string;
   freshrss_api_password: string;
   full_text_fetch_enabled: boolean;
+  auto_show_all_content: boolean;
   [key: string]: unknown; // Allow additional properties
 }
 

@@ -62,9 +62,6 @@ function handleUpdateSettings(updatedSettings: SettingsData) {
 .setting-item {
   @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-bg-secondary border border-border;
 }
-.sub-setting-item {
-  @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-2.5 rounded-md bg-bg-tertiary;
-}
 .info-display {
   @apply px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-border;
   background-color: rgba(233, 236, 239, 0.3);

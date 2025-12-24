@@ -71,6 +71,7 @@ export function useSettings() {
     freshrss_username: settingsDefaults.freshrss_username,
     freshrss_api_password: settingsDefaults.freshrss_api_password,
     full_text_fetch_enabled: settingsDefaults.full_text_fetch_enabled,
+    auto_show_all_content: settingsDefaults.auto_show_all_content,
   } as SettingsData);
 
   /**
@@ -149,6 +150,7 @@ export function useSettings() {
         freshrss_username: data.freshrss_username || settingsDefaults.freshrss_username,
         freshrss_api_password: data.freshrss_api_password || settingsDefaults.freshrss_api_password,
         full_text_fetch_enabled: data.full_text_fetch_enabled === 'true',
+        auto_show_all_content: data.auto_show_all_content === 'true',
       } as SettingsData;
 
       return settings.value;

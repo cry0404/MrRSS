@@ -7,6 +7,7 @@ import {
   PhArticleNyTimes,
   PhCursorClick,
   PhEyeSlash,
+  PhPlayCircle,
 } from '@phosphor-icons/vue';
 import type { SettingsData } from '@/types/settings';
 
@@ -112,6 +113,38 @@ const emit = defineEmits<{
       />
     </div>
 
+    <!-- Sub-setting: Auto Show All Content -->
+    <div
+      v-if="settings.full_text_fetch_enabled"
+      class="mt-2 sm:mt-3 ml-4 sm:ml-6 pl-3 sm:pl-4 border-l-2 border-border"
+    >
+      <div class="sub-setting-item">
+        <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
+          <PhPlayCircle :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-5 sm:h-5" />
+          <div class="flex-1 min-w-0">
+            <div class="font-medium mb-0 sm:mb-1 text-xs sm:text-sm">
+              {{ t('autoShowAllContent') }}
+            </div>
+            <div class="text-[10px] sm:text-xs text-text-secondary hidden sm:block">
+              {{ t('autoShowAllContentDesc') }}
+            </div>
+          </div>
+        </div>
+        <input
+          :checked="settings.auto_show_all_content"
+          type="checkbox"
+          class="toggle"
+          @change="
+            (e) =>
+              emit('update:settings', {
+                ...settings,
+                auto_show_all_content: (e.target as HTMLInputElement).checked,
+              })
+          "
+        />
+      </div>
+    </div>
+
     <div class="setting-item mt-2 sm:mt-3">
       <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
         <PhImages :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
@@ -210,5 +243,8 @@ const emit = defineEmits<{
 }
 .setting-item {
   @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-bg-secondary border border-border;
+}
+.sub-setting-item {
+  @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-2.5 rounded-md bg-bg-tertiary;
 }
 </style>

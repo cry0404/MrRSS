@@ -205,6 +205,9 @@ export function useSettingsAutoSave(settings: Ref<SettingsData> | (() => Setting
           full_text_fetch_enabled: (
             settingsRef.value.full_text_fetch_enabled ?? settingsDefaults.full_text_fetch_enabled
           ).toString(),
+          auto_show_all_content: (
+            settingsRef.value.auto_show_all_content ?? settingsDefaults.auto_show_all_content
+          ).toString(),
         }),
       });
 
@@ -249,6 +252,15 @@ export function useSettingsAutoSave(settings: Ref<SettingsData> | (() => Setting
         new CustomEvent('image-gallery-setting-changed', {
           detail: {
             enabled: settingsRef.value.image_gallery_enabled,
+          },
+        })
+      );
+
+      // Notify about auto_show_all_content change
+      window.dispatchEvent(
+        new CustomEvent('auto-show-all-content-changed', {
+          detail: {
+            value: settingsRef.value.auto_show_all_content,
           },
         })
       );

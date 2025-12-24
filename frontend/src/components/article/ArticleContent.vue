@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed, nextTick } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, computed, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhSpinnerGap, PhArticleNyTimes } from '@phosphor-icons/vue';
 import type { Article } from '@/types/models';
@@ -64,14 +64,23 @@ const isChatPanelOpen = ref(false);
 // Full-text fetching state
 const isFetchingFullArticle = ref(false);
 const fullArticleContent = ref('');
+const autoShowAllContent = ref(false);
 
 // Fetch settings on mount to get actual values
 onMounted(async () => {
   try {
-    await fetchSettings();
+    const data = await fetchSettings();
+    autoShowAllContent.value =
+      data.auto_show_all_content === 'true' || data.auto_show_all_content === true;
   } catch (e) {
     console.error('Error fetching settings for chat:', e);
   }
+
+  // Listen for auto show all content setting changes
+  window.addEventListener(
+    'auto-show-all-content-changed',
+    onAutoShowAllContentChanged as EventListener
+  );
 });
 
 // Computed to check if chat should be shown
@@ -428,6 +437,12 @@ async function reattachImageInteractions() {
   props.attachImageEventListeners();
 }
 
+// Handle auto show all content setting change
+function onAutoShowAllContentChanged(e: Event): void {
+  const customEvent = e as CustomEvent<{ value: boolean }>;
+  autoShowAllContent.value = customEvent.detail.value;
+}
+
 // Watch for article changes and regenerate summary + translations
 watch(
   () => props.article?.id,
@@ -481,6 +496,11 @@ watch(
       // Re-attach image event listeners after rendering enhancements
       await reattachImageInteractions();
 
+      // Auto-fetch full article if setting is enabled
+      if (autoShowAllContent.value && !fullArticleContent.value) {
+        setTimeout(() => fetchFullArticle(), 200);
+      }
+
       // Delay summary generation to prioritize content display
       if (shouldAutoGenerateSummary()) {
         setTimeout(() => generateSummary(props.article), 100);
@@ -502,6 +522,11 @@ onMounted(async () => {
       enhanceRendering('.prose-content');
       // Re-attach image event listeners after rendering
       await reattachImageInteractions();
+
+      // Auto-fetch full article if setting is enabled and content is already loaded
+      if (autoShowAllContent.value && !fullArticleContent.value && !isFetchingFullArticle.value) {
+        setTimeout(() => fetchFullArticle(), 200);
+      }
     }
 
     // Check for cached summary first
@@ -546,6 +571,14 @@ watch(
   },
   { immediate: true }
 );
+
+// Clean up event listeners
+onBeforeUnmount(() => {
+  window.removeEventListener(
+    'auto-show-all-content-changed',
+    onAutoShowAllContentChanged as EventListener
+  );
+});
 </script>
 
 <template>

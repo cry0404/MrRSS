@@ -230,6 +230,8 @@ const zh: TranslationMessages = {
   enableSummaryDesc: '自动生成文章摘要',
   enableFullTextFetch: '启用全文提取',
   enableFullTextFetchDesc: '当 RSS 仅提供摘要时，允许从原始网站提取完整文章内容',
+  autoShowAllContent: '自动展示所有内容',
+  autoShowAllContentDesc: '在内容渲染模式下自动显示所有文章的完整内容（可能会增加加载时间）',
   enableTranslation: '启用翻译',
   enableTranslationDesc: '自动将文章标题翻译为您的首选语言',
   english: 'english',
