@@ -244,7 +244,14 @@ go build -tags server -o mrrss-server .
 ./mrrss-server
 ```
 
-请参阅[服务器模式文档](docs/SERVER_MODE.md)以获取完整的 API 参考和部署指南。
+当然，本项目也提供了基于 ghcr.io 的预构建服务器镜像：
+
+```bash
+docker run -d -p 1234:1234 ghcr.io/wcy-dt/mrrss:latest-amd64
+docker run -d -p 1234:1234 ghcr.io/wcy-dt/mrrss:latest-arm64
+```
+
+请参阅[服务器模式 API 文档](docs/SERVER_MODE/swagger.json)以获取完整的 API 参考。
 
 </div>
 
