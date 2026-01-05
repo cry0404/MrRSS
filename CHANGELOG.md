@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the issue where image gallery view shows only 2 columns. (#399)
 - Fixed the issue of left and right click actions not working correctly in feeds list. (#394)
 - Fixed the issue where can not dragging feeds into collapsed categories. (#394)
+- Fixed the issue where links can not be opened in default browser after extracting full article content. (#409)
 
 ## [1.3.13] - 2026-01-03
 
