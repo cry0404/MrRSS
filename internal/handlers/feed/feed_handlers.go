@@ -42,6 +42,7 @@ func HandleFeeds(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 // @Param        request  body      object  true  "Feed details"
 // @Success      200  {string}  string  "Feed added successfully"
 // @Failure      400  {object}  map[string]string  "Bad request"
+// @Failure      409  {object}  map[string]string  "Feed URL already exists"
 // @Failure      500  {object}  map[string]string  "Internal server error"
 // @Router       /feeds/add [post]
 func HandleAddFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
@@ -82,8 +83,25 @@ func HandleAddFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Determine the feed URL to check for duplicates
+	feedURL := req.URL
+	if req.ScriptPath != "" {
+		feedURL = "script://" + req.ScriptPath
+	} else if req.Type == "email" {
+		feedURL = "email://" + req.EmailAddress
+	}
+
+	// Check if feed with this URL already exists (excluding FreshRSS feeds)
+	var existingID int64
+	var existingIsFreshRSS bool
+	err := h.DB.QueryRow("SELECT id, is_freshrss_source FROM feeds WHERE url = ?", feedURL).Scan(&existingID, &existingIsFreshRSS)
+	if err == nil && !existingIsFreshRSS {
+		// Feed exists and is not a FreshRSS feed - return conflict error
+		http.Error(w, "feed with this URL already exists", http.StatusConflict)
+		return
+	}
+
 	var feedID int64
-	var err error
 	if req.ScriptPath != "" {
 		// Add feed using custom script
 		feedID, err = h.Fetcher.AddScriptSubscription(req.ScriptPath, req.Category, req.Title)
@@ -158,6 +176,7 @@ func HandleDeleteFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 // @Param        request  body      object  true  "Feed update details"
 // @Success      200  {string}  string  "Feed updated successfully"
 // @Failure      400  {object}  map[string]string  "Bad request"
+// @Failure      409  {object}  map[string]string  "Feed URL already exists"
 // @Failure      500  {object}  map[string]string  "Internal server error"
 // @Router       /feeds/update [post]
 func HandleUpdateFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
@@ -196,6 +215,24 @@ func HandleUpdateFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Determine the feed URL to check for duplicates
+	feedURL := req.URL
+	if req.ScriptPath != "" {
+		feedURL = "script://" + req.ScriptPath
+	} else if req.Type == "email" {
+		feedURL = "email://" + req.EmailAddress
+	}
+
+	// Check if another feed with this URL already exists (excluding FreshRSS feeds and current feed)
+	var existingID int64
+	var existingIsFreshRSS bool
+	err := h.DB.QueryRow("SELECT id, is_freshrss_source FROM feeds WHERE url = ? AND id != ?", feedURL, req.ID).Scan(&existingID, &existingIsFreshRSS)
+	if err == nil && !existingIsFreshRSS {
+		// Another feed exists with this URL and is not a FreshRSS feed - return conflict error
+		http.Error(w, "feed with this URL already exists", http.StatusConflict)
 		return
 	}
 

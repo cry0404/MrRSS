@@ -185,6 +185,12 @@ async function submit() {
       // Read error message from response
       const errorText = await res.text();
 
+      // Check if it's a duplicate URL error (409 Conflict)
+      if (res.status === 409 || errorText.includes('already exists')) {
+        window.showToast(t('duplicateFeedURL'), 'error');
+        return;
+      }
+
       // Check if it's an XPath error for better display
       if (feedType.value === 'xpath' && errorText.includes('XPath')) {
         // For XPath errors, show a more detailed toast

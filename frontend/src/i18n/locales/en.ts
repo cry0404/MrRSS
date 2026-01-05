@@ -311,6 +311,8 @@ const en: TranslationMessages = {
   errorCheckingUpdates: 'Error checking for updates',
   errorCleaningDatabase: 'Error cleaning up database',
   errorDiscoveringFeeds: 'Error discovering feeds',
+  duplicateFeedURL: 'A feed with this URL already exists',
+  duplicateFeedURLDesc: 'You cannot add the same feed URL twice. Please check your existing feeds.',
   errorPollingStatus: 'Error polling discovery status',
   errorReorderingFeed: 'Failed to reorder feed',
   errorSavingSettings: 'Error saving settings',
