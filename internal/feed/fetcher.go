@@ -219,6 +219,19 @@ func (f *Fetcher) FetchAll(ctx context.Context) {
 	// If all feeds are FreshRSS feeds, no standard refresh needed
 	if len(filteredFeeds) == 0 {
 		log.Printf("All %d feeds are FreshRSS sources (refreshed via sync only), skipping standard refresh", freshRSSCount)
+
+		// Update last global refresh time even if no standard feeds
+		newUpdateTime := time.Now().Format(time.RFC3339)
+		log.Printf("Global refresh started (FreshRSS only), updating last_global_refresh to: %s", newUpdateTime)
+		if err := f.db.SetSetting("last_global_refresh", newUpdateTime); err != nil {
+			log.Printf("ERROR: Failed to update last_global_refresh: %v", err)
+		}
+
+		// Track global refresh in statistics even if no standard feeds
+		if err := f.db.IncrementStat("feed_refresh"); err != nil {
+			log.Printf("ERROR: Failed to track feed refresh: %v", err)
+		}
+
 		// Mark progress as completed since there's nothing to do
 		f.taskManager.MarkCompleted()
 		return

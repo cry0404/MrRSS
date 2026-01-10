@@ -94,6 +94,32 @@ async function syncNow() {
   }
 }
 
+// Handle FreshRSS enabled toggle with confirmation
+async function handleFreshRSSToggle(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const newEnabled = target.checked;
+
+  // If disabling, show confirmation dialog
+  if (!newEnabled && props.settings.freshrss_enabled) {
+    const confirmed = await window.showConfirm({
+      title: t('freshrssEnabled'),
+      message: t('freshrssDisableConfirm'),
+      isDanger: true,
+    });
+    if (!confirmed) {
+      // Revert the checkbox
+      target.checked = true;
+      return;
+    }
+  }
+
+  // Emit the change
+  emit('update:settings', {
+    ...props.settings,
+    freshrss_enabled: newEnabled,
+  });
+}
+
 // Watch for FreshRSS enabled changes and refresh data accordingly
 watch(
   () => props.settings.freshrss_enabled,
@@ -183,13 +209,7 @@ function formatSyncTime(timeStr: string | null): string {
       type="checkbox"
       :checked="props.settings.freshrss_enabled"
       class="toggle"
-      @change="
-        (e) =>
-          emit('update:settings', {
-            ...props.settings,
-            freshrss_enabled: (e.target as HTMLInputElement).checked,
-          })
-      "
+      @change="handleFreshRSSToggle"
     />
   </div>
   <div

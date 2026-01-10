@@ -3,6 +3,7 @@ package article
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -38,7 +39,12 @@ func HandleGetUnreadCounts(h *core.Handler, w http.ResponseWriter, r *http.Reque
 		"total":       totalCount,
 		"feed_counts": feedCounts,
 	}
-	json.NewEncoder(w).Encode(response)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("[HandleGetUnreadCounts] ERROR encoding response: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+	}
 }
 
 // HandleMarkAllAsRead marks all articles as read.
@@ -120,7 +126,11 @@ func HandleRefresh(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 	// Manual refresh - fetches all feeds in background
 	go h.Fetcher.FetchAll(context.Background())
+
+	// Return success response
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "refreshing"})
 }
 
 // HandleCleanupArticles triggers manual cleanup of articles.

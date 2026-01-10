@@ -2,6 +2,8 @@ package article
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"sort"
 	"time"
@@ -52,8 +54,17 @@ func GetFeedType(feed *models.Feed) string {
 // @Success      200  {object}  map[string]interface{}  "Progress information"
 // @Router       /progress [get]
 func HandleProgress(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	progress := h.Fetcher.GetProgressWithStats()
-	json.NewEncoder(w).Encode(progress)
+
+	// Log for debugging
+	log.Printf("[HandleProgress] Returning progress: is_running=%v, pool=%d, queue=%d",
+		progress.IsRunning, progress.PoolTaskCount, progress.QueueTaskCount)
+
+	if err := json.NewEncoder(w).Encode(progress); err != nil {
+		log.Printf("[HandleProgress] ERROR encoding progress: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to encode progress: %v", err), http.StatusInternalServerError)
+	}
 }
 
 // TaskDetailsResponse contains detailed task information
@@ -121,7 +132,10 @@ func HandleTaskDetails(h *core.Handler, w http.ResponseWriter, r *http.Request) 
 		QueueTasks: queueTasks,
 	}
 
-	json.NewEncoder(w).Encode(response)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to encode task details: %v", err), http.StatusInternalServerError)
+	}
 }
 
 // HandleFilteredArticles returns articles filtered by advanced conditions from the database.

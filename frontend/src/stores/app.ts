@@ -47,6 +47,9 @@ export interface AppActions {
 }
 
 export const useAppStore = defineStore('app', () => {
+  // Get settings composable once at store initialization
+  const { settings: settingsRef } = useSettings();
+
   // State
   const articles = ref<Article[]>([]);
   const feeds = ref<Feed[]>([]);
@@ -282,14 +285,26 @@ export const useAppStore = defineStore('app', () => {
     refreshProgress.value.isRunning = true;
     try {
       // First, trigger standard refresh
-      await fetch('/api/refresh', { method: 'POST' });
+      const refreshRes = await fetch('/api/refresh', { method: 'POST' });
+      if (!refreshRes.ok) {
+        throw new Error(`Refresh API returned ${refreshRes.status}: ${refreshRes.statusText}`);
+      }
+      // Verify the response is valid JSON by consuming it
+      try {
+        await refreshRes.json();
+      } catch (e) {
+        console.error('Invalid JSON response from /api/refresh:', e);
+        throw new Error(`Invalid JSON response from refresh API: ${e}`);
+      }
 
       // Also trigger FreshRSS sync if enabled
-      try {
-        await fetch('/api/freshrss/sync', { method: 'POST' });
-      } catch (e) {
-        // If FreshRSS sync fails, it's okay - just log it
-        console.log('FreshRSS sync triggered (may not be enabled)');
+      if (settingsRef.value.freshrss_enabled === 'true') {
+        try {
+          await fetch('/api/freshrss/sync', { method: 'POST' });
+        } catch (e) {
+          // If FreshRSS sync fails, it's okay - just log it
+          console.log('FreshRSS sync failed:', e);
+        }
       }
 
       // Wait a moment to check if refresh is actually running
@@ -297,11 +312,13 @@ export const useAppStore = defineStore('app', () => {
 
       // Check progress to see if there are actually any tasks
       const progressRes = await fetch('/api/progress');
+      if (!progressRes.ok) {
+        throw new Error(`Progress API returned ${progressRes.status}: ${progressRes.statusText}`);
+      }
       const progressData = await progressRes.json();
 
       // If no tasks are running, mark as completed immediately
       if (!progressData.is_running) {
-        console.log('No feeds to refresh (all feeds are FreshRSS or no feeds exist)');
         refreshProgress.value.isRunning = false;
 
         // Still refresh feeds and articles to get any updates from FreshRSS sync
@@ -329,6 +346,9 @@ export const useAppStore = defineStore('app', () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const res = await fetch('/api/progress');
+      if (!res.ok) {
+        throw new Error(`Progress API returned ${res.status}: ${res.statusText}`);
+      }
       const data = await res.json();
       console.log('Initial progress update:', data);
       refreshProgress.value = {
@@ -353,6 +373,9 @@ export const useAppStore = defineStore('app', () => {
     const interval = setInterval(async () => {
       try {
         const res = await fetch('/api/progress');
+        if (!res.ok) {
+          throw new Error(`Progress API returned ${res.status}: ${res.statusText}`);
+        }
         const data = await res.json();
         refreshProgress.value = {
           ...refreshProgress.value, // Preserve existing pool_tasks and queue_tasks

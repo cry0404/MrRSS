@@ -5,42 +5,43 @@ All notable changes to MrRSS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.14] - 2026-01-10
 
 ### Added
 
 - Supported better reverse proxy for website display. (#414)
 - Supported RSSHub feed type for better integration with RSSHub instances. (#176, #302) (@cry0404)
-- Supported statistics tab in settings modal to view usage statistics over time.
+- Supported a statistics tab in the settings modal to view usage statistics over time.
 - Supported manually sorting rules for advanced users. (#398)
 - Supported Gemini service API. (#437)
 - Supported language detection to reduce unnecessary translation requests. (#410)
 - Added error messages for feeds that fail to refresh. (#429)
-- Supported buttons to switch to previous/next articles in article detail view. (#357)
-- Supported -10s and +10s skip buttons in audio player. (#395)
+- Supported buttons to switch to previous/next articles in the article detail view. (#357)
+- Supported -10s and +10s skip buttons in the audio player. (#395)
 
 ### Changed
 
-- Thumbnail images in article list are now cached to avoid disappearing after restarting the application. (#423)
+- Cached thumbnail images in the article list to avoid disappearing after restarting the application. (#423)
 - Improved the performance of article list rendering.
-- Clicking an article again will not close the article content viewer now. (#434)
+- Prevented the article content viewer from closing when clicking the same article again. (#434)
 
 ### Fixed
 
-- Fixed the issue where URLs are not trimmed correctly when adding or editing feeds. (#413)
-- Fixed the issue where summary can not be regenerated after the article content changed. (#412)
-- Fixed the issue of some small style problems. (#396, #397, #402, #407, #425, #428, #430, #443)
-- Fixed the issue where image gallery view shows only 2 columns. (#399)
-- Fixed the issue of left and right click actions not working correctly in feeds list. (#394)
-- Fixed the issue where can not dragging feeds into collapsed categories. (#394)
-- Fixed the issue where links can not be opened in default browser after extracting full article content. (#409)
-- Fixed the issue where can adding duplicate feeds. (#401)
-- Fixed the issue where article list stucked in some cases. (#422)
-- Fixed the issue where sidebar width would shrink when feed titles are short. (#433)
-- Fixed the issue where image viewer can not be closed automatically after switching articles or feeds. (#431)
-- Fixed the issue where AI summaries are always regenerated in English or not accurate enough. (#424, #438)
-- Fixed the issue where FreshRSS synchronization fails for feeds in some cases. (#440)
-- Fixed the issue where translation fail will cause many toast notifications. (#436)
+- Fixed an issue where URLs were not trimmed correctly when adding or editing feeds. (#413)
+- Fixed an issue where the summary could not be regenerated after the article content changed. (#412)
+- Fixed some minor style issues. (#396, #397, #402, #407, #425, #428, #430, #443, #449)
+- Fixed an issue where the image gallery view showed only 2 columns. (#399)
+- Fixed an issue where left and right click actions did not work correctly in the feeds list. (#394)
+- Fixed an issue where feeds could not be dragged into collapsed categories. (#394)
+- Fixed an issue where links could not be opened in the default browser after extracting the full article content. (#409)
+- Fixed an issue where duplicate feeds could be added. (#401)
+- Fixed an issue where the article list got stuck in some cases. (#422)
+- Fixed an issue where the sidebar width would shrink when feed titles were short. (#433)
+- Fixed an issue where the image viewer could not be closed automatically after switching articles or feeds. (#431)
+- Fixed an issue where AI summaries were always regenerated in English or were not accurate enough. (#424, #438)
+- Fixed an issue where FreshRSS synchronization failed for feeds in some cases. (#440)
+- Fixed an issue where translation failures caused many toast notifications. (#436)
+- Fixed an issue where FreshRSS articles could not display thumbnail images correctly. (#446)
 
 **Special Thanks** to @EnterMan123 for carefully testing and reporting many of these issues!
 

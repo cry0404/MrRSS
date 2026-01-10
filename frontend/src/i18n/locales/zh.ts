@@ -405,6 +405,10 @@ const zh: TranslationMessages = {
   freshrssEnabled: 'FreshRSS 集成',
   freshrssEnabledDesc: '与 FreshRSS 服务器同步订阅源和文章',
   freshrssMissingCredentials: '请提供所有 FreshRSS 凭据以启用同步',
+  freshrssDisableConfirm:
+    '禁用 FreshRSS 将删除本地的 FreshRSS 订阅源和文章。此操作不可撤销。确定要继续吗？',
+  freshrssDisableSuccess: '已成功删除所有 FreshRSS 数据',
+  freshrssDisableFailed: '删除 FreshRSS 数据失败',
 
   freshrssPassword: '密码',
   freshrssPasswordDesc: 'FreshRSS 密码',
@@ -676,6 +680,7 @@ const zh: TranslationMessages = {
   rssUrlPlaceholder: 'https://example.com/rss',
   rsshubUrlPlaceholder: 'RSS 路由（支持 rsshub:// 格式）',
   rsshubSupported: '已启用 RSSHub 支持',
+  rsshubNotSuggestOfficial: 'rsshub.app 对第三方工具存在访问限制，建议使用自部署的 RSSHub 实例。',
   ruleActions: '操作',
   ruleAppliedSuccess: '规则已应用于 {count} 篇文章',
   ruleCondition: '条件',

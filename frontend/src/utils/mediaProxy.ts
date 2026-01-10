@@ -9,7 +9,7 @@ let mediaCachePromise: Promise<boolean> | null = null;
 /**
  * Convert a media URL to use the proxy endpoint
  * @param url Original media URL
- * @param referer Optional referer URL for anti-hotlinking
+ * @param referer Optional referer URL for anti-hotlinking and resolving relative URLs
  * @returns Proxied URL
  */
 export function getProxiedMediaUrl(url: string, referer?: string): string {
@@ -20,19 +20,30 @@ export function getProxiedMediaUrl(url: string, referer?: string): string {
     return url;
   }
 
-  // Don't proxy local URLs
-  if (
-    url.startsWith('/') ||
-    url.startsWith('http://localhost') ||
-    url.startsWith('http://127.0.0.1')
-  ) {
+  // Don't proxy localhost URLs (these are local development URLs)
+  if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
     return url;
+  }
+
+  // Resolve relative URLs using the referer
+  // Relative URLs need to be converted to absolute URLs before proxying
+  let urlToProxy = url;
+  if (referer && !url.startsWith('http://') && !url.startsWith('https://')) {
+    // This is a relative URL, resolve it against the referer
+    try {
+      const baseUrl = new URL(referer);
+      urlToProxy = new URL(url, baseUrl).href;
+    } catch (e) {
+      // If URL resolution fails, use the original URL
+      console.warn('Failed to resolve relative URL:', url, 'against referer:', referer, e);
+      urlToProxy = url;
+    }
   }
 
   // CRITICAL FIX: Use base64 encoding to avoid all URL encoding issues
   // This prevents double-encoding problems with special characters, Chinese characters, etc.
   // Base64 encoding is safe for URLs and doesn't interfere with query parameter parsing
-  const urlB64 = btoa(url);
+  const urlB64 = btoa(urlToProxy);
 
   // Build proxy URL with base64-encoded parameters
   let proxyUrl = `/api/media/proxy?url_b64=${urlB64}`;

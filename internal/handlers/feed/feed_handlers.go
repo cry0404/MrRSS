@@ -303,7 +303,10 @@ func HandleRefreshFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) 
 	// Refresh the feed in background with progress tracking (manual = queue head)
 	go h.Fetcher.FetchSingleFeed(context.Background(), *feed, true)
 
+	// Return success response
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "refreshing"})
 }
 
 // HandleReorderFeed reorders a feed within or across categories.

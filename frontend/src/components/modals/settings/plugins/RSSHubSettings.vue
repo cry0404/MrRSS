@@ -103,6 +103,11 @@ async function testConnection() {
     v-if="props.settings.rsshub_enabled"
     class="ml-2 sm:ml-4 space-y-2 sm:space-y-3 border-l-2 border-border pl-2 sm:pl-4"
   >
+    <div class="tip-box">
+      <PhInfo :size="16" class="text-accent shrink-0 sm:w-5 sm:h-5" />
+      <span class="text-xs sm:text-sm">{{ t('rsshubNotSuggestOfficial') }}</span>
+    </div>
+
     <!-- Endpoint -->
     <div class="sub-setting-item">
       <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
@@ -183,6 +188,12 @@ async function testConnection() {
 
 <style scoped>
 @reference "../../../../style.css";
+
+.tip-box {
+  @apply flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-lg;
+  background-color: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
 
 .input-field {
   @apply p-1.5 sm:p-2.5 border border-border rounded-md bg-bg-secondary text-text-primary focus:border-accent focus:outline-none transition-colors;

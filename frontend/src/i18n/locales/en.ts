@@ -412,6 +412,10 @@ const en: TranslationMessages = {
   freshrssEnabled: 'FreshRSS Integration',
   freshrssEnabledDesc: 'Sync feeds and articles with a FreshRSS server',
   freshrssMissingCredentials: 'Please enter FreshRSS server URL, username, and password',
+  freshrssDisableConfirm:
+    'Disabling FreshRSS will delete local FreshRSS feeds and articles. This action cannot be undone. Are you sure you want to continue?',
+  freshrssDisableSuccess: 'Successfully deleted all FreshRSS data',
+  freshrssDisableFailed: 'Failed to delete FreshRSS data',
   freshrssPassword: 'Password',
   freshrssPasswordDesc: 'The FreshRSS password',
   freshrssPasswordPlaceholder: 'Enter your password',
@@ -681,6 +685,8 @@ const en: TranslationMessages = {
   rssUrlPlaceholder: 'https://example.com/rss',
   rsshubUrlPlaceholder: 'RSS route (supporting rsshub:// protocol)',
   rsshubSupported: 'RSSHub Support Enabled',
+  rsshubNotSuggestOfficial:
+    'rsshub.app is not recommended due to usage limits for third-party apps, please deploy your own instance.',
   ruleActions: 'Actions',
   ruleAppliedSuccess: 'Rule applied to {count} articles',
   ruleCondition: 'Condition',

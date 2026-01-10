@@ -356,6 +356,11 @@ func (tm *TaskManager) AddGlobalRefresh(ctx context.Context, feeds []models.Feed
 		log.Printf("ERROR: Failed to update last_global_refresh: %v", err)
 	}
 
+	// Track global refresh in statistics
+	if err := tm.fetcher.db.IncrementStat("feed_refresh"); err != nil {
+		log.Printf("ERROR: Failed to track feed refresh: %v", err)
+	}
+
 	// Clear all feed error marks in database
 	if err := tm.fetcher.db.ClearAllFeedErrors(); err != nil {
 		log.Printf("Failed to clear all feed errors: %v", err)
