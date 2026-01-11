@@ -134,10 +134,10 @@ onMounted(async () => {
     console.error('Error loading initial settings:', e);
   }
 
-  // Check for updates on startup
+  // Check for updates on startup (silent mode - don't show toast if up to date)
   setTimeout(async () => {
     try {
-      await checkForUpdates();
+      await checkForUpdates(true);
 
       // If update is available and auto-update is disabled, show dialog
       if (updateInfo.value && updateInfo.value.has_update && !autoUpdate) {
