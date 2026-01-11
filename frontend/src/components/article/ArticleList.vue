@@ -649,15 +649,17 @@ function handleHoverMarkAsRead(articleId: number): void {
         <PhSpinner :size="20" class="animate-spin sm:w-6 sm:h-6" />
       </div>
     </div>
+  </section>
 
-    <!-- Filter Modal -->
+  <!-- Filter Modal - Teleported to body to avoid positioning constraints -->
+  <Teleport to="body">
     <ArticleFilterModal
       :show="showFilterModal"
       :current-filters="activeFilters"
       @close="showFilterModal = false"
       @apply="handleApplyFilters"
     />
-  </section>
+  </Teleport>
 </template>
 
 <style scoped>
