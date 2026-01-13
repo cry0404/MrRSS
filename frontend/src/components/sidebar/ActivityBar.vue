@@ -184,7 +184,7 @@ defineExpose({
     class="smart-activity-bar flex flex-col items-center py-3 bg-bg-tertiary border-r border-border h-full select-none shrink-0 relative"
   >
     <!-- Logo -->
-    <div class="mb-6">
+    <div class="mt-3 mb-6">
       <img :src="LogoSvg" alt="MrRSS" class="w-6 h-6" />
     </div>
 
@@ -264,6 +264,8 @@ defineExpose({
 .smart-activity-bar {
   width: 56px;
   min-width: 56px;
+  position: relative;
+  z-index: 20;
 }
 
 @media (max-width: 767px) {

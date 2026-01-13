@@ -131,7 +131,7 @@ const emitShowSettings = () => window.dispatchEvent(new CustomEvent('show-settin
 
 .compact-sidebar-wrapper {
   position: relative;
-  z-index: 30;
+  z-index: 10;
   display: flex;
   align-items: stretch;
 }
@@ -147,7 +147,7 @@ const emitShowSettings = () => window.dispatchEvent(new CustomEvent('show-settin
   left: 56px;
   top: 0;
   bottom: 0;
-  z-index: 40;
+  z-index: 10;
 }
 
 @media (max-width: 767px) {
