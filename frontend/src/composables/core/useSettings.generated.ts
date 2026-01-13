@@ -33,6 +33,8 @@ export function generateInitialSettings(): SettingsData {
     deepl_api_key: settingsDefaults.deepl_api_key,
     deepl_endpoint: settingsDefaults.deepl_endpoint,
     default_view_mode: settingsDefaults.default_view_mode,
+    feed_drawer_expanded: settingsDefaults.feed_drawer_expanded,
+    feed_drawer_pinned: settingsDefaults.feed_drawer_pinned,
     freshrss_api_password: settingsDefaults.freshrss_api_password,
     freshrss_auto_sync_interval: settingsDefaults.freshrss_auto_sync_interval,
     freshrss_enabled: settingsDefaults.freshrss_enabled,
@@ -120,6 +122,8 @@ export function parseSettingsData(data: Record<string, string>): SettingsData {
     deepl_api_key: data.deepl_api_key || settingsDefaults.deepl_api_key,
     deepl_endpoint: data.deepl_endpoint || settingsDefaults.deepl_endpoint,
     default_view_mode: data.default_view_mode || settingsDefaults.default_view_mode,
+    feed_drawer_expanded: data.feed_drawer_expanded === 'true',
+    feed_drawer_pinned: data.feed_drawer_pinned === 'true',
     freshrss_api_password: data.freshrss_api_password || settingsDefaults.freshrss_api_password,
     freshrss_auto_sync_interval:
       parseInt(data.freshrss_auto_sync_interval) || settingsDefaults.freshrss_auto_sync_interval,

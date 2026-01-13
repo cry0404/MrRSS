@@ -25,6 +25,8 @@ export interface SettingsData {
   deepl_api_key: string;
   deepl_endpoint: string;
   default_view_mode: string;
+  feed_drawer_expanded: boolean;
+  feed_drawer_pinned: boolean;
   freshrss_api_password: string;
   freshrss_auto_sync_interval: number;
   freshrss_enabled: boolean;

@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed an issue where article list will not scroll automatically when switching articles. (#451)
 - Fixed some minor style issues. (#452, #456, #453)
 
+### Refactored
+
+- Refactored sidebar component for better maintainability and performance. (#466)
+
 ## [1.3.15] - 2026-01-11
 
 ### Changed

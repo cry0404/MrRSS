@@ -549,6 +549,20 @@
       "category": "reading",
       "encrypted": false,
       "frontend_key": "compactMode"
+    },
+    "feed_drawer_pinned": {
+      "type": "bool",
+      "default": true,
+      "category": "internal",
+      "encrypted": false,
+      "frontend_key": "feedDrawerPinned"
+    },
+    "feed_drawer_expanded": {
+      "type": "bool",
+      "default": true,
+      "category": "internal",
+      "encrypted": false,
+      "frontend_key": "feedDrawerExpanded"
     }
   }
 }

@@ -969,6 +969,39 @@
                 }
             }
         },
+        "/articles/filter-counts": {
+            "get": {
+                "description": "Get per-feed counts for different filter types (unread, favorites, read_later, images)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articles"
+                ],
+                "summary": "Get filter-specific feed counts",
+                "responses": {
+                    "200": {
+                        "description": "Filter counts for all filter types",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/articles/image-gallery": {
             "get": {
                 "description": "Retrieve articles from image-mode feeds (visual/rss-gallery feeds) with pagination",

@@ -69,9 +69,10 @@ const {
   loadMoreFilteredArticles,
 } = useArticleFilter();
 
-const { showArticleContextMenu } = useArticleActions(t, defaultViewMode, () =>
-  store.fetchUnreadCounts()
-);
+const { showArticleContextMenu } = useArticleActions(t, defaultViewMode, async () => {
+  await store.fetchUnreadCounts();
+  await store.fetchFilterCounts();
+});
 
 // Computed filtered articles - optimized to avoid excessive recomputation
 const filteredArticles = computed(() => {
@@ -97,6 +98,44 @@ const visibleArticles = computed(() => {
   // Keeping it simple to avoid complexity
   return filteredArticles.value;
 });
+
+// Dynamic title based on current filter and temporary selection
+const articleListTitle = computed(() => {
+  // If there's a temporary selection from feed drawer, show feed/category name with filter
+  if (store.tempSelection.feedId) {
+    const feed = store.feeds?.find((f) => f.id === store.tempSelection.feedId);
+    const feedName = feed?.title || '';
+    const filterText = getFilterText();
+    return filterText ? `${feedName} - ${filterText}` : feedName;
+  }
+
+  if (store.tempSelection.category) {
+    const categoryName = store.tempSelection.category;
+    const filterText = getFilterText();
+    return filterText ? `${categoryName} - ${filterText}` : categoryName;
+  }
+
+  // No temporary selection, show filter only
+  return getFilterText() || t('articles');
+});
+
+// Helper to get filter text
+function getFilterText(): string {
+  switch (store.currentFilter) {
+    case 'all':
+      return t('allArticles');
+    case 'unread':
+      return t('unreadArticles');
+    case 'favorites':
+      return t('favorites');
+    case 'readLater':
+      return t('readLater');
+    case 'imageGallery':
+      return t('imageGallery');
+    default:
+      return '';
+  }
+}
 
 // Initialize show preview images setting
 const { initialize: initializeShowPreviewImages } = useShowPreviewImages();
@@ -309,8 +348,9 @@ function selectArticle(article: Article): void {
     // Add to temporarily keep list so it doesn't disappear immediately
     temporarilyKeepArticles.value.add(article.id);
     fetch(`/api/articles/read?id=${article.id}&read=true`, { method: 'POST' })
-      .then(() => {
-        store.fetchUnreadCounts();
+      .then(async () => {
+        await store.fetchUnreadCounts();
+        await store.fetchFilterCounts();
       })
       .catch((e) => {
         console.error('Error marking as read:', e);
@@ -390,6 +430,7 @@ async function markAllAsRead(): Promise<void> {
       // Refresh articles and counts
       await store.fetchArticles();
       await store.fetchUnreadCounts();
+      await store.fetchFilterCounts();
       window.showToast(t('markedAllAsRead'), 'success');
     } catch (e) {
       console.error('Error marking filtered articles as read:', e);
@@ -414,6 +455,7 @@ async function clearReadLater(): Promise<void> {
     const res = await fetch('/api/articles/clear-read-later', { method: 'POST' });
     if (res.ok) {
       await store.fetchArticles();
+      await store.fetchFilterCounts();
       window.showToast(t('clearedReadLater'), 'success');
     }
   } catch (e) {
@@ -441,8 +483,8 @@ function handleHoverMarkAsRead(articleId: number): void {
     class="article-list flex flex-col w-full border-r border-border bg-bg-primary shrink-0 h-full"
   >
     <div class="p-2 sm:p-4 border-b border-border bg-bg-primary">
-      <div class="flex items-center justify-between sm:mb-2">
-        <h3 class="m-0 text-base sm:text-lg font-semibold">{{ t('articles') }}</h3>
+      <div class="flex items-center justify-between">
+        <h3 class="m-0 text-base sm:text-lg font-semibold">{{ articleListTitle }}</h3>
         <div class="flex items-center gap-1 sm:gap-2">
           <!-- Clear Read Later button - only shown when viewing Read Later list -->
           <button
@@ -451,14 +493,14 @@ function handleHoverMarkAsRead(articleId: number): void {
             :title="t('clearReadLater')"
             @click="clearReadLater"
           >
-            <PhTrash :size="20" class="sm:w-6 sm:h-6" />
+            <PhTrash :size="18" class="sm:w-5 sm:h-5" />
           </button>
           <button
             class="text-text-secondary hover:text-text-primary hover:bg-bg-tertiary p-1 sm:p-1.5 rounded transition-colors"
             :title="t('markAllRead')"
             @click="markAllAsRead"
           >
-            <PhCheckCircle :size="20" class="sm:w-6 sm:h-6" />
+            <PhCheckCircle :size="18" class="sm:w-5 sm:h-5" />
           </button>
           <button
             class="text-text-secondary hover:text-text-primary hover:bg-bg-tertiary p-1 sm:p-1.5 rounded transition-colors"
@@ -468,8 +510,8 @@ function handleHoverMarkAsRead(articleId: number): void {
           >
             <component
               :is="store.showOnlyUnread ? PhEye : PhEyeSlash"
-              :size="20"
-              class="sm:w-6 sm:h-6"
+              :size="18"
+              class="sm:w-5 sm:h-5"
             />
           </button>
           <div class="relative">
@@ -499,8 +541,8 @@ function handleHoverMarkAsRead(articleId: number): void {
               @click="refreshArticles"
             >
               <PhArrowClockwise
-                :size="20"
-                class="sm:w-6 sm:h-6"
+                :size="18"
+                class="sm:w-5 sm:h-5"
                 :class="store.refreshProgress.isRunning ? 'animate-spin' : ''"
               />
             </button>
@@ -614,7 +656,7 @@ function handleHoverMarkAsRead(articleId: number): void {
             </Transition>
           </div>
           <button class="md:hidden text-xl sm:text-2xl p-1" @click="emit('toggleSidebar')">
-            <PhList :size="20" class="sm:w-6 sm:h-6" />
+            <PhList :size="18" class="sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

@@ -46,7 +46,6 @@ const { contextMenu, openContextMenu, handleContextMenuAction } = useContextMenu
 const {
   sidebarWidth,
   articleListWidth,
-  startResizeSidebar,
   startResizeArticleList,
   setArticleListWidth,
   setCompactMode,
@@ -166,8 +165,8 @@ onMounted(async () => {
 
         if (progressData.is_running) {
           // Backend is already refreshing, start polling
-          store.refreshProgress.value = {
-            ...store.refreshProgress.value,
+          store.refreshProgress = {
+            ...store.refreshProgress,
             isRunning: true,
             pool_task_count: progressData.pool_task_count,
             article_click_count: progressData.article_click_count,
@@ -202,33 +201,37 @@ onMounted(async () => {
       }
     }, 500);
   }, 100);
+});
 
-  // Listen for events from Sidebar
-  window.addEventListener('show-add-feed', () => (showAddFeed.value = true));
-  window.addEventListener('show-edit-feed', (e: Event) => {
-    const customEvent = e as CustomEvent;
-    feedToEdit.value = customEvent.detail;
-    showEditFeed.value = true;
-  });
-  window.addEventListener('show-settings', () => (showSettings.value = true));
-  window.addEventListener('show-discover-blogs', (e: Event) => {
-    const customEvent = e as CustomEvent;
-    feedToDiscover.value = customEvent.detail;
-    showDiscoverBlogs.value = true;
-  });
+// Listen for events from Sidebar (moved outside onMounted to ensure proper capture)
+window.addEventListener('show-add-feed', () => {
+  showAddFeed.value = true;
+});
+window.addEventListener('show-edit-feed', (e) => {
+  const customEvent = e as CustomEvent<any>;
+  feedToEdit.value = customEvent.detail;
+  showEditFeed.value = true;
+});
+window.addEventListener('show-settings', () => {
+  showSettings.value = true;
+});
+window.addEventListener('show-discover-blogs', (e) => {
+  const customEvent = e as CustomEvent<any>;
+  feedToDiscover.value = customEvent.detail;
+  showDiscoverBlogs.value = true;
+});
 
-  // Listen for compact mode changes to update article list width
-  window.addEventListener('compact-mode-changed', (e: Event) => {
-    const customEvent = e as CustomEvent<{ enabled: boolean }>;
-    const enabled = customEvent.detail.enabled;
-    setCompactMode(enabled);
-    setArticleListWidth(enabled ? 600 : 400); // Always update width when user changes setting
-  });
+// Listen for compact mode changes to update article list width
+window.addEventListener('compact-mode-changed', (e) => {
+  const customEvent = e as CustomEvent<{ enabled: boolean }>;
+  const enabled = customEvent.detail.enabled;
+  setCompactMode(enabled);
+  setArticleListWidth(enabled ? 600 : 400); // Always update width when user changes setting
+});
 
-  // Global Context Menu Event Listener
-  window.addEventListener('open-context-menu', (e: Event) => {
-    openContextMenu(e as CustomEvent);
-  });
+// Global Context Menu Event Listener
+window.addEventListener('open-context-menu', (e) => {
+  openContextMenu(e as CustomEvent<any>);
 });
 
 // Check if we should trigger refresh based on last update time and interval
@@ -275,8 +278,6 @@ function onFeedUpdated(): void {
     }"
   >
     <Sidebar :is-open="isSidebarOpen" @toggle="toggleSidebar" />
-
-    <div class="resizer hidden md:block" @mousedown="startResizeSidebar"></div>
 
     <!-- Show ImageGalleryView when in image gallery mode -->
     <template v-if="isImageGalleryMode">

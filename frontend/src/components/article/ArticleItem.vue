@@ -31,11 +31,6 @@ const store = useAppStore();
 
 // Compact mode setting
 const compactMode = computed(() => {
-  console.log(
-    'ArticleItem compactMode computed:',
-    settings.value.compact_mode,
-    typeof settings.value.compact_mode
-  );
   return settings.value.compact_mode === true;
 });
 
@@ -51,7 +46,6 @@ function loadCompactModeSettings() {
         ...settings.value,
         compact_mode: data.compact_mode === true || data.compact_mode === 'true',
       };
-      console.log('ArticleItem settings loaded:', settings.value.compact_mode);
     })
     .catch((err) => console.error('Error loading settings in ArticleItem:', err));
 }
@@ -62,7 +56,6 @@ onMounted(() => {
 
   // Listen for compact mode changes
   handleCompactModeChange = () => {
-    console.log('ArticleItem received compact-mode-changed event');
     loadCompactModeSettings();
   };
 
@@ -231,7 +224,8 @@ async function markAsRead() {
     });
     // Emit event to parent to update article state
     emit('hoverMarkAsRead', props.article.id);
-    store.fetchUnreadCounts();
+    await store.fetchUnreadCounts();
+    await store.fetchFilterCounts();
   } catch (e) {
     console.error('Error marking as read on hover:', e);
   }

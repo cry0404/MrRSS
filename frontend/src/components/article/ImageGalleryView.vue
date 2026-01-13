@@ -430,42 +430,62 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="containerRef" class="image-gallery-container">
+  <div
+    ref="containerRef"
+    class="flex flex-col flex-1 h-full overflow-y-auto bg-bg-primary scroll-smooth"
+  >
     <!-- Header -->
-    <div class="gallery-header">
-      <button class="menu-btn md:hidden" :title="t('toggleSidebar')" @click="emit('toggleSidebar')">
+    <div
+      class="sticky top-0 z-10 bg-bg-primary border-b border-border p-2 sm:p-4 flex items-center gap-3"
+    >
+      <button
+        class="p-2 rounded-lg hover:bg-bg-tertiary text-text-primary transition-colors md:hidden"
+        :title="t('toggleSidebar')"
+        @click="emit('toggleSidebar')"
+      >
         <PhList :size="24" />
       </button>
-      <div class="flex items-center gap-2">
-        <PhImage :size="24" class="text-accent" />
-        <h1 class="text-xl font-bold text-text-primary">{{ t('imageGallery') }}</h1>
+      <div class="flex items-center gap-2 sm:gap-2">
+        <h1 class="text-base sm:text-lg font-bold text-text-primary line-height-fixed-32">
+          {{ t('imageGallery') }}
+        </h1>
       </div>
     </div>
 
     <!-- Masonry Grid -->
-    <div v-if="articles.length > 0" class="masonry-container">
-      <div v-for="(column, colIndex) in columns" :key="colIndex" class="masonry-column">
+    <div v-if="articles.length > 0" class="p-4 flex gap-4">
+      <div v-for="(column, colIndex) in columns" :key="colIndex" class="flex-1 flex flex-col gap-4">
         <div
           v-for="article in column"
           :key="article.id"
-          class="masonry-item"
+          class="cursor-pointer"
           @click="openImage(article)"
           @contextmenu="handleContextMenu($event, article)"
         >
-          <div class="image-container">
+          <div
+            class="relative overflow-hidden rounded-lg bg-bg-secondary transition-transform duration-200 hover:scale-[1.02]"
+          >
             <img
               :src="article.image_url"
               :alt="article.title"
-              class="gallery-image"
+              class="w-full h-auto block"
               loading="lazy"
             />
             <!-- Image count indicator -->
-            <div v-if="getImageCount(article) > 1" class="image-count-badge">
+            <div
+              v-if="getImageCount(article) > 1"
+              class="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/60 text-white text-xs font-semibold backdrop-blur-sm z-10 flex items-center gap-1"
+            >
               <PhImage :size="14" />
               <span class="ml-1">{{ getImageCount(article) }}</span>
             </div>
-            <div class="image-overlay">
-              <button class="favorite-btn" @click="toggleFavorite(article, $event)">
+            <div
+              class="absolute inset-0 bg-black/0 hover:bg-black/30 transition-all duration-200 flex items-start justify-end p-2 group"
+            >
+              <button
+                class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 rounded-full p-1.5 hover:bg-black/70"
+                @click="toggleFavorite(article, $event)"
+              >
                 <PhHeart
                   :size="20"
                   :weight="article.is_favorite ? 'fill' : 'regular'"
@@ -474,11 +494,13 @@ onUnmounted(() => {
               </button>
             </div>
           </div>
-          <div class="image-info">
-            <p class="image-title">{{ article.title }}</p>
-            <div class="image-meta">
-              <span class="feed-name">{{ article.feed_title }}</span>
-              <span class="image-date">{{ formatDate(article.published_at) }}</span>
+          <div class="p-2">
+            <p class="text-sm font-medium text-text-primary line-clamp-2 mb-1">
+              {{ article.title }}
+            </p>
+            <div class="flex items-center justify-between text-xs text-text-secondary">
+              <span class="truncate flex-1">{{ article.feed_title }}</span>
+              <span class="ml-2 shrink-0">{{ formatDate(article.published_at) }}</span>
             </div>
           </div>
         </div>
@@ -486,69 +508,112 @@ onUnmounted(() => {
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!isLoading" class="empty-state">
+    <div
+      v-else-if="!isLoading"
+      class="flex flex-col items-center justify-center h-full w-full gap-4"
+    >
       <PhImage :size="64" class="text-text-secondary opacity-50" />
       <p class="text-text-secondary">{{ t('noArticles') }}</p>
     </div>
 
     <!-- Loading Indicator -->
-    <div v-if="isLoading" class="loading-indicator">
-      <div class="spinner"></div>
+    <div v-if="isLoading" class="flex justify-center py-8">
+      <div
+        class="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"
+      ></div>
     </div>
 
     <!-- Image Viewer Modal -->
     <div
       v-if="showImageViewer && selectedArticle"
-      class="image-viewer-modal"
+      class="fixed inset-0 z-50 bg-black/90 flex flex-col p-4"
       data-image-viewer="true"
       @click="closeImageViewer"
     >
-      <button class="close-btn" @click="closeImageViewer">
+      <button
+        class="absolute top-4 right-4 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full text-white flex items-center justify-center transition-colors duration-200 z-10 shrink-0"
+        @click="closeImageViewer"
+      >
         <PhX :size="20" />
       </button>
 
       <!-- Image counter (when multiple images) -->
-      <div v-if="allImages.length > 1" class="image-counter">
+      <div
+        v-if="allImages.length > 1"
+        class="absolute top-4 left-4 px-2 py-1 rounded text-white text-sm font-medium min-w-[60px] text-center z-10"
+        style="
+          text-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.8),
+            0 1px 2px rgba(0, 0, 0, 0.6);
+        "
+      >
         {{ currentImageIndex + 1 }} / {{ allImages.length }}
       </div>
 
       <!-- Navigation buttons (when multiple images) -->
       <template v-if="allImages.length > 1">
-        <button class="nav-btn nav-btn-prev" @click.stop="previousImage">‹</button>
-        <button class="nav-btn nav-btn-next" @click.stop="nextImage">›</button>
+        <button
+          class="absolute top-1/2 left-4 -translate-y-1/2 w-12 h-12 rounded text-white text-4xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 z-10"
+          style="
+            text-shadow:
+              0 1px 3px rgba(0, 0, 0, 0.8),
+              0 1px 2px rgba(0, 0, 0, 0.6);
+          "
+          @click.stop="previousImage"
+        >
+          ‹
+        </button>
+        <button
+          class="absolute top-1/2 right-4 -translate-y-1/2 w-12 h-12 rounded text-white text-4xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 z-10"
+          style="
+            text-shadow:
+              0 1px 3px rgba(0, 0, 0, 0.8),
+              0 1px 2px rgba(0, 0, 0, 0.6);
+          "
+          @click.stop="nextImage"
+        >
+          ›
+        </button>
       </template>
 
-      <div class="image-viewer-content" @click.stop>
+      <div class="flex-1 flex items-center justify-center min-h-0 relative" @click.stop>
         <!-- Loading placeholder -->
-        <div v-if="currentImageLoading" class="image-loading-placeholder">
-          <div class="loading-spinner"></div>
+        <div
+          v-if="currentImageLoading"
+          class="absolute inset-0 flex items-center justify-center z-10"
+        >
+          <div
+            class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"
+          ></div>
         </div>
 
         <img
           :src="allImages[currentImageIndex] || selectedArticle.image_url"
           :alt="selectedArticle.title"
-          class="viewer-image"
-          :class="{ loading: currentImageLoading }"
+          class="h-full w-full object-contain"
+          :class="{ 'opacity-0': currentImageLoading, 'transition-opacity duration-200': true }"
           @load="handleImageLoad"
           @error="handleImageError"
         />
       </div>
 
-      <div class="viewer-info" @click.stop>
-        <div class="viewer-header">
-          <h2 class="viewer-title">{{ selectedArticle.title }}</h2>
+      <div class="bg-bg-primary px-3 py-3 rounded-md shrink-0" @click.stop>
+        <div class="flex items-center justify-between gap-4 mb-2">
+          <h2 class="text-base font-bold text-text-primary flex-1 line-clamp-2">
+            {{ selectedArticle.title }}
+          </h2>
           <a
             :href="selectedArticle.url"
             target="_blank"
             rel="noopener noreferrer"
-            class="view-original-btn"
+            class="px-3 py-1.5 bg-accent hover:bg-accent-hover text-white rounded-md text-sm whitespace-nowrap transition-colors duration-200"
           >
             {{ t('viewOriginal') }}
           </a>
         </div>
-        <div class="viewer-meta">
-          <span class="feed-name">{{ selectedArticle.feed_title }}</span>
-          <span class="image-date">{{ formatDate(selectedArticle.published_at) }}</span>
+        <div class="flex items-center gap-4 text-sm text-text-secondary">
+          <span class="truncate flex-1">{{ selectedArticle.feed_title }}</span>
+          <span class="shrink-0">{{ formatDate(selectedArticle.published_at) }}</span>
         </div>
       </div>
     </div>
@@ -556,15 +621,21 @@ onUnmounted(() => {
     <!-- Context Menu -->
     <div
       v-if="contextMenu.show && contextMenu.article"
-      class="context-menu"
+      class="fixed z-50 bg-bg-primary border border-border rounded-lg shadow-lg py-1 min-w-[180px]"
       :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
       @click.stop
     >
-      <button class="context-menu-item" @click="downloadImage(contextMenu.article)">
+      <button
+        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
+        @click="downloadImage(contextMenu.article)"
+      >
         <PhFloppyDisk :size="16" />
         <span>{{ t('downloadImage') }}</span>
       </button>
-      <button class="context-menu-item" @click="openOriginal(contextMenu.article)">
+      <button
+        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
+        @click="openOriginal(contextMenu.article)"
+      >
         <PhGlobe :size="16" />
         <span>{{ t('openInBrowser') }}</span>
       </button>
@@ -573,195 +644,13 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.image-gallery-container {
-  @apply flex flex-col flex-1 h-full overflow-y-auto bg-bg-primary scroll-smooth;
-}
-
-.gallery-header {
-  @apply sticky top-0 z-10 bg-bg-primary border-b border-border px-4 py-3 flex items-center gap-3;
-}
-
-.menu-btn {
-  @apply p-2 rounded-lg hover:bg-bg-tertiary text-text-primary transition-colors;
-}
-
-.masonry-container {
-  @apply p-4 flex gap-4;
-}
-
-.masonry-column {
-  @apply flex-1 flex flex-col gap-4;
-}
-
-.masonry-item {
-  @apply cursor-pointer;
-}
-
-.image-container {
-  @apply relative overflow-hidden rounded-lg bg-bg-secondary;
-  @apply transition-transform duration-200 hover:scale-[1.02];
-}
-
-.gallery-image {
-  @apply w-full h-auto block;
-}
-
-.image-count-badge {
-  @apply absolute bottom-2 left-2 px-2 py-1 rounded-full;
-  @apply bg-black/60 text-white text-xs font-semibold;
-  @apply backdrop-blur-sm z-10;
-  @apply flex items-center gap-1;
-}
-
-.image-overlay {
-  @apply absolute inset-0 bg-black/0 hover:bg-black/30 transition-all duration-200;
-  @apply flex items-start justify-end p-2;
-}
-
-.favorite-btn {
-  @apply opacity-0 hover:opacity-100 transition-opacity duration-200;
-  @apply bg-black/50 rounded-full p-1.5;
-}
-
-.image-container:hover .favorite-btn {
-  @apply opacity-100;
-}
-
-.image-info {
-  @apply p-2;
-}
-
-.image-title {
-  @apply text-sm font-medium text-text-primary line-clamp-2 mb-1;
-}
-
-.image-meta {
-  @apply flex items-center justify-between text-xs text-text-secondary;
-}
-
-.feed-name {
-  @apply truncate flex-1;
-}
-
-.image-date {
-  @apply ml-2 shrink-0;
-}
-
-.empty-state {
-  @apply flex flex-col items-center justify-center h-full w-full gap-4;
-}
-
-.loading-indicator {
-  @apply flex justify-center py-8;
-}
-
-.spinner {
-  @apply w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin;
-}
-
-/* Image Viewer Modal */
-.image-viewer-modal {
-  @apply fixed inset-0 z-50 bg-black/90 flex flex-col p-4;
-}
-
-.close-btn {
-  @apply absolute top-4 right-4 w-8 h-8 bg-black/50 hover:bg-black/70;
-  @apply rounded-full text-white flex items-center justify-center;
-  @apply transition-colors duration-200 z-10 shrink-0;
-}
-
-/* Image counter */
-.image-counter {
-  @apply absolute top-4 left-4 px-2 py-1 rounded;
-  @apply text-white text-sm font-medium min-w-[60px] text-center;
-  @apply z-10 text-shadow;
-}
-
-/* Navigation buttons */
-.nav-btn {
-  @apply absolute top-1/2 -translate-y-1/2 w-12 h-12 rounded;
-  @apply text-white text-4xl;
-  @apply flex items-center justify-center transition-all duration-200;
-  @apply z-10 text-shadow;
-}
-
-.nav-btn-prev {
-  @apply left-4;
-}
-
-.nav-btn-next {
-  @apply right-4;
-}
-
-.nav-btn:hover {
-  @apply scale-110;
-}
-
-.nav-btn:active {
-  @apply scale-95;
-}
-
-/* Text shadow for better visibility on images */
-.text-shadow {
-  text-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.8),
-    0 1px 2px rgba(0, 0, 0, 0.6);
-}
-
-.image-viewer-content {
-  @apply flex-1 flex items-center justify-center min-h-0 relative;
-}
-
-.image-loading-placeholder {
-  @apply absolute inset-0 flex items-center justify-center z-10;
-}
-
-.loading-spinner {
-  @apply w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin;
-}
-
-.viewer-image {
-  @apply h-full w-full;
-  object-fit: contain;
-}
-
-.viewer-image.loading {
-  @apply opacity-0;
-}
-
-.viewer-info {
-  @apply bg-bg-primary px-3 py-3 rounded-md shrink-0;
-  background-color: var(--bg-primary);
-}
-
-.viewer-header {
-  @apply flex items-center justify-between gap-4 mb-2;
-}
-
-.viewer-title {
-  @apply text-base font-bold text-text-primary flex-1 line-clamp-2;
-}
-
-.viewer-meta {
-  @apply flex items-center gap-4 text-sm text-text-secondary;
-}
-
-.view-original-btn {
-  @apply px-3 py-1.5 bg-accent text-white rounded-md text-sm whitespace-nowrap;
-  @apply hover:bg-accent-hover transition-colors duration-200;
-}
-
-/* Context Menu */
-.context-menu {
-  @apply fixed z-50 bg-bg-primary border border-border rounded-lg shadow-lg py-1 min-w-[180px];
-}
-
-.context-menu-item {
-  @apply w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary;
-  @apply hover:bg-bg-tertiary transition-colors cursor-pointer;
-}
-
-.context-menu-item:active {
-  @apply bg-bg-secondary;
+/* Define keyframes for spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
