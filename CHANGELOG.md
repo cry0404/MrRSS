@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - All the documents will now be opened in the default browser, and multi-language support has been added. (#458)
+- Importing and exporting files will not show error messages if no file is selected. (#483)
 
 ### Fixed
 
