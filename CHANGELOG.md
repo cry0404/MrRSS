@@ -5,7 +5,7 @@ All notable changes to MrRSS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.16] - 2026-01-16
 
 ### Added
 
@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed an issue where the application will update automatically without user confirmation. (#479)
 - Fixed an issue where FreshRSS synchronization fails in some cases. (#460)
 - Fixed an issue where the switching between articles and images will cause view mode to reset. (#432)
+- Fixed an issue where the XPath mode feed parsing fails in some cases. (#479)
 
 ### Refactored
 
