@@ -350,9 +350,6 @@ function onRefreshTooltipHide(): void {
 
 // Article selection and interaction
 function selectArticle(article: Article): void {
-  // Reset user preference when selecting article via normal click
-  window.dispatchEvent(new CustomEvent('reset-user-view-preference'));
-
   // If switching from one article to another, remove the previous one from temp list
   if (store.currentArticleId) {
     temporarilyKeepArticles.value.delete(store.currentArticleId);

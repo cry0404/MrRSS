@@ -85,6 +85,9 @@ export const useAppStore = defineStore('app', () => {
   const theme = ref<Theme>('light');
   const showOnlyUnread = ref<boolean>(localStorage.getItem('showOnlyUnread') === 'true');
 
+  // Article view mode preferences (persisted across component mounts)
+  const articleViewModePreferences = ref<Map<number, 'original' | 'rendered'>>(new Map());
+
   // Refresh progress
   const refreshProgress = ref<RefreshProgress>({ isRunning: false });
   let refreshInterval: ReturnType<typeof setInterval> | null = null;
@@ -675,6 +678,7 @@ export const useAppStore = defineStore('app', () => {
     theme,
     refreshProgress,
     showOnlyUnread,
+    articleViewModePreferences,
 
     // Actions
     setFilter,

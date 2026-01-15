@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed an issue where the Gemini API can not work correctly. (#459)
 - Fixed an issue where the application will update automatically without user confirmation. (#479)
 - Fixed an issue where FreshRSS synchronization fails in some cases. (#460)
+- Fixed an issue where the switching between articles and images will cause view mode to reset. (#432)
 
 ### Refactored
 
