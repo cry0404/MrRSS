@@ -471,6 +471,9 @@ export interface TranslationMessages {
   searchingFriendLinks: string;
   selectActions: string;
   selectAll: string;
+  totalAndSelected: string;
+  noSearchResults: string;
+  noFeeds: string;
   selectArticle: string;
   selectCategory: string;
   selectCondition: string;
