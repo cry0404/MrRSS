@@ -309,6 +309,14 @@ export function useKeyboardShortcuts(callbacks: KeyboardShortcutCallbacks) {
 
     // Check for escape key to close modals first (always allow, even when shortcuts disabled)
     if (key === shortcuts.value.closeArticle) {
+      // Check if the find in page search input is focused
+      const findInputFocused = document.activeElement?.classList.contains('find-input');
+
+      // If find input is focused, don't handle ESC here - let FindInPage component handle it
+      if (findInputFocused) {
+        return;
+      }
+
       // Check if there are any open modals
       const hasOpenModal = document.querySelector('[data-modal-open="true"]') !== null;
 

@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change checkbox checked indicator from asterisk to checkmark. (#507)
 - Improved feed list in settings page for better usability. (#498)
 - Protocol is not required when adding/editing feeds. (#502)
+- Improved article content search performance. (#509)
 
 ### Fixed
 
