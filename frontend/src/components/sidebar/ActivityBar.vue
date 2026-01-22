@@ -257,7 +257,7 @@ defineExpose({
         class="relative flex items-center justify-center text-text-secondary flex-shrink-0 transition-all hover:text-accent"
         style="width: 44px; height: 44px"
         :title="t('setting.tab.settings')"
-        @click="emit('setting.tab.settings')"
+        @click="emit('settings')"
       >
         <PhGear :size="24" weight="regular" class="transition-all" />
       </button>

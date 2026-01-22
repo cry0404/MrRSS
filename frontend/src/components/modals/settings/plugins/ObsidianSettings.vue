@@ -111,7 +111,7 @@ function handleObsidianVaultPathChange(event: Event) {
       <input
         type="text"
         :value="props.settings.obsidian_vault_path"
-        :placeholder="t('setting.plugins.obsidian.vaultPathPlaceholder')"
+        placeholder="C:\\Users\\username\\Documents\\Obsidian Vault"
         class="input-field w-48 sm:w-64 text-xs sm:text-sm"
         @input="handleObsidianVaultPathChange"
       />

@@ -773,7 +773,6 @@ const en: TranslationMessages = {
         vaultNamePlaceholder: 'My Vault',
         vaultPath: 'Vault Path',
         vaultPathDesc: 'Full path to the Obsidian vault directory',
-        vaultPathPlaceholder: 'C:\\Users\\username\\Documents\\Obsidian Vault',
       },
     },
     reading: {

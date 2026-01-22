@@ -762,7 +762,6 @@ const zh: TranslationMessages = {
         vaultNamePlaceholder: '我的仓库',
         vaultPath: '仓库路径',
         vaultPathDesc: 'Obsidian 仓库目录的完整路径',
-        vaultPathPlaceholder: 'C:\\Users\\username\\Documents\\Obsidian Vault',
       },
     },
     reading: {

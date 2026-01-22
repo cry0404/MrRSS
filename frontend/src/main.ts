@@ -9,6 +9,17 @@ import { useAppStore } from './stores/app';
 const app = createApp(App);
 const pinia = createPinia();
 
+// Add global error handler for Vue errors
+app.config.errorHandler = (err, instance, info) => {
+  console.error('[Vue Error Handler] Error:', err);
+  console.error('[Vue Error Handler] Component:', instance?.$?.type?.name || 'Unknown');
+  console.error('[Vue Error Handler] Info:', info);
+  // Log the full stack trace
+  if (err instanceof Error) {
+    console.error('[Vue Error Handler] Stack:', err.stack);
+  }
+};
+
 app.use(pinia);
 app.use(i18n);
 app.use(PhosphorIcons);

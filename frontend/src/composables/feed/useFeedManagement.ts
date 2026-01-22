@@ -34,17 +34,17 @@ export function useFeedManagement() {
 
       if (result.status === 'success') {
         console.log('OPML import successful:', result);
-        window.showToast(t('opmlImportedSuccess', { count: result.feedCount }), 'success');
+        window.showToast(t('modal.feed.feedAddedSuccess'), 'success');
         store.fetchFeeds();
         // Start polling for progress as the backend is now fetching articles for imported feeds
         store.pollProgress();
       } else {
         console.error('OPML import failed:', result);
-        window.showToast(t('importFailed', { error: 'Unknown error' }), 'error');
+        window.showToast(t('common.errors.addingFeed'), 'error');
       }
     } catch (error) {
       console.error('OPML import network error:', error);
-      window.showToast(t('importFailed', { error: (error as Error).message }), 'error');
+      window.showToast(t('common.errors.addingFeed'), 'error');
     }
   }
 
@@ -76,11 +76,11 @@ export function useFeedManagement() {
         window.showToast(t('modal.opml.exportSuccess'), 'success');
       } else {
         console.error('OPML export failed:', result);
-        window.showToast(t('exportFailed', { error: 'Unknown error' }), 'error');
+        window.showToast(t('common.errors.unknownError'), 'error');
       }
     } catch (error) {
       console.error('OPML export network error:', error);
-      window.showToast(t('exportFailed', { error: (error as Error).message }), 'error');
+      window.showToast(t('common.errors.unknownError'), 'error');
     }
   }
 
@@ -101,7 +101,7 @@ export function useFeedManagement() {
       const res = await fetch('/api/articles/cleanup', { method: 'POST' });
       if (res.ok) {
         const result = await res.json();
-        window.showToast(t('databaseCleanedSuccess', { count: result.deleted }), 'success');
+        window.showToast(`Deleted ${result.deleted} articles`, 'success');
         store.fetchArticles();
       } else {
         window.showToast(t('common.errors.cleaningDatabase'), 'error');

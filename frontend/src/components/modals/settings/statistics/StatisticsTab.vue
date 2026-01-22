@@ -67,14 +67,15 @@ const allStatTypes = [
   'article_favorite',
 ] as const;
 
-const statLabels: Record<string, string> = {
+// Use computed for statLabels to avoid top-level t() calls
+const statLabels = computed<Record<string, string>>(() => ({
   feed_refresh: t('modal.feed.refreshes'),
   article_read: t('setting.statistic.articlesRead'),
   article_view: t('setting.statistic.articlesViewed'),
   ai_chat: t('setting.statistic.aiChats'),
   ai_summary: t('setting.statistic.aiSummaries'),
   article_favorite: t('setting.statistic.articlesFavorited'),
-};
+}));
 
 const statIcons: Record<string, any> = {
   feed_refresh: PhArrowCounterClockwise,
@@ -94,11 +95,12 @@ const statColors: Record<string, string> = {
   article_favorite: 'var(--accent-color)',
 };
 
-const intervalOptions = [
+// Use computed for intervalOptions to avoid top-level t() calls
+const intervalOptions = computed(() => [
   { value: 'week' as Period, label: t('setting.statistic.byWeek'), icon: PhCalendar },
   { value: 'month' as Period, label: t('setting.statistic.byMonth'), icon: PhCalendar },
   { value: 'year' as Period, label: t('setting.statistic.byYear'), icon: PhCalendar },
-];
+]);
 
 const totalStats = computed(() => {
   const currentStats = stats.value;
@@ -106,7 +108,7 @@ const totalStats = computed(() => {
 
   return allStatTypes.map((key) => ({
     key,
-    label: statLabels[key] || key,
+    label: statLabels.value[key] || key,
     value: currentStats.totals[key] || 0,
     icon: statIcons[key] || PhChartBar,
     color: statColors[key] || '#6b7280',
