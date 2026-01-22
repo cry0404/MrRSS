@@ -34,7 +34,6 @@ const en: TranslationMessages = {
       removeFromFavorite: 'Remove from Favorites',
       removeFromFavorites: 'Remove from Favorites',
       removeFromReadLater: 'Remove from Read Later',
-      toggleFavorite: 'Toggle Favorite',
       toggleFavoriteStatus: 'Toggle Favorite',
       unhideArticle: 'Unhide Article',
       viewArticle: 'View Article',
@@ -116,7 +115,12 @@ const en: TranslationMessages = {
     },
   },
   common: {
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    inputValue: 'Input Value',
     action: {
+      cancel: 'Cancel',
+      confirm: 'Confirm',
       deleteSelected: 'Delete Selected',
       deselectAll: 'Deselect All',
       discard: 'Discard',
@@ -127,9 +131,9 @@ const en: TranslationMessages = {
       moveSelected: 'Move Selected',
       no: 'No',
       openWebsite: 'Open Website',
+      remove: 'Remove',
       resetToDefault: 'Reset to Default',
       saveChanges: 'Save Changes',
-      subscribeSelected: 'Subscribe Selected',
       switchTo: 'Switch to',
       unsubscribe: 'Unsubscribe',
       yes: 'Yes',
@@ -137,12 +141,10 @@ const en: TranslationMessages = {
     aiSettingsConfiguredInAITab:
       'AI API Key, Endpoint, and Model are configured in the AI tab. This feature can consume a significant number of tokens, please use with caution.',
     back: 'Back',
-    cancel: 'Cancel',
     checking: 'Checking...',
     clear: 'Clear',
     clearReadLater: 'Clear Read Later',
     close: 'Close',
-    confirm: 'Confirm',
     connectionFailed: 'Connection failed',
     connectionSuccessful: 'Connection successful',
     contextMenu: {
@@ -159,7 +161,6 @@ const en: TranslationMessages = {
     error: 'Error',
     errors: {
       addingFeed: 'Error adding feed',
-      checkingUpdates: 'Error checking for updates',
       cleaningDatabase: 'Error cleaning up database',
       discoveringFeeds: 'Error discovering feeds',
       errorCheckingUpdates: 'Error checking for updates',
@@ -188,14 +189,11 @@ const en: TranslationMessages = {
       category: 'Category',
       disabled: 'Disabled',
       enabled: 'Enabled',
-      name: 'Name',
       requiredField: 'This field is required',
       status: 'Status',
       title: 'Title',
     },
     imageViewer: {
-      helpExtended:
-        'Use mouse wheel or +/- keys to zoom • Drag to move • Ctrl+S to save • ESC to close',
       zoomIn: 'Zoom In',
       zoomOut: 'Zoom Out',
     },
@@ -252,13 +250,12 @@ const en: TranslationMessages = {
   },
   modal: {
     common: {
-      confirmDialog: {},
-      inputDialog: {},
       unsavedChangesMessage: 'You have unsaved changes. Do you want to discard them?',
       unsavedChangesTitle: 'Unsaved Changes',
     },
     discovery: {
       detecting: 'Detecting...',
+      checkingRssFeed: 'Checking RSS feed...',
       discoverAllFeeds: 'Discover All Feeds',
       discoverAllFeedsDesc:
         "Automatically discover new feeds from all the subscriptions that haven't been scanned yet",
@@ -277,7 +274,6 @@ const en: TranslationMessages = {
       startDiscovery: 'Start discovery',
     },
     feed: {
-      parts: {},
       adding: 'Adding...',
       addNewFeed: 'Add New Feed',
       addSubscription: 'Add Subscription',
@@ -285,7 +281,6 @@ const en: TranslationMessages = {
       customCategory: 'Custom Category...',
       deleteFeedMessage: 'Are you sure you want to delete this feed?',
       deleteFeedTitle: 'Delete Feed',
-      deleteMultipleFeedsMessage: 'Are you sure you want to delete {count} feeds?',
       deleteMultipleFeedsTitle: 'Delete Multiple Feeds',
       dragToReorder: 'Drag to reorder or move to another category',
       duplicateFeedURL: 'A feed with this URL already exists',
@@ -352,8 +347,6 @@ const en: TranslationMessages = {
       typeRSSHub: 'RSSHub Feed',
       typeXPath: 'XPath',
       xpath: 'XPath Support',
-      xpathAutoFetchHint:
-        'Full article extraction will be automatically enabled since URL XPath is set but Content XPath is not',
       xpathDescription: 'Extract data from web pages using XPath',
       xpathDocumentation: 'XPath Documentation',
       xpathHtml: 'HTML + XPath',
@@ -371,9 +364,9 @@ const en: TranslationMessages = {
       xpathType: 'XPath Type',
       xpathXml: 'XML + XPath',
       renameCategory: 'Rename Category',
+      subscribeSelected: 'Subscribe Selected',
       subscribing: 'Subscribing',
       unsubscribedSuccess: 'Successfully unsubscribed',
-      unsubscribeMessage: 'Are you sure you want to unsubscribe from "{name}"?',
       unsubscribeTitle: 'Unsubscribe',
     },
     filter: {
@@ -392,7 +385,6 @@ const en: TranslationMessages = {
       noFiltersApplied: 'No filters applied',
       not: 'NOT',
       notCondition: 'NOT',
-      or: 'OR',
       publishedAfter: 'Published On/After',
       publishedBefore: 'Published On/Before',
       readStatus: 'Read Status',
@@ -424,7 +416,10 @@ const en: TranslationMessages = {
     },
   },
   setting: {
-    about: {},
+    about: {
+      version: 'Version',
+      viewOnGitHub: 'View on GitHub',
+    },
     ai: {
       aiApiKey: 'API Key',
       aiApiKeyDesc: 'API key for AI services (optional)',
@@ -463,7 +458,6 @@ const en: TranslationMessages = {
         'Are you sure you want to clear all chat history? This action cannot be undone.',
       clearAllChatsDesc: 'Delete all AI chat sessions',
       clearAllChatsFailed: 'Failed to clear chat history',
-      clearAllChatsSuccess: 'Successfully cleared {count} chat sessions',
       configValid: 'Config Valid',
       connectionSuccess: 'Connection',
       isDanger:
@@ -563,24 +557,28 @@ const en: TranslationMessages = {
       translationProviderDesc: 'Choose the translation service to use',
       translationSkippedAlreadyTarget: 'Translation skipped',
       custom: {
+        headerName: 'Header name',
+        headerValue: 'Value',
+        mrssLangCode: 'en, zh, ...',
+        selectTemplate: 'Select Template',
+      },
+    },
+    translation: {
+      custom: {
         bodyTemplate: 'Request Body Template',
         bodyTemplateDesc: 'Use placeholders in your request body',
         endpoint: 'API Endpoint',
         endpointDesc: 'The API endpoint URL for the translation service',
         endpointPlaceholder: 'https://api.example.com/translate',
-        headerName: 'Header name',
-        headerValue: 'Value',
         headers: 'HTTP Headers',
         headersDesc: 'Custom HTTP headers',
         langMapping: 'Language Code Mapping',
         langMappingDesc: 'Map MrRSS language codes to API-specific codes',
         method: 'HTTP Method',
         methodDesc: 'HTTP method for the API request',
-        mrssLangCode: 'en, zh, ...',
         responsePath: 'Response Path',
         responsePathDesc: 'JSONPath to extract translation (e.g., data.translatedText)',
         responsePathPlaceholder: 'data',
-        selectTemplate: 'Select Template',
         template: 'Preset Templates',
         templateDesc: 'Load preset configuration for common services',
         timeout: 'Timeout',
@@ -618,10 +616,7 @@ const en: TranslationMessages = {
       cssUploaded: 'CSS file uploaded successfully',
       deleteCSS: 'Delete CSS',
       script: 'Custom Script',
-      scriptDesc: 'Use custom JavaScript for data extraction',
       scriptDoc: 'View Documentation',
-      scriptHelp:
-        'Scripts should output valid RSS/Atom XML. Supported: Python, Shell, PowerShell, Node.js, Ruby.',
       scriptsFolder: 'Open Scripts Folder',
       scriptsFolderOpened: 'Scripts folder opened',
       scriptsNotFound: 'No scripts found in the scripts folder.',
@@ -734,7 +729,6 @@ const en: TranslationMessages = {
       lastDetection: 'Last Detection',
       latencyLabel: 'Latency',
       latencyMs: 'ms',
-      network: 'Network',
       networkSettings: 'Network Settings',
       networkSettingsDescription:
         'Automatic network speed detection to optimize parallel feed refresh performance',
@@ -748,6 +742,7 @@ const en: TranslationMessages = {
         'Disabling FreshRSS will delete local FreshRSS feeds and articles. This action cannot be undone. Are you sure you want to continue?',
       enabled: 'FreshRSS Integration',
       enabledDesc: 'Sync feeds and articles with a FreshRSS server',
+      syncFailed: 'Sync failed',
       feedLocked: 'FreshRSS feed cannot be edited, moved, or modified',
       justNow: 'Just now',
       lastSync: 'Last Sync',
@@ -792,6 +787,7 @@ const en: TranslationMessages = {
       hideFromTimelineDesc: 'Hide this feed\'s articles from "All Articles" and "Unread" views',
       hideText: 'Hide Text',
       hideTranslations: 'Hide Translations',
+      showText: 'Show Text',
       hoverMarkAsRead: 'Hover to Mark as Read',
       hoverMarkAsReadDesc:
         'Automatically mark articles as read when hovering over them (does not apply to Read Later articles)',
@@ -810,8 +806,6 @@ const en: TranslationMessages = {
       viewAsWebpage: 'View as Webpage',
     },
     rsshub: {
-      accessDenied:
-        'RSSHub access denied (403). The public rsshub.app instance has restrictions. Please deploy your own RSSHub instance or configure an API key in settings',
       apiKey: 'API Key',
       apiKeyDesc: 'API key for private RSSHub instance',
       cannotDisableWithFeeds: 'Cannot disable RSSHub while there are active RSSHub feeds',
@@ -887,6 +881,7 @@ const en: TranslationMessages = {
       customization: 'Customization',
       general: 'General',
       interactionSettings: 'Interaction Settings',
+      network: 'Network',
       plugins: 'Plugins',
       readingAndDisplay: 'Reading',
       settings: 'Settings',
@@ -897,7 +892,6 @@ const en: TranslationMessages = {
       autoUpdateInterval: 'Auto Update Interval',
       autoUpdateIntervalDesc: 'Interval for automatic update checks (hours)',
       checkForUpdates: 'Check for Updates',
-      checkingForUpdates: 'Checking for updates...',
       currentVersion: 'Current version',
       installFailed: 'Installation failed',
       installingUpdate: 'Installing update...',
@@ -905,17 +899,13 @@ const en: TranslationMessages = {
       noInstallerAvailable:
         'No installer available for your platform. Please download manually from',
       notNow: 'Not Now',
-      noUpdateAvailable: 'No update available',
       updateAvailable: 'Update available',
       updateFailed: 'Last update failed',
       updateNow: 'Update Now',
       updates: 'Updates',
-      updateStatus: 'Update Status',
       updateSuccess: 'Last update successful',
       updateWillRestart: 'The application will restart to install the update',
       upToDate: 'You are using the latest version',
-      version: 'Version',
-      viewOnGitHub: 'View on GitHub',
     },
   },
   sidebar: {
@@ -934,9 +924,7 @@ const en: TranslationMessages = {
     },
     feedList: {
       articles: 'Articles',
-      articles_per_month: 'Articles/Month',
       feeds: 'Feeds',
-      latest_article: 'Latest Article',
       pin: 'Pin',
       recentArticles: 'Recent Articles',
       uncategorized: 'Uncategorized',
@@ -951,7 +939,6 @@ const en: TranslationMessages = {
       byUpdateStatus: 'Sort by update status',
       frequency: 'Frequency',
       latest: 'Latest',
-      updateStatus: 'Update Status',
     },
   },
   shortcut: {
@@ -964,13 +951,9 @@ const en: TranslationMessages = {
     toggle: {
       contentView: 'Content View',
       filter: 'Toggle Article Filter',
-      negate: 'Negate',
-      read: 'Mark as Read',
-      readLater: 'Read Later',
       readLaterStatus: 'Toggle Read Later',
       readStatus: 'Toggle Read Status',
       sidebar: 'Toggle Sidebar',
-      translations: 'Translations',
     },
   },
 

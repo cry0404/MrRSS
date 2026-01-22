@@ -227,7 +227,7 @@ function updateOperator(operator: string): void {
         v-else
         type="text"
         :value="condition.value"
-        :placeholder="t('inputValue')"
+        :placeholder="t('common.inputValue')"
         class="input-field"
         @input="(e) => updateValue((e.target as HTMLInputElement).value)"
       />
