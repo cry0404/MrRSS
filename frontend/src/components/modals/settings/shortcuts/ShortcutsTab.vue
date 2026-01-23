@@ -27,6 +27,7 @@ import {
 import ShortcutItem from './ShortcutItem.vue';
 import type { SettingsData } from '@/types/settings';
 import { useSettingsAutoSave } from '@/composables/core/useSettingsAutoSave';
+import { ButtonControl, SettingWithToggle, InfoBox } from '@/components/settings';
 
 const { t } = useI18n();
 
@@ -46,18 +47,18 @@ const settingsRef = computed(() => props.settings);
 // Use composable for auto-save with reactivity
 useSettingsAutoSave(settingsRef);
 
-// Handle shortcuts enabled toggle change
-function handleToggleChange(event: Event) {
-  const target = event.target as HTMLInputElement;
+// Update settings and dispatch events
+function updateSetting(key: keyof SettingsData, value: any) {
   emit('update:settings', {
     ...props.settings,
-    shortcuts_enabled: target.checked,
+    [key]: value,
   });
-  // Dispatch event to notify keyboard shortcuts system
-  if (typeof window !== 'undefined') {
+
+  // Dispatch event to notify keyboard shortcuts system when toggling
+  if (key === 'shortcuts_enabled' && typeof window !== 'undefined') {
     window.dispatchEvent(
       new CustomEvent('shortcuts-enabled-changed', {
-        detail: { enabled: target.checked },
+        detail: { enabled: value },
       })
     );
   }
@@ -329,38 +330,25 @@ watch(
           </p>
         </div>
       </div>
-      <button class="btn-secondary" @click="resetToDefaults">
-        <PhArrowCounterClockwise :size="16" class="sm:w-5 sm:h-5" />
-        {{ t('common.action.resetToDefault') }}
-      </button>
-    </div>
-
-    <!-- Enable/Disable Shortcuts Toggle -->
-    <div class="setting-item">
-      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhKeyboard :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-        <div class="flex-1 min-w-0">
-          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
-            {{ t('setting.shortcut.shortcutsEnabled') }}
-          </div>
-          <div class="text-xs text-text-secondary hidden sm:block">
-            {{ t('setting.shortcut.shortcutsEnabledDesc') }}
-          </div>
-        </div>
-      </div>
-      <input
-        :checked="settings.shortcuts_enabled === true"
-        type="checkbox"
-        class="toggle"
-        @change="handleToggleChange"
+      <ButtonControl
+        :label="t('common.action.resetToDefault')"
+        :icon="PhArrowCounterClockwise"
+        type="secondary"
+        @click="resetToDefaults"
       />
     </div>
 
+    <!-- Enable/Disable Shortcuts Toggle -->
+    <SettingWithToggle
+      :icon="PhKeyboard"
+      :title="t('setting.shortcut.shortcutsEnabled')"
+      :description="t('setting.shortcut.shortcutsEnabledDesc')"
+      :model-value="settings.shortcuts_enabled === true"
+      @update:model-value="updateSetting('shortcuts_enabled', $event)"
+    />
+
     <!-- Tip moved to top with improved styling -->
-    <div class="tip-box">
-      <PhInfo :size="16" class="text-accent shrink-0 sm:w-5 sm:h-5" />
-      <span class="text-xs sm:text-sm">{{ t('common.action.escToClear') }}</span>
-    </div>
+    <InfoBox :icon="PhInfo" :content="t('common.action.escToClear')" />
 
     <div v-for="group in shortcutGroups" :key="group.label" class="setting-group">
       <label
@@ -385,31 +373,4 @@ watch(
 
 <style scoped>
 @reference "../../../../style.css";
-
-.btn-secondary {
-  @apply bg-bg-tertiary border border-border text-text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-md cursor-pointer flex items-center gap-1.5 sm:gap-2 font-medium hover:bg-bg-secondary transition-colors;
-}
-
-.setting-item {
-  @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-bg-secondary border border-border;
-}
-
-.tip-box {
-  @apply flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-lg;
-  background-color: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.toggle {
-  @apply w-10 h-5 appearance-none bg-bg-tertiary rounded-full relative cursor-pointer border border-border transition-colors checked:bg-accent checked:border-accent shrink-0;
-}
-
-.toggle::after {
-  content: '';
-  @apply absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-transform;
-}
-
-.toggle:checked::after {
-  transform: translateX(20px);
-}
 </style>

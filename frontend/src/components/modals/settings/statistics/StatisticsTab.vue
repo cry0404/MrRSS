@@ -364,11 +364,13 @@ onMounted(async () => {
     <div v-else class="flex flex-col gap-6">
       <div class="grid grid-cols-3 gap-3">
         <div v-for="stat in totalStats" :key="stat.key" class="stat-card">
-          <div class="flex items-center justify-center w-10.5 h-10.5 rounded-lg flex-shrink-0">
-            <component :is="stat.icon" :size="28" />
+          <div class="stat-icon-wrapper">
+            <component :is="stat.icon" :size="28" class="text-text-tertiary" />
           </div>
           <div class="flex flex-col gap-1 flex-1">
-            <p class="text-xs font-semibold uppercase tracking-wider m-0">{{ stat.label }}</p>
+            <p class="text-xs font-semibold uppercase tracking-wider m-0 text-text-secondary">
+              {{ stat.label }}
+            </p>
             <p class="text-[1.75rem] font-bold text-accent m-0 leading-none">{{ stat.value }}</p>
           </div>
         </div>
@@ -401,6 +403,15 @@ onMounted(async () => {
 }
 
 .stat-card {
-  @apply relative flex items-center gap-3 px-5 py-4 bg-bg-secondary border-2 border-border rounded-lg transition-all;
+  @apply relative flex items-center gap-3 px-4 py-3 bg-bg-secondary border-2 border-border rounded-lg transition-all hover:shadow-sm;
+}
+
+.stat-card:hover {
+  border-color: color-mix(in srgb, var(--accent-color) 50%, transparent);
+}
+
+.stat-icon-wrapper {
+  @apply flex items-center justify-center w-12 h-12 rounded-lg flex-shrink-0;
+  background-color: color-mix(in srgb, var(--bg-tertiary) 50%, transparent);
 }
 </style>

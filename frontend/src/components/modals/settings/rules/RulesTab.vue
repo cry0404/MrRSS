@@ -7,6 +7,7 @@ import RuleEditorModal from '../../rules/RuleEditorModal.vue';
 import RuleItem from './RuleItem.vue';
 import type { Condition } from '@/composables/rules/useRuleOptions';
 import type { SettingsData } from '@/types/settings';
+import { ButtonControl, SettingGroup, SettingItem } from '@/components/settings';
 
 const store = useAppStore();
 const { t } = useI18n();
@@ -300,32 +301,21 @@ async function onDrop(targetRuleId: number, event: DragEvent) {
 
 <template>
   <div class="space-y-4 sm:space-y-6">
-    <div class="setting-group">
-      <label
-        class="font-semibold mb-2 sm:mb-3 text-text-secondary uppercase text-xs tracking-wider flex items-center gap-2"
-      >
-        <PhLightning :size="14" class="sm:w-4 sm:h-4" />
-        {{ t('modal.rule.rules') }}
-      </label>
-
+    <SettingGroup :icon="PhLightning" :title="t('modal.rule.rules')">
       <!-- Header with description and add button -->
-      <div class="setting-item mb-2 sm:mb-3">
-        <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-          <PhLightning :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-          <div class="flex-1 min-w-0">
-            <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
-              {{ t('modal.rule.rules') }}
-            </div>
-            <div class="text-xs text-text-secondary hidden sm:block">
-              {{ t('modal.rule.rulesDesc') }}
-            </div>
-          </div>
-        </div>
-        <button class="btn-secondary" @click="addRule">
-          <PhPlus :size="16" class="sm:w-5 sm:h-5" />
-          <span class="hidden sm:inline">{{ t('setting.rule.addRule') }}</span>
-        </button>
-      </div>
+      <SettingItem
+        :icon="PhLightning"
+        :title="t('modal.rule.rules')"
+        :description="t('modal.rule.rulesDesc')"
+        class="mb-2 sm:mb-3"
+      >
+        <ButtonControl
+          :label="t('setting.rule.addRule')"
+          :icon="PhPlus"
+          type="secondary"
+          @click="addRule"
+        />
+      </SettingItem>
 
       <!-- Empty state -->
       <div v-if="rules.length === 0" class="empty-state">
@@ -357,7 +347,7 @@ async function onDrop(targetRuleId: number, event: DragEvent) {
           />
         </transition-group>
       </div>
-    </div>
+    </SettingGroup>
 
     <!-- Rule Editor Modal -->
     <RuleEditorModal
@@ -372,14 +362,6 @@ async function onDrop(targetRuleId: number, event: DragEvent) {
 
 <style scoped>
 @reference "../../../../style.css";
-
-.setting-item {
-  @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-bg-secondary border border-border;
-}
-
-.btn-secondary {
-  @apply bg-bg-tertiary border border-border text-text-primary px-3 sm:px-4 py-1.5 sm:py-2 rounded-md cursor-pointer flex items-center gap-1.5 sm:gap-2 font-medium hover:bg-bg-secondary transition-colors;
-}
 
 .empty-state {
   @apply text-center py-8 sm:py-12;
