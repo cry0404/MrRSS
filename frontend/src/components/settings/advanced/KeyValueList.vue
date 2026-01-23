@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { PhPlus, PhTrash } from '@phosphor-icons/vue';
+import KeyValueInput from './KeyValueInput.vue';
 
 export interface KeyValuePair {
   id: string;
@@ -17,6 +18,8 @@ interface Props {
   emptyKeyWarning?: string;
   emptyValueWarning?: string;
   debounceMs?: number;
+  /** Only allow ASCII characters (for HTTP headers) */
+  asciiOnly?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,6 +30,7 @@ const props = withDefaults(defineProps<Props>(), {
   emptyKeyWarning: '',
   emptyValueWarning: '',
   debounceMs: 500,
+  asciiOnly: false,
 });
 
 const emit = defineEmits<{
@@ -64,6 +68,22 @@ let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 function loadPairs() {
   pairs.value = parseJsonString(props.modelValue);
+}
+
+function updateKey(pairId: string, value: string) {
+  const pair = pairs.value.find((p) => p.id === pairId);
+  if (pair) {
+    pair.key = value;
+    debouncedSave();
+  }
+}
+
+function updateValue(pairId: string, value: string) {
+  const pair = pairs.value.find((p) => p.id === pairId);
+  if (pair) {
+    pair.value = value;
+    debouncedSave();
+  }
 }
 
 function savePairs() {
@@ -126,19 +146,17 @@ defineOptions({
     <!-- Pairs List -->
     <div class="mt-2 sm:mt-3 space-y-1.5 sm:space-y-2 w-full">
       <div v-for="pair in pairs" :key="pair.id" class="flex items-center gap-1.5 sm:gap-2">
-        <input
-          v-model="pair.key"
-          type="text"
+        <KeyValueInput
+          :model-value="pair.key"
           :placeholder="keyPlaceholder"
-          class="input-field text-xs sm:text-sm flex-1"
-          @input="debouncedSave()"
+          :ascii-only="asciiOnly"
+          @update:model-value="updateKey(pair.id, $event)"
         />
-        <input
-          v-model="pair.value"
-          type="text"
+        <KeyValueInput
+          :model-value="pair.value"
           :placeholder="valuePlaceholder"
-          class="input-field text-xs sm:text-sm flex-1"
-          @input="debouncedSave()"
+          :ascii-only="asciiOnly"
+          @update:model-value="updateValue(pair.id, $event)"
         />
         <button
           type="button"
@@ -162,9 +180,3 @@ defineOptions({
     </div>
   </div>
 </template>
-
-<style scoped>
-.input-field {
-  @apply p-1.5 sm:p-2.5 border border-border rounded-md bg-bg-secondary text-text-primary focus:border-accent focus:outline-none transition-colors;
-}
-</style>

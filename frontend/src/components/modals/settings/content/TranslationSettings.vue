@@ -411,6 +411,7 @@ const getErrorClass = (condition: boolean) => (condition ? 'border-red-500' : ''
             :value-placeholder="t('setting.content.custom.headerValue') || 'Value'"
             :add-button-text="t('setting.content.addHeader')"
             :remove-button-title="t('common.action.remove') || 'Remove'"
+            ascii-only
             @update:model-value="updateSetting('custom_translation_headers', $event)"
           />
         </div>

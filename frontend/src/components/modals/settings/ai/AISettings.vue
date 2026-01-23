@@ -94,6 +94,7 @@ function updateSetting(key: keyof SettingsData, value: any) {
         :value-placeholder="t('setting.ai.aiCustomHeadersValue')"
         :add-button-text="t('setting.ai.aiCustomHeadersAdd')"
         :remove-button-title="t('setting.ai.aiCustomHeadersRemove')"
+        ascii-only
         @update:model-value="updateSetting('ai_custom_headers', $event)"
       />
     </div>
