@@ -574,7 +574,7 @@ function handleHoverMarkAsRead(articleId: number): void {
             @click="store.toggleShowOnlyUnread()"
           >
             <component
-              :is="store.showOnlyUnread ? PhEye : PhEyeSlash"
+              :is="store.showOnlyUnread ? PhEyeSlash : PhEye"
               :size="18"
               class="sm:w-5 sm:h-5"
             />
