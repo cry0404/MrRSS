@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed the issue where default title was not set fetched when not provided. (#566)
-- Fixed multiple minor styling issues. (#584)
+- Fixed multiple minor styling issues. (#569, #584)
 
 ## [1.3.17] - 2026-01-24
 

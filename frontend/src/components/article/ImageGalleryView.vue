@@ -9,14 +9,11 @@ import {
   PhList,
   PhCopy,
   PhDownloadSimple,
-  PhGlobe,
   PhX,
   PhTextT,
   PhTextTSlash,
   PhMagnifyingGlassPlus,
   PhMagnifyingGlassMinus,
-  PhEnvelope,
-  PhEnvelopeOpen,
 } from '@phosphor-icons/vue';
 import { openInBrowser } from '@/utils/browser';
 
@@ -54,12 +51,6 @@ const columnCount = ref(4);
 const containerRef = ref<HTMLElement | null>(null);
 // eslint-disable-next-line no-undef
 let resizeObserver: ResizeObserver | null = null;
-const contextMenu = ref<{ show: boolean; x: number; y: number; article: Article | null }>({
-  show: false,
-  x: 0,
-  y: 0,
-  article: null,
-});
 const imageCountCache = ref<Map<number, number>>(new Map());
 const showTextOverlay = ref(true);
 const thumbnailStripRef = ref<HTMLElement | null>(null);
@@ -464,17 +455,75 @@ function formatDate(dateString: string): string {
 function handleContextMenu(event: MouseEvent, article: Article) {
   event.preventDefault();
   event.stopPropagation();
-  contextMenu.value = {
-    show: true,
-    x: event.clientX,
-    y: event.clientY,
-    article,
-  };
+
+  // Use global context menu system to avoid conflicts with sidebar/context menu
+  const menuItems = [
+    {
+      label: article.is_read ? t('article.action.markAsUnread') : t('article.action.markAsRead'),
+      action: 'toggleRead',
+      icon: article.is_read ? 'ph-envelope' : 'ph-envelope-open',
+    },
+    {
+      label: article.is_favorite
+        ? t('article.action.removeFromFavorites')
+        : t('article.imageGallery.addToFavorite'),
+      action: 'toggleFavorite',
+      icon: 'ph-star',
+      iconWeight: article.is_favorite ? 'fill' : 'regular',
+      iconColor: article.is_favorite ? 'text-yellow-500' : '',
+    },
+    { separator: true },
+    {
+      label: t('common.contextMenu.copyTitle'),
+      action: 'copyTitle',
+      icon: 'ph-text-t',
+    },
+    {
+      label: t('common.contextMenu.copyLink'),
+      action: 'copyLink',
+      icon: 'ph-link',
+    },
+    { separator: true },
+    {
+      label: t('common.contextMenu.downloadImage'),
+      action: 'downloadImage',
+      icon: 'PhDownloadSimple',
+    },
+    {
+      label: t('article.action.openInBrowser'),
+      action: 'openBrowser',
+      icon: 'ph-globe',
+    },
+  ];
+
+  window.dispatchEvent(
+    new CustomEvent('open-context-menu', {
+      detail: {
+        x: event.clientX,
+        y: event.clientY,
+        items: menuItems,
+        data: article,
+        callback: handleImageAction,
+      },
+    })
+  );
 }
 
-// Close context menu
-function closeContextMenu() {
-  contextMenu.value.show = false;
+// Handle context menu actions
+async function handleImageAction(action: string, article: Article): Promise<void> {
+  if (action === 'toggleRead') {
+    await toggleReadStatus(article);
+  } else if (action === 'toggleFavorite') {
+    await toggleFavorite(article);
+  } else if (action === 'copyTitle') {
+    await copyArticleTitle(article);
+  } else if (action === 'copyLink') {
+    await copyArticleLink(article);
+  } else if (action === 'downloadImage') {
+    await downloadImage(article.image_url || '');
+  } else if (action === 'openBrowser') {
+    openOriginal(article);
+  }
 }
 
 // Download image
@@ -577,7 +626,6 @@ async function copyImage(src: string) {
 // Open original article
 function openOriginal(article: Article) {
   openInBrowser(article.url);
-  closeContextMenu();
 }
 
 // Toggle article read status
@@ -779,7 +827,6 @@ onMounted(() => {
   if (containerRef.value) {
     containerRef.value.addEventListener('scroll', handleScroll);
   }
-  window.addEventListener('click', closeContextMenu);
   window.addEventListener('keydown', handleKeyDown);
 
   // Set up ResizeObserver to watch for container size changes
@@ -801,7 +848,6 @@ onUnmounted(() => {
     resizeObserver.disconnect();
     resizeObserver = null;
   }
-  window.removeEventListener('click', closeContextMenu);
   window.removeEventListener('keydown', handleKeyDown);
 });
 </script>
@@ -1144,87 +1190,6 @@ onUnmounted(() => {
           <span class="shrink-0">{{ formatDate(selectedArticle.published_at) }}</span>
         </div>
       </div>
-    </div>
-
-    <!-- Context Menu -->
-    <div
-      v-if="contextMenu.show && contextMenu.article"
-      class="fixed z-50 bg-bg-primary border border-border rounded-lg shadow-lg py-1 min-w-[180px]"
-      :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
-      @click.stop
-    >
-      <button
-        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
-        @click="
-          toggleReadStatus(contextMenu.article);
-          closeContextMenu();
-        "
-      >
-        <PhEnvelope v-if="!contextMenu.article.is_read" :size="16" />
-        <PhEnvelopeOpen v-else :size="16" />
-        <span>{{
-          contextMenu.article.is_read
-            ? t('article.action.markAsUnread')
-            : t('article.action.markAsRead')
-        }}</span>
-      </button>
-      <button
-        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
-        @click="
-          toggleFavorite(contextMenu.article);
-          closeContextMenu();
-        "
-      >
-        <PhHeart
-          :size="16"
-          :weight="contextMenu.article.is_favorite ? 'fill' : 'regular'"
-          :class="contextMenu.article.is_favorite ? 'text-yellow-500' : ''"
-        />
-        <span>{{
-          contextMenu.article.is_favorite
-            ? t('article.action.removeFromFavorites')
-            : t('article.imageGallery.addToFavorite')
-        }}</span>
-      </button>
-      <div class="h-px bg-border my-1"></div>
-      <button
-        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
-        @click="
-          copyArticleTitle(contextMenu.article);
-          closeContextMenu();
-        "
-      >
-        <PhTextT :size="16" />
-        <span>{{ t('common.contextMenu.copyTitle') }}</span>
-      </button>
-      <button
-        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
-        @click="
-          copyArticleLink(contextMenu.article);
-          closeContextMenu();
-        "
-      >
-        <PhCopy :size="16" />
-        <span>{{ t('common.contextMenu.copyLink') }}</span>
-      </button>
-      <div class="h-px bg-border my-1"></div>
-      <button
-        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
-        @click="
-          downloadImage(contextMenu.article.image_url || '');
-          closeContextMenu();
-        "
-      >
-        <PhDownloadSimple :size="16" />
-        <span>{{ t('common.contextMenu.downloadImage') }}</span>
-      </button>
-      <button
-        class="w-full px-4 py-2 flex items-center gap-3 text-sm text-text-primary hover:bg-bg-tertiary active:bg-bg-secondary transition-colors cursor-pointer"
-        @click="openOriginal(contextMenu.article)"
-      >
-        <PhGlobe :size="16" />
-        <span>{{ t('article.action.openInBrowser') }}</span>
-      </button>
     </div>
   </div>
 </template>
