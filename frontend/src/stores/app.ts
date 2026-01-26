@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed, type Ref } from 'vue';
 import type { Article, Feed, UnreadCounts, RefreshProgress } from '@/types/models';
+import type { FilterCondition } from '@/types/filter';
 import { useSettings } from '@/composables/core/useSettings';
 
 export type Filter = 'all' | 'unread' | 'favorites' | 'readLater' | 'imageGallery' | '';
@@ -30,6 +31,9 @@ export interface AppState {
   theme: Ref<Theme>;
   refreshProgress: Ref<RefreshProgress>;
   showOnlyUnread: Ref<boolean>;
+  activeFilters: Ref<FilterCondition[]>;
+  filteredArticlesFromServer: Ref<Article[]>;
+  isFilterLoading: Ref<boolean>;
 }
 
 export interface AppActions {
@@ -51,6 +55,7 @@ export interface AppActions {
   checkForAppUpdates: () => Promise<void>;
   startAutoRefresh: (minutes: number) => void;
   toggleShowOnlyUnread: () => void;
+  setActiveFilters: (filters: FilterCondition[]) => void;
 }
 
 export const useAppStore = defineStore('app', () => {
@@ -84,6 +89,9 @@ export const useAppStore = defineStore('app', () => {
   );
   const theme = ref<Theme>('light');
   const showOnlyUnread = ref<boolean>(localStorage.getItem('showOnlyUnread') === 'true');
+  const activeFilters = ref<FilterCondition[]>([]);
+  const filteredArticlesFromServer = ref<Article[]>([]);
+  const isFilterLoading = ref(false);
 
   // Article view mode preferences (persisted across component mounts)
   const articleViewModePreferences = ref<Map<number, 'original' | 'rendered'>>(new Map());
@@ -676,6 +684,18 @@ export const useAppStore = defineStore('app', () => {
     localStorage.setItem('showOnlyUnread', String(showOnlyUnread.value));
   }
 
+  function setActiveFilters(filters: FilterCondition[]): void {
+    activeFilters.value = filters;
+  }
+
+  function setFilteredArticlesFromServer(articles: Article[]): void {
+    filteredArticlesFromServer.value = articles;
+  }
+
+  function setIsFilterLoading(loading: boolean): void {
+    isFilterLoading.value = loading;
+  }
+
   async function fetchTaskDetails(): Promise<void> {
     try {
       const res = await fetch('/api/progress/task-details');
@@ -712,6 +732,9 @@ export const useAppStore = defineStore('app', () => {
     theme,
     refreshProgress,
     showOnlyUnread,
+    activeFilters,
+    filteredArticlesFromServer,
+    isFilterLoading,
     articleViewModePreferences,
 
     // Actions
@@ -736,6 +759,9 @@ export const useAppStore = defineStore('app', () => {
     checkForAppUpdates,
     startAutoRefresh,
     toggleShowOnlyUnread,
+    setActiveFilters,
+    setFilteredArticlesFromServer,
+    setIsFilterLoading,
     fetchTaskDetails,
   };
 });

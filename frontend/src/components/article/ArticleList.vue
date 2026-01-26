@@ -61,14 +61,12 @@ const {
   cleanup: cleanupTranslation,
 } = useArticleTranslation();
 
-const {
-  activeFilters,
-  filteredArticlesFromServer,
-  isFilterLoading,
-  resetFilterState,
-  fetchFilteredArticles,
-  loadMoreFilteredArticles,
-} = useArticleFilter();
+const { activeFilters, resetFilterState, fetchFilteredArticles, loadMoreFilteredArticles } =
+  useArticleFilter();
+
+// Use store's filtered articles and loading state directly
+const filteredArticlesFromServer = computed(() => store.filteredArticlesFromServer);
+const isFilterLoading = computed(() => store.isFilterLoading);
 
 // Computed filtered articles - optimized to avoid excessive recomputation
 const filteredArticles = computed(() => {

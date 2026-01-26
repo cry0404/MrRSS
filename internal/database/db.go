@@ -534,6 +534,17 @@ func runMigrations(db *sql.DB) error {
 	// Migration: Add author field to articles table
 	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN author TEXT DEFAULT ''`)
 
+	// Migration: Add saved_filters table for custom filter persistence
+	_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS saved_filters (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT NOT NULL UNIQUE,
+		conditions TEXT NOT NULL,
+		position INTEGER DEFAULT 0,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_saved_filters_position ON saved_filters(position)`)
+
 	return nil
 }
 

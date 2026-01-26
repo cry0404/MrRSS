@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added support for saving filters. (#223)
+
 ### Changed
 
 - Marking a lot of articles as read at once now shows a confirmation dialog to prevent accidental actions. (#560)

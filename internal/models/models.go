@@ -72,3 +72,13 @@ type Article struct {
 	UniqueID              string    `json:"unique_id"`        // Unique identifier for deduplication (title+feed_id+published_date)
 	FreshRSSItemID        string    `json:"freshrss_item_id"` // FreshRSS/Google Reader item ID for API operations
 }
+
+// SavedFilter represents a user-saved article filter
+type SavedFilter struct {
+	ID         int64     `json:"id"`
+	Name       string    `json:"name"`
+	Conditions string    `json:"conditions"` // JSON string of FilterCondition[]
+	Position   int       `json:"position"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
