@@ -31,13 +31,26 @@ export function useSettingsAutoSave(settings: Ref<SettingsData> | (() => Setting
 
   // Track previous article display settings to prevent unnecessary refreshes
   const prevArticleDisplaySettings: Ref<{
-    showHiddenArticles: string;
+    showHiddenArticles: boolean;
   }> = ref({
     showHiddenArticles: settingsDefaults.show_hidden_articles,
   });
 
   // Track previous compact mode setting to prevent unnecessary width resets
   const prevCompactMode: Ref<boolean> = ref(settingsDefaults.compact_mode);
+
+  // Track previous summary settings
+  const prevSummarySettings: Ref<{
+    enabled: boolean;
+    provider: string;
+    triggerMode: string;
+    length: string;
+  }> = ref({
+    enabled: settingsDefaults.summary_enabled,
+    provider: settingsDefaults.summary_provider,
+    triggerMode: settingsDefaults.summary_trigger_mode,
+    length: settingsDefaults.summary_length,
+  });
 
   /**
    * Initialize translation tracking
@@ -53,6 +66,12 @@ export function useSettingsAutoSave(settings: Ref<SettingsData> | (() => Setting
         showHiddenArticles: settingsRef.value.show_hidden_articles,
       };
       prevCompactMode.value = settingsRef.value.compact_mode;
+      prevSummarySettings.value = {
+        enabled: settingsRef.value.summary_enabled,
+        provider: settingsRef.value.summary_provider,
+        triggerMode: settingsRef.value.summary_trigger_mode,
+        length: settingsRef.value.summary_length,
+      };
       isInitialLoad = false;
     }, 100);
   });
@@ -174,6 +193,33 @@ export function useSettingsAutoSave(settings: Ref<SettingsData> | (() => Setting
         );
         // Update tracking
         prevCompactMode.value = settingsRef.value.compact_mode;
+      }
+
+      // Check if summary settings changed
+      const summaryChanged =
+        prevSummarySettings.value.enabled !== settingsRef.value.summary_enabled ||
+        prevSummarySettings.value.provider !== settingsRef.value.summary_provider ||
+        prevSummarySettings.value.triggerMode !== settingsRef.value.summary_trigger_mode ||
+        prevSummarySettings.value.length !== settingsRef.value.summary_length;
+
+      if (summaryChanged) {
+        window.dispatchEvent(
+          new CustomEvent('summary-settings-changed', {
+            detail: {
+              enabled: settingsRef.value.summary_enabled,
+              provider: settingsRef.value.summary_provider,
+              triggerMode: settingsRef.value.summary_trigger_mode,
+              length: settingsRef.value.summary_length,
+            },
+          })
+        );
+        // Update tracking
+        prevSummarySettings.value = {
+          enabled: settingsRef.value.summary_enabled,
+          provider: settingsRef.value.summary_provider,
+          triggerMode: settingsRef.value.summary_trigger_mode,
+          length: settingsRef.value.summary_length,
+        };
       }
     } catch (e) {
       console.error('Error auto-saving settings:', e);
