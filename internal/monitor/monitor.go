@@ -24,8 +24,6 @@ const (
 	defaultAPIURL = "https://cf-monitor-api.ch3nyang.workers.dev"
 	// Default App ID
 	defaultAppID = "mrrss"
-	// Device ID settings key
-	deviceIDSettingKey = "monitor_device_id"
 )
 
 // MonitorClient handles analytics reporting
