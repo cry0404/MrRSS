@@ -614,14 +614,14 @@ function handleFilterDragEnd() {
         <!-- Feeds Drawer (for all filters including imageGallery) -->
         <template v-if="drawerType === 'feeds'">
           <!-- Search Box -->
-          <div class="px-3 pt-3 pb-2 border-b border-border">
-            <div class="flex items-center gap-2">
+          <div class="border-b border-border">
+            <div class="flex items-center">
               <div class="relative flex-1">
                 <input
                   v-model="searchQuery"
                   type="text"
                   :placeholder="t('common.search.searchFeeds')"
-                  class="w-full bg-bg-tertiary border border-border rounded-lg px-3 py-2 pl-8 text-sm focus:border-accent focus:outline-none transition-colors"
+                  class="w-full bg-bg-tertiary px-3 py-2 pl-8 text-sm focus:outline-none transition-colors"
                 />
                 <PhMagnifyingGlass
                   :size="14"
@@ -637,7 +637,7 @@ function handleFilterDragEnd() {
               </div>
               <!-- Edit Toggle Button -->
               <button
-                class="text-text-secondary hover:text-text-primary hover:bg-bg-tertiary p-1 sm:p-1.5 rounded transition-colors flex-shrink-0"
+                class="text-text-secondary hover:text-accent p-1 sm:p-1.5 transition-colors flex-shrink-0"
                 :class="isEditMode ? 'text-accent' : ''"
                 :title="isEditMode ? t('common.done') : t('common.edit')"
                 @click="toggleEditMode"

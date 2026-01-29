@@ -12,7 +12,6 @@ import {
   PhClockCountdown,
   PhArrowSquareOut,
   PhTranslate,
-  PhShareNetwork,
 } from '@phosphor-icons/vue';
 import type { Article } from '@/types/models';
 
@@ -142,7 +141,11 @@ defineEmits<{
         :title="t('setting.plugins.obsidian.exportTo')"
         @click="$emit('exportToObsidian')"
       >
-        <PhShareNetwork :size="18" class="sm:w-5 sm:h-5" />
+        <img
+          src="/assets/plugin_icons/obsidian.svg"
+          class="w-4.5 h-4.5 sm:w-5 sm:h-5"
+          alt="Obsidian"
+        />
       </button>
     </div>
   </div>
