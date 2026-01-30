@@ -1036,7 +1036,9 @@ const en: TranslationMessages = {
     activity: {
       addFeed: 'Add Feed',
       allArticles: 'All Articles',
+      collapseActivityBar: 'Collapse Activity Bar',
       collapseFeedList: 'Collapse Feed List',
+      expandActivityBar: 'Expand Activity Bar',
       expandFeedList: 'Expand Feed List',
       favorites: 'Favorites',
       imageGallery: 'Image Gallery',

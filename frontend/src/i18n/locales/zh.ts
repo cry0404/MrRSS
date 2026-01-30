@@ -1015,7 +1015,9 @@ const zh: TranslationMessages = {
     activity: {
       addFeed: '添加订阅',
       allArticles: '所有文章',
+      collapseActivityBar: '折叠活动栏',
       collapseFeedList: '折叠订阅源列表',
+      expandActivityBar: '展开活动栏',
       expandFeedList: '展开订阅源列表',
       favorites: '收藏',
       imageGallery: '图片模式',
