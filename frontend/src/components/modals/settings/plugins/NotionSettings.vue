@@ -6,7 +6,7 @@ import {
   NestedSettingsContainer,
   SubSettingItem,
   InputControl,
-  HelpBox,
+  TipBox,
 } from '@/components/settings';
 
 const { t } = useI18n();
@@ -57,14 +57,14 @@ function updateSetting(key: keyof SettingsData, value: any) {
 
   <NestedSettingsContainer v-if="props.settings.notion_enabled">
     <!-- Help text -->
-    <HelpBox type="help" :title="t('setting.plugins.notion.setupInstructions')">
+    <TipBox type="help" :title="t('setting.plugins.notion.setupInstructions')">
       <ol>
         <li>{{ t('setting.plugins.notion.step1') }}</li>
         <li>{{ t('setting.plugins.notion.step2') }}</li>
         <li>{{ t('setting.plugins.notion.step3') }}</li>
         <li>{{ t('setting.plugins.notion.step4') }}</li>
       </ol>
-    </HelpBox>
+    </TipBox>
 
     <!-- API Key -->
     <SubSettingItem

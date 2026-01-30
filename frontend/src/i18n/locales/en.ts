@@ -822,6 +822,7 @@ const en: TranslationMessages = {
         "The app automatically uses the operating system's proxy settings by default. You only need to enable this option if you want to use a different proxy than the system proxy.",
       tunModeInfo:
         'If you are using a proxy tool (such as Clash, V2Ray, etc.), please ensure TUN mode or Enhanced mode is enabled to allow all applications to use the proxy.',
+      tunModeInfoTitle: 'Can not connect to the Internet?',
       useCustomProxy: 'Use Custom Proxy',
       useGlobalProxy: 'Use Global Proxy',
       currentMode: 'Current mode',

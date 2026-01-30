@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Refactored
+
+- Refactored the tip box for improved consistency and maintainability.
+
 ### Added
 
 - Added Notion integration for exporting articles directly to Notion pages. (#625)

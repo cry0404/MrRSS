@@ -807,6 +807,7 @@ const zh: TranslationMessages = {
         '应用默认自动使用操作系统的代理设置。仅当您想使用与系统代理不同的代理时，才需要启用此选项。',
       tunModeInfo:
         '如果您使用代理工具（如 Clash、V2Ray 等），请确保启用 TUN 模式或增强模式，以便所有应用程序都能使用代理。',
+      tunModeInfoTitle: '无法连接到网络？',
       useCustomProxy: '使用自定义代理',
       useGlobalProxy: '使用全局代理',
       currentMode: '当前模式',
