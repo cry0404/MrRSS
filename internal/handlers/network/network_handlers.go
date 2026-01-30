@@ -2,7 +2,6 @@ package network
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"MrRSS/internal/handlers/core"
+	"MrRSS/internal/handlers/response"
 	"MrRSS/internal/network"
 	"MrRSS/internal/utils"
 )
@@ -25,7 +25,7 @@ import (
 // @Router       /network/detect [post]
 func HandleDetectNetwork(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		response.Error(w, nil, http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -73,8 +73,7 @@ func HandleDetectNetwork(h *core.Handler, w http.ResponseWriter, r *http.Request
 	}
 
 	// Return results to frontend
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	response.JSON(w, result)
 }
 
 // HandleGetNetworkInfo returns current network detection info from settings
@@ -121,6 +120,5 @@ func HandleGetNetworkInfo(h *core.Handler, w http.ResponseWriter, r *http.Reques
 		DetectionSuccess: speedLevel != "",
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	response.JSON(w, result)
 }

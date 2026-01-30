@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"MrRSS/internal/handlers/core"
+	"MrRSS/internal/handlers/response"
 	"MrRSS/internal/models"
 
 	md "github.com/JohannesKaufmann/html-to-markdown"
@@ -161,46 +162,46 @@ type AppendBlocksRequest struct {
 // @Router       /articles/export/notion [post]
 func HandleExportToNotion(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		response.Error(w, nil, http.StatusMethodNotAllowed)
 		return
 	}
 
 	var req ExportToNotionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		response.Error(w, err, http.StatusBadRequest)
 		return
 	}
 
 	if req.ArticleID <= 0 {
-		http.Error(w, "Invalid article ID", http.StatusBadRequest)
+		response.Error(w, fmt.Errorf("invalid article ID"), http.StatusBadRequest)
 		return
 	}
 
 	// Get article from database
 	article, err := h.DB.GetArticleByID(int64(req.ArticleID))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Article not found: %v", err), http.StatusNotFound)
+		response.Error(w, err, http.StatusNotFound)
 		return
 	}
 
 	// Check if Notion integration is enabled
 	notionEnabled, _ := h.DB.GetSetting("notion_enabled")
 	if notionEnabled != "true" {
-		http.Error(w, "Notion integration is not enabled", http.StatusBadRequest)
+		response.Error(w, fmt.Errorf("notion integration is not enabled"), http.StatusBadRequest)
 		return
 	}
 
 	// Get API key (encrypted setting)
 	apiKey, _ := h.DB.GetEncryptedSetting("notion_api_key")
 	if apiKey == "" {
-		http.Error(w, "Notion API key is not configured", http.StatusBadRequest)
+		response.Error(w, fmt.Errorf("notion API key is not configured"), http.StatusBadRequest)
 		return
 	}
 
 	// Get parent page ID
 	pageID, _ := h.DB.GetSetting("notion_page_id")
 	if pageID == "" {
-		http.Error(w, "Notion page ID is not configured", http.StatusBadRequest)
+		response.Error(w, fmt.Errorf("notion page ID is not configured"), http.StatusBadRequest)
 		return
 	}
 
@@ -249,7 +250,7 @@ func HandleExportToNotion(h *core.Handler, w http.ResponseWriter, r *http.Reques
 	// Send request to Notion API to create the page
 	pageURL, createdPageID, err := createNotionPage(apiKey, notionRequest)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to create Notion page: %v", err), http.StatusInternalServerError)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -259,8 +260,7 @@ func HandleExportToNotion(h *core.Handler, w http.ResponseWriter, r *http.Reques
 		if err != nil {
 			// Page was created but some content failed to append
 			// Still return success but mention the issue
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{
+			response.JSON(w, map[string]string{
 				"success":  "true",
 				"page_url": pageURL,
 				"message":  fmt.Sprintf("Article exported but some content may be missing: %v", err),
@@ -270,8 +270,7 @@ func HandleExportToNotion(h *core.Handler, w http.ResponseWriter, r *http.Reques
 	}
 
 	// Return success response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	response.JSON(w, map[string]string{
 		"success":  "true",
 		"page_url": pageURL,
 		"message":  "Article exported to Notion successfully",

@@ -2,11 +2,13 @@ package settings
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
 	"MrRSS/internal/handlers/core"
+	"MrRSS/internal/handlers/response"
 )
 
 // safeGetEncryptedSetting safely retrieves an encrypted setting, returning empty string on error.
@@ -143,7 +145,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		windowWidth := safeGetSetting(h, "window_width")
 		windowX := safeGetSetting(h, "window_x")
 		windowY := safeGetSetting(h, "window_y")
-		json.NewEncoder(w).Encode(map[string]string{
+		response.JSON(w, map[string]string{
 			"ai_api_key":                       aiApiKey,
 			"ai_chat_enabled":                  aiChatEnabled,
 			"ai_custom_headers":                aiCustomHeaders,
@@ -341,12 +343,12 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			WindowY                       string `json:"window_y"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			response.Error(w, err, http.StatusBadRequest)
 			return
 		}
 		if err := h.DB.SetEncryptedSetting("ai_api_key", req.AIAPIKey); err != nil {
 			log.Printf("Failed to save ai_api_key: %v", err)
-			http.Error(w, "Failed to save ai_api_key", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save ai_api_key: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -400,7 +402,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if err := h.DB.SetEncryptedSetting("baidu_secret_key", req.BaiduSecretKey); err != nil {
 			log.Printf("Failed to save baidu_secret_key: %v", err)
-			http.Error(w, "Failed to save baidu_secret_key", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save baidu_secret_key: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -462,7 +464,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if err := h.DB.SetEncryptedSetting("deepl_api_key", req.DeeplAPIKey); err != nil {
 			log.Printf("Failed to save deepl_api_key: %v", err)
-			http.Error(w, "Failed to save deepl_api_key", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save deepl_api_key: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -484,7 +486,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if err := h.DB.SetEncryptedSetting("freshrss_api_password", req.FreshRSSAPIPassword); err != nil {
 			log.Printf("Failed to save freshrss_api_password: %v", err)
-			http.Error(w, "Failed to save freshrss_api_password", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save freshrss_api_password: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -586,7 +588,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if err := h.DB.SetEncryptedSetting("notion_api_key", req.NotionAPIKey); err != nil {
 			log.Printf("Failed to save notion_api_key: %v", err)
-			http.Error(w, "Failed to save notion_api_key", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save notion_api_key: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -620,7 +622,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if err := h.DB.SetEncryptedSetting("proxy_password", req.ProxyPassword); err != nil {
 			log.Printf("Failed to save proxy_password: %v", err)
-			http.Error(w, "Failed to save proxy_password", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save proxy_password: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -634,7 +636,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if err := h.DB.SetEncryptedSetting("proxy_username", req.ProxyUsername); err != nil {
 			log.Printf("Failed to save proxy_username: %v", err)
-			http.Error(w, "Failed to save proxy_username", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save proxy_username: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -648,7 +650,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if err := h.DB.SetEncryptedSetting("rsshub_api_key", req.RsshubAPIKey); err != nil {
 			log.Printf("Failed to save rsshub_api_key: %v", err)
-			http.Error(w, "Failed to save rsshub_api_key", http.StatusInternalServerError)
+			response.Error(w, fmt.Errorf("failed to save rsshub_api_key: %w", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -840,7 +842,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		windowWidth := safeGetSetting(h, "window_width")
 		windowX := safeGetSetting(h, "window_x")
 		windowY := safeGetSetting(h, "window_y")
-		json.NewEncoder(w).Encode(map[string]string{
+		response.JSON(w, map[string]string{
 			"ai_api_key":                       aiApiKey,
 			"ai_chat_enabled":                  aiChatEnabled,
 			"ai_custom_headers":                aiCustomHeaders,
@@ -939,6 +941,6 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			"window_y":                         windowY,
 		})
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		response.Error(w, nil, http.StatusMethodNotAllowed)
 	}
 }

@@ -322,7 +322,7 @@ func generateSettingsHandlersGo(schema *SettingsSchema) error {
 		structFields = append(structFields, fmt.Sprintf("\t\t%s%s string `json:\"%s\"`", goKey, strings.Repeat(" ", padding), key))
 
 		if def.Encrypted {
-			saveStatements = append(saveStatements, fmt.Sprintf("\t\tif err := h.DB.SetEncryptedSetting(\"%s\", req.%s); err != nil {\n\t\t\tlog.Printf(\"Failed to save %s: %%v\", err)\n\t\t\thttp.Error(w, \"Failed to save %s\", http.StatusInternalServerError)\n\t\t\treturn\n\t\t}", key, goKey, key, key))
+			saveStatements = append(saveStatements, fmt.Sprintf("\t\tif err := h.DB.SetEncryptedSetting(\"%s\", req.%s); err != nil {\n\t\t\tlog.Printf(\"Failed to save %s: %%v\", err)\n\t\t\tresponse.Error(w, fmt.Errorf(\"failed to save %s: %%w\", err), http.StatusInternalServerError)\n\t\t\treturn\n\t\t}", key, goKey, key, key))
 		} else {
 			saveStatements = append(saveStatements, fmt.Sprintf("\t\tif req.%s != \"\" {\n\t\t\th.DB.SetSetting(\"%s\", req.%s)\n\t\t}", goKey, key, goKey))
 		}
@@ -332,11 +332,13 @@ func generateSettingsHandlersGo(schema *SettingsSchema) error {
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
 	"MrRSS/internal/handlers/core"
+	"MrRSS/internal/handlers/response"
 )
 
 // safeGetEncryptedSetting safely retrieves an encrypted setting, returning empty string on error.
@@ -378,7 +380,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 %s
-		json.NewEncoder(w).Encode(map[string]string{
+		response.JSON(w, map[string]string{
 %s
 		})
 	case http.MethodPost:
@@ -386,17 +388,17 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 %s
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			response.Error(w, err, http.StatusBadRequest)
 			return
 		}
 %s
 		// Re-fetch all settings after save to return updated values
 %s
-		json.NewEncoder(w).Encode(map[string]string{
+		response.JSON(w, map[string]string{
 %s
 		})
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		response.Error(w, nil, http.StatusMethodNotAllowed)
 	}
 }
 `

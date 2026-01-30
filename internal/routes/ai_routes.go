@@ -1,11 +1,13 @@
 package routes
 
 import (
+	"errors"
 	"net/http"
 
 	aihandlers "MrRSS/internal/handlers/ai"
 	chat "MrRSS/internal/handlers/chat"
 	"MrRSS/internal/handlers/core"
+	"MrRSS/internal/handlers/response"
 )
 
 // registerAIRoutes registers all AI-related routes
@@ -24,7 +26,7 @@ func registerAIRoutes(mux *http.ServeMux, h *core.Handler) {
 		case http.MethodDelete:
 			chat.HandleDeleteSession(h, w, r)
 		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			response.Error(w, errors.New("method not allowed"), http.StatusMethodNotAllowed)
 		}
 	})
 	mux.HandleFunc("/api/ai/chat/messages", func(w http.ResponseWriter, r *http.Request) { chat.HandleListMessages(h, w, r) })
