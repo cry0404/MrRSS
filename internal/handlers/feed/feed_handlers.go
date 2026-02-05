@@ -355,6 +355,16 @@ func HandleUpdateFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Immediately fetch articles for the updated feed in background
+	go func() {
+		feed, err := h.DB.GetFeedByID(req.ID)
+		if err != nil {
+			return
+		}
+		// Use manual refresh (queue head) for updated feed
+		h.Fetcher.FetchSingleFeed(context.Background(), *feed, true)
+	}()
+
 	w.WriteHeader(http.StatusOK)
 }
 

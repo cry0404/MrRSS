@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Notion integration for exporting articles directly to Notion pages. (#625)
 - Supported hiding and showing the activity bar. (#588)
 
+### Changed
+
+- Auto-refresh will be triggered after feed update. (#639)
+
 ### Fixed
 
 - Ensured summary generation waits for full content when applicable. (#629)
