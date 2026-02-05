@@ -191,13 +191,8 @@ func (h *DeepSeekHandler) FormatEndpoint(endpoint, model string) string {
 		return "https://api.deepseek.com/v1/chat/completions"
 	}
 
-	// If custom endpoint provided, ensure it has the correct path
-	if !strings.Contains(endpoint, "/chat/completions") {
-		endpoint = strings.TrimSuffix(endpoint, "/")
-		return endpoint + "/v1/chat/completions"
-	}
-
-	return endpoint
+	// Use endpoint as-is (user should provide full API path)
+	return strings.TrimSuffix(endpoint, "/")
 }
 
 // GetRequiredHeaders returns the required HTTP headers for DeepSeek API

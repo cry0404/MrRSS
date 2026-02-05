@@ -13,8 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Supported multiple AI profiles and configuration management. (#439)
 - Added Notion integration for exporting articles directly to Notion pages. (#625)
 - Supported hiding and showing the activity bar. (#588)
+
+### Removed
+
+- Removed path auto-completion in AI handler. (#640)
 
 ## [1.3.18] - 2026-01-29
 

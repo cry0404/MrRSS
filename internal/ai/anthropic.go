@@ -200,13 +200,8 @@ func (h *AnthropicHandler) FormatEndpoint(endpoint, model string) string {
 		return "https://api.anthropic.com/v1/messages"
 	}
 
-	// If custom endpoint provided, ensure it has the correct path
-	if !strings.Contains(endpoint, "/messages") {
-		endpoint = strings.TrimSuffix(endpoint, "/")
-		return endpoint + "/v1/messages"
-	}
-
-	return endpoint
+	// Use endpoint as-is (user should provide full API path)
+	return strings.TrimSuffix(endpoint, "/")
 }
 
 // GetRequiredHeaders returns the required HTTP headers for Anthropic API

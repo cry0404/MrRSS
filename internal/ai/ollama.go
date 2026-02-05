@@ -165,16 +165,13 @@ func (h *OllamaHandler) ValidateResponse(statusCode int, body []byte) error {
 
 // FormatEndpoint returns the appropriate endpoint based on request type
 func (h *OllamaHandler) FormatEndpoint(endpoint, model string) string {
-	endpoint = strings.TrimSuffix(endpoint, "/")
-
-	// Default to /api/generate if no specific endpoint is set
-	// Client will set the correct endpoint based on request type
-	if !strings.HasSuffix(endpoint, "/api/generate") && !strings.HasSuffix(endpoint, "/api/chat") {
-		// Default to generate, client will override for chat if needed
-		endpoint = endpoint + "/api/generate"
+	// Ollama endpoint (user should provide full API path like http://localhost:11434/api/generate or http://localhost:11434/api/chat)
+	if endpoint == "" {
+		return "http://localhost:11434/api/generate"
 	}
 
-	return endpoint
+	// Use endpoint as-is (user should provide full API path)
+	return strings.TrimSuffix(endpoint, "/")
 }
 
 // IsOllamaError checks if an error message indicates an Ollama API format

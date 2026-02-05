@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 )
 
@@ -269,61 +268,15 @@ func IsGeminiError(errorMessage string) bool {
 	return false
 }
 
-// ExtractModelFromEndpoint extracts the model name from a Gemini endpoint
-// For example: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
-// returns "gemini-pro"
-func ExtractModelFromEndpoint(endpoint string) string {
-	// Gemini endpoint format: .../models/{model}:generateContent
-	re := regexp.MustCompile(`/models/([^:]+)`)
-	matches := re.FindStringSubmatch(endpoint)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-	return ""
-}
-
 // FormatGeminiEndpoint formats a Gemini endpoint with the given model
 // If the endpoint already contains a model, it's replaced
 func FormatGeminiEndpoint(baseEndpoint, model string) string {
-	// If endpoint already contains :generateContent or :streamGenerateContent, replace the model
-	if strings.Contains(baseEndpoint, ":generateContent") {
-		// Use simple pattern to replace model name
-		re := regexp.MustCompile(`/models/[^:]+:generateContent`)
-		if re.MatchString(baseEndpoint) {
-			return re.ReplaceAllString(baseEndpoint, "/models/"+model+":generateContent")
-		}
-		return baseEndpoint
+	// Gemini endpoint (user should provide full API path)
+	if baseEndpoint == "" {
+		// Default Gemini endpoint
+		return "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent"
 	}
 
-	// Trim trailing slash
-	baseEndpoint = strings.TrimSuffix(baseEndpoint, "/")
-
-	// If model is already in the endpoint, just add the method
-	if strings.Contains(baseEndpoint, "/models/"+model) {
-		return baseEndpoint + ":generateContent"
-	}
-
-	// Check if endpoint ends with "models" (trailing slash was trimmed from .../models/)
-	if strings.HasSuffix(baseEndpoint, "models") {
-		// Case: .../models (trailing slash was trimmed)
-		return baseEndpoint + "/" + model + ":generateContent"
-	}
-
-	// If endpoint has /models/ in the middle (not just ending with "models")
-	if strings.Contains(baseEndpoint, "/models/") {
-		// Find where /models/ ends
-		idx := strings.Index(baseEndpoint, "/models/") + len("/models/")
-		afterModels := baseEndpoint[idx:]
-
-		// If there's content after /models/ (not empty), replace it
-		if afterModels != "" {
-			// Remove everything after /models/ and add new model
-			return baseEndpoint[:idx] + model + ":generateContent"
-		}
-		// Just has /models/ at the end (shouldn't happen due to trim, but handle it)
-		return baseEndpoint + model + ":generateContent"
-	}
-
-	// Add model and method
-	return baseEndpoint + "/models/" + model + ":generateContent"
+	// Use endpoint as-is (user should provide full API path)
+	return strings.TrimSuffix(baseEndpoint, "/")
 }
