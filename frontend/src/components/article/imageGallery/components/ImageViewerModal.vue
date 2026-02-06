@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   PhX,
@@ -12,6 +12,7 @@ import {
 import type { Article } from '@/types/models';
 import { useImageViewer } from '../composables/useImageViewer';
 import ThumbnailStrip from './ThumbnailStrip.vue';
+import { getProxiedMediaUrl, isMediaCacheEnabled } from '@/utils/mediaProxy';
 
 interface Props {
   article: Article | null;
@@ -33,6 +34,14 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
+// Track media cache setting
+const mediaCacheEnabled = ref(false);
+
+// Check media cache setting on mount
+onMounted(async () => {
+  mediaCacheEnabled.value = await isMediaCacheEnabled();
+});
+
 // Local state for image index (managed separately for navigation)
 const localImageIndex = ref(props.currentImageIndex);
 
@@ -48,11 +57,33 @@ watch(
 const viewer = useImageViewer(props.allImages, localImageIndex, props.articles, props.article);
 
 // Get current image URL
+// Cover images (article.image_url) are always cached
+// Other images (from article content) are cached only if global media cache is enabled
 const currentImageUrl = computed(() => {
+  let originalUrl = '';
+  let isCoverImage = false;
+
   if (props.allImages.length > 0 && localImageIndex.value < props.allImages.length) {
-    return props.allImages[localImageIndex.value];
+    originalUrl = props.allImages[localImageIndex.value];
+    // Check if this is the cover image
+    isCoverImage = originalUrl === props.article?.image_url;
+  } else {
+    originalUrl = props.article?.image_url || '';
+    isCoverImage = true;
   }
-  return props.article?.image_url || '';
+
+  // Cover images are always cached to ensure they display correctly
+  if (isCoverImage) {
+    return getProxiedMediaUrl(originalUrl, undefined, true);
+  }
+
+  // Non-cover images: only cache if global media cache is enabled
+  if (mediaCacheEnabled.value) {
+    return getProxiedMediaUrl(originalUrl, undefined, true);
+  }
+
+  // If cache is disabled for non-cover images, use original URL directly
+  return originalUrl;
 });
 
 /**
@@ -305,6 +336,7 @@ window.addEventListener('image-wheel-navigate', ((e: CustomEvent) => {
         :images="allImages"
         :current-index="localImageIndex"
         :show="showThumbnailStrip"
+        :cover-image-u-r-l="article?.image_url"
         @select="handleThumbnailSelect"
         @toggle="emit('toggleThumbnailStrip')"
       />

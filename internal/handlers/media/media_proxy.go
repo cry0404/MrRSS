@@ -151,8 +151,9 @@ func getSmartReferer(imageURL, originalReferer string) string {
 // @Tags         media
 // @Accept       json
 // @Produce      application/octet-stream
-// @Param        url      query     string  true  "Media URL to proxy"
-// @Param        referer  query     string  false  "Referer URL for hotlink protection"
+// @Param        url         query     string  true  "Media URL to proxy"
+// @Param        referer     query     string  false  "Referer URL for hotlink protection"
+// @Param        force_cache query     bool    false  "Force caching even if globally disabled"
 // @Success      200  {file}  file  "Media file"
 // @Failure      400  {object}  map[string]string  "Bad request (missing or invalid URL)"
 // @Failure      403  {object}  map[string]string  "Media proxy is disabled"
@@ -195,7 +196,15 @@ func HandleMediaProxy(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	mediaCacheEnabled, _ := h.DB.GetSetting("media_cache_enabled")
 	mediaProxyFallback, _ := h.DB.GetSetting("media_proxy_fallback")
 
-	// If neither cache nor fallback is enabled, return error
+	// Check if force_cache parameter is set (for image mode feeds)
+	forceCache := r.URL.Query().Get("force_cache") == "true"
+
+	// If force_cache is true, enable caching for this request
+	if forceCache {
+		mediaCacheEnabled = "true"
+	}
+
+	// If neither cache nor fallback is enabled (and not forced), return error
 	if mediaCacheEnabled != "true" && mediaProxyFallback != "true" {
 		response.Error(w, fmt.Errorf("media proxy is disabled"), http.StatusForbidden)
 		return

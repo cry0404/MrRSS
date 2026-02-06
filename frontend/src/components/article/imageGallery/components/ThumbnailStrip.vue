@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { getProxiedMediaUrl, isMediaCacheEnabled } from '@/utils/mediaProxy';
 
 interface Props {
   images: string[];
   currentIndex: number;
   show: boolean;
+  coverImageURL?: string; // Optional: URL of the cover image (always cached)
 }
 
 const props = defineProps<Props>();
@@ -16,6 +18,14 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+// Track media cache setting
+const mediaCacheEnabled = ref(false);
+
+// Check media cache setting on mount
+onMounted(async () => {
+  mediaCacheEnabled.value = await isMediaCacheEnabled();
+});
 
 const thumbnailStripRef = ref<HTMLElement | null>(null);
 const thumbnailStripWidth = ref(0);
@@ -74,6 +84,29 @@ function handleThumbnailWheel(e: WheelEvent): void {
 function selectThumbnail(index: number): void {
   emit('select', index);
 }
+
+/**
+ * Get proxied URL for a thumbnail
+ * Cover images are always cached
+ * Other images are cached only if global media cache is enabled
+ */
+function getProxiedUrl(url: string): string {
+  // Check if this is the cover image
+  const isCoverImage = props.coverImageURL && url === props.coverImageURL;
+
+  // Cover images are always cached to ensure they display correctly
+  if (isCoverImage) {
+    return getProxiedMediaUrl(url, undefined, true);
+  }
+
+  // Non-cover images: only cache if global media cache is enabled
+  if (mediaCacheEnabled.value) {
+    return getProxiedMediaUrl(url, undefined, true);
+  }
+
+  // If cache is disabled for non-cover images, use original URL directly
+  return url;
+}
 </script>
 
 <template>
@@ -119,7 +152,7 @@ function selectThumbnail(index: number): void {
             @click="selectThumbnail(index)"
           >
             <img
-              :src="image"
+              :src="getProxiedUrl(image)"
               :alt="`${t('common.text.image')} ${index + 1}`"
               class="w-full h-full object-cover"
               loading="lazy"

@@ -10,9 +10,10 @@ let mediaCachePromise: Promise<boolean> | null = null;
  * Convert a media URL to use the proxy endpoint
  * @param url Original media URL
  * @param referer Optional referer URL for anti-hotlinking and resolving relative URLs
+ * @param forceCache Force caching even if globally disabled (e.g., for image mode feeds)
  * @returns Proxied URL
  */
-export function getProxiedMediaUrl(url: string, referer?: string): string {
+export function getProxiedMediaUrl(url: string, referer?: string, forceCache?: boolean): string {
   if (!url) return '';
 
   // Don't proxy data URLs or blob URLs
@@ -52,6 +53,11 @@ export function getProxiedMediaUrl(url: string, referer?: string): string {
   if (referer) {
     const refererB64 = btoa(referer);
     proxyUrl += `&referer_b64=${refererB64}`;
+  }
+
+  // Add force_cache parameter if specified
+  if (forceCache) {
+    proxyUrl += `&force_cache=true`;
   }
 
   return proxyUrl;

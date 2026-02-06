@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { PhImage, PhHeart } from '@phosphor-icons/vue';
+import { computed } from 'vue';
 import type { Article } from '@/types/models';
+import { getProxiedMediaUrl } from '@/utils/mediaProxy';
 
 interface Props {
   article: Article;
@@ -9,13 +11,24 @@ interface Props {
   showTextOverlay: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   click: [];
   favorite: [event: Event];
   contextMenu: [event: MouseEvent];
 }>();
+
+/**
+ * Get proxied image URL for cover image
+ * Cover images (image_url) are always cached to ensure they display correctly
+ * This prevents hotlinking issues and ensures consistent loading
+ */
+const proxiedImageUrl = computed(() => {
+  // Always use proxy with force_cache=true for cover images
+  // Cover images are the main image shown in the gallery grid
+  return getProxiedMediaUrl(props.article.image_url, undefined, true);
+});
 
 /**
  * Handle favorite button click
@@ -66,12 +79,7 @@ function formatDate(dateString: string): string {
     <div
       class="relative overflow-hidden rounded-lg bg-bg-secondary transition-transform duration-200 hover:scale-[1.02]"
     >
-      <img
-        :src="article.image_url"
-        :alt="article.title"
-        class="w-full h-auto block"
-        loading="lazy"
-      />
+      <img :src="proxiedImageUrl" :alt="article.title" class="w-full h-auto block" loading="lazy" />
 
       <!-- Image count indicator -->
       <div

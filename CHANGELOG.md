@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Auto-refresh will be triggered after feed update. (#639)
+- Cover images in image gallery are now forced to use caching. (#500)
 
 ### Fixed
 
