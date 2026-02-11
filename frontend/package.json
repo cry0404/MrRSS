@@ -40,7 +40,7 @@
     "@cypress/vite-dev-server": "^7.2.0",
     "@cypress/vue": "^6.0.2",
     "@types/highlight.js": "^10.1.0",
-    "@types/node": "^25.2.0",
+    "@types/node": "^25.2.2",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
     "@vitejs/plugin-vue": "^6.0.4",
