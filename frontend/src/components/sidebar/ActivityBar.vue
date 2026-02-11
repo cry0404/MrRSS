@@ -262,7 +262,6 @@ defineExpose({
         @click="toggleFeedList"
       >
         <PhSidebar
-          v-if="isFeedListExpanded"
           :size="24"
           :weight="isFeedListExpanded ? 'fill' : 'regular'"
         />
