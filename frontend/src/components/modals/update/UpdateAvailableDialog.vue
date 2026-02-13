@@ -113,15 +113,6 @@ const updateButtonText = computed(() => {
           disabled: props.downloadingUpdate || props.installingUpdate,
           onClick: handleClose,
         }"
-        :primary-button="
-          props.updateInfo.download_url
-            ? {
-                label: updateButtonText,
-                disabled: props.downloadingUpdate || props.installingUpdate,
-                onClick: handleUpdate,
-              }
-            : undefined
-        "
       >
         <template v-if="props.updateInfo.download_url" #right>
           <button
