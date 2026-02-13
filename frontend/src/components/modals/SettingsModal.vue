@@ -111,7 +111,7 @@ function handleDiscoverAll() {
 
       <div class="flex flex-1 min-h-0 overflow-hidden">
         <!-- Sidebar Navigation -->
-        <div class="w-48 sm:w-56 border-r border-border bg-bg-secondary shrink-0 overflow-y-auto">
+        <div class="w-48 sm:w-56 border-r border-border bg-bg-secondary shrink-0 overflow-y-scroll">
           <nav class="p-2 space-y-1">
             <button
               :class="['sidebar-tab-btn', activeTab === 'general' ? 'active' : '']"
@@ -194,7 +194,7 @@ function handleDiscoverAll() {
         </div>
 
         <!-- Content Area -->
-        <div class="flex-1 overflow-y-auto p-3 sm:p-6 min-h-0 scroll-smooth">
+        <div class="flex-1 overflow-y-scroll p-3 sm:p-6 min-h-0 scroll-smooth">
           <GeneralTab
             v-if="activeTab === 'general'"
             :settings="settings"

@@ -873,7 +873,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="flex-1 overflow-y-auto bg-bg-primary p-3 sm:p-6 scroll-smooth"
+    class="flex-1 overflow-y-scroll bg-bg-primary p-3 sm:p-6 scroll-smooth"
     @click="handleContainerClick"
   >
     <div

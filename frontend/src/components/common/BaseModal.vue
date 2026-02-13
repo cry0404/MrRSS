@@ -206,7 +206,7 @@ onUnmounted(() => {
 
       <!-- Body -->
       <div
-        :class="['flex-1 overflow-y-auto', title || $slots.header ? '' : 'p-4 sm:p-6', bodyClass]"
+        :class="['flex-1 overflow-y-scroll', title || $slots.header ? '' : 'p-4 sm:p-6', bodyClass]"
       >
         <slot></slot>
       </div>
