@@ -136,11 +136,8 @@ func (t *AITranslator) Translate(text, targetLang string) (string, error) {
 		return "", err
 	}
 
-	// Clean up the response:
-	// 1) remove model thinking blocks if they leaked into main content
-	// 2) trim quotes/whitespace
-	translated := ai.RemoveThinkingTags(result.Content)
-	translated = strings.TrimSpace(translated)
+	// Clean up the response - remove any quotes or extra whitespace
+	translated := strings.TrimSpace(result.Content)
 	translated = strings.Trim(translated, "\"'")
 	return translated, nil
 }
