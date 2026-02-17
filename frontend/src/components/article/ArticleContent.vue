@@ -21,6 +21,7 @@ import {
 import { useSettings } from '@/composables/core/useSettings';
 import { useAppStore } from '@/stores/app';
 import { proxyImagesInHtml, isMediaCacheEnabled } from '@/utils/mediaProxy';
+import { stripThinkingContent } from '@/utils/translationSanitizer';
 import './ArticleContent.css';
 
 interface SummaryResult {
@@ -223,7 +224,7 @@ async function translateText(
       }
 
       return {
-        text: data.translated_text || '',
+        text: stripThinkingContent(data.translated_text || ''),
         html: data.html || '',
       };
     } else {

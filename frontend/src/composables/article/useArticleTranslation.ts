@@ -1,6 +1,7 @@
 import { ref, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Article } from '@/types/models';
+import { stripThinkingContent } from '@/utils/translationSanitizer';
 
 interface TranslationSettings {
   enabled: boolean;
@@ -107,7 +108,7 @@ export function useArticleTranslation() {
 
         // Update the article in the store
         // Backend returns translated_title even when skipped (returns original title)
-        article.translated_title = data.translated_title;
+        article.translated_title = stripThinkingContent(data.translated_title || '');
 
         // Show notification if AI limit was reached
         if (data.limit_reached) {
