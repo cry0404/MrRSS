@@ -100,6 +100,7 @@ var AllSettings = []SettingDef{
 	{Key: "shortcuts", Encrypted: false},
 	{Key: "shortcuts_enabled", Encrypted: false},
 	{Key: "show_article_preview_images", Encrypted: false},
+	{Key: "show_floating_toc", Encrypted: false},
 	{Key: "show_hidden_articles", Encrypted: false},
 	{Key: "startup_on_boot", Encrypted: false},
 	{Key: "summary_enabled", Encrypted: false},

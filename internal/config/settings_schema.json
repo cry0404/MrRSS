@@ -410,6 +410,13 @@
       "encrypted": false,
       "frontend_key": "showArticlePreviewImages"
     },
+    "show_floating_toc": {
+      "type": "bool",
+      "default": true,
+      "category": "reading",
+      "encrypted": false,
+      "frontend_key": "showFloatingToc"
+    },
     "obsidian_enabled": {
       "type": "bool",
       "default": false,

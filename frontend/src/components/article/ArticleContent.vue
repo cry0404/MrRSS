@@ -6,6 +6,7 @@ import type { Article } from '@/types/models';
 import ArticleTitle from './parts/ArticleTitle.vue';
 import ArticleSummary from './parts/ArticleSummary.vue';
 import ArticleBody from './parts/ArticleBody.vue';
+import FloatingToc from './parts/FloatingToc.vue';
 import AudioPlayer from './parts/AudioPlayer.vue';
 import VideoPlayer from './parts/VideoPlayer.vue';
 import ArticleChatButton from './ArticleChatButton.vue';
@@ -64,6 +65,7 @@ function handleRetryLoad() {
 const { settings: appSettings, fetchSettings } = useSettings();
 const store = useAppStore();
 const isChatPanelOpen = ref(false);
+const articleScrollContainer = ref<HTMLElement | null>(null);
 
 // Full-text fetching state
 const isFetchingFullArticle = ref(false);
@@ -123,6 +125,8 @@ const showChatButton = computed(() => {
     // Removed: props.showContent requirement - chat should work in both modes
   );
 });
+
+const showFloatingToc = computed(() => appSettings.value.show_floating_toc);
 
 // Computed to check if full-text fetching should be shown
 const showFullTextButton = computed(() => {
@@ -873,11 +877,12 @@ onBeforeUnmount(() => {
 
 <template>
   <div
+    ref="articleScrollContainer"
     class="flex-1 overflow-y-scroll bg-bg-primary p-3 sm:p-6 scroll-smooth"
     @click="handleContainerClick"
   >
     <div
-      class="max-w-3xl mx-auto bg-bg-primary"
+      class="max-w-3xl mx-auto bg-bg-primary [container-type:inline-size]"
       :class="{
         'hide-translations': !showTranslations,
         'translation-only-mode': translationSettings.translationOnlyMode,
@@ -942,6 +947,12 @@ onBeforeUnmount(() => {
           }}</span>
         </button>
       </div>
+
+      <FloatingToc
+        :enabled="showFloatingToc"
+        :article-id="article.id"
+        :scroll-container="articleScrollContainer"
+      />
     </div>
 
     <!-- Chat Button (shown when content is loaded and chat is enabled) -->
