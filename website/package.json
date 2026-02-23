@@ -1,6 +1,6 @@
 {
   "name": "mrrss-website",
-  "version": "1.3.20",
+  "version": "1.3.21",
   "description": "MrRSS - AI-Powered RSS Reader Landing Page",
   "type": "module",
   "scripts": {
@@ -17,7 +17,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
-    "@typescript-eslint/parser": "^8.25.0",
+    "@typescript-eslint/parser": "^8.55.0",
     "@vitejs/plugin-vue": "^6.0.4",
     "eslint": "^9.39.2",
     "prettier": "^3.8.1",
