@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Striped leaked thinking content in AI translation results. (@MidnightCrowing)
+- Fixed multiple minor styling inconsistencies. (#650)
 
 ## [1.3.20] - 2026-02-13
 
