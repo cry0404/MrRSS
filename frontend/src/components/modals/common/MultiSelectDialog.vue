@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhCheckSquare, PhSquare } from '@phosphor-icons/vue';
 import BaseModal from '@/components/common/BaseModal.vue';
@@ -51,24 +51,6 @@ const filteredOptions = computed(() => {
   );
 });
 
-onMounted(() => {
-  // Initialize with no selection
-  selectedValues.value = [];
-});
-
-function toggleOption(value: string) {
-  const index = selectedValues.value.indexOf(value);
-  if (index > -1) {
-    selectedValues.value.splice(index, 1);
-  } else {
-    selectedValues.value.push(value);
-  }
-}
-
-function isOptionSelected(value: string): boolean {
-  return selectedValues.value.includes(value);
-}
-
 function handleConfirm() {
   emit('confirm', selectedValues.value);
   emit('close');
@@ -82,6 +64,39 @@ function handleCancel() {
 function handleClose() {
   emit('cancel');
   emit('close');
+}
+
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleConfirm();
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    handleCancel();
+  }
+}
+
+onMounted(() => {
+  // Initialize with no selection
+  selectedValues.value = [];
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+});
+
+function toggleOption(value: string) {
+  const index = selectedValues.value.indexOf(value);
+  if (index > -1) {
+    selectedValues.value.splice(index, 1);
+  } else {
+    selectedValues.value.push(value);
+  }
+}
+
+function isOptionSelected(value: string): boolean {
+  return selectedValues.value.includes(value);
 }
 </script>
 
@@ -100,6 +115,7 @@ function handleClose() {
           type="text"
           :placeholder="t('common.select.searchPlaceholder')"
           class="w-full px-2 py-1 bg-bg-secondary text-text-primary text-xs focus:outline-none"
+          @keydown.enter.stop
         />
       </div>
 
