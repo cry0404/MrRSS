@@ -53,6 +53,7 @@ function handleUpdate(value: string | number): void {
     <BaseSelect
       :model-value="action"
       :options="actionSelectOptions"
+      :searchable="true"
       @update:model-value="handleUpdate"
     />
     <button class="btn-danger-icon" :title="t('setting.rule.removeAction')" @click="emit('remove')">

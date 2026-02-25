@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted, type PropType } from 'vue';
+import { ref, computed, watch, nextTick, onUnmounted, type PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PhCaretDown, PhCheck } from '@phosphor-icons/vue';
+import { PhCaretDown, PhCheck, PhChecks } from '@phosphor-icons/vue';
 import { type SelectOption, flattenOptions } from '@/types/select';
 import { useSelect } from '@/composables/ui/useSelect';
 import './select.css';
@@ -44,10 +44,6 @@ const props = defineProps({
     type: Boolean,
     default: false, // Reserved for future implementation
   },
-  showSelectAll: {
-    type: Boolean,
-    default: true,
-  },
   position: {
     type: String as PropType<'bottom' | 'top' | 'auto'>,
     default: 'bottom',
@@ -63,99 +59,56 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
-const dropdownPositionStyle = ref<Record<string, string>>({});
+const searchQuery = ref('');
+const searchInputRef = ref<HTMLInputElement>();
+
+// Reactive refs for computed values passed to useSelect
+const positionRef = computed(() => props.position);
+const widthRef = computed(() => props.width);
+const maxWidthRef = computed(() => props.maxWidth);
+const desiredMaxHeightRef = computed(() => props.maxHeight);
+
+// Filter options based on search query
+const filteredOptions = computed(() => {
+  if (!props.searchable || !searchQuery.value.trim()) {
+    return props.options;
+  }
+
+  const query = searchQuery.value.toLowerCase().trim();
+  return props.options.filter((option) => option.label.toLowerCase().includes(query));
+});
 
 // Flatten options for navigation
-const flatOptions = computed(() => flattenOptions(props.options));
+const flatOptions = computed(() => flattenOptions(filteredOptions.value));
 
-// Use select composable for click outside and hover management
+// Use select composable for shared functionality
 const {
   selectedIndex,
   triggerRef,
   dropdownRef,
+  dropdownPositionStyle,
+  widthClass,
+  maxWidthStyle,
+  shouldTeleport,
   resetIndex,
   registerAsOpen,
   unregisterAsOpen,
   handleMouseLeave,
-} = useSelect(flatOptions.value, isOpen, dropdownId);
-
-// Compute dropdown position
-const dropdownPosition = computed(() => {
-  if (props.position === 'auto') {
-    return 'bottom';
-  }
-  return props.position;
+  updateDropdownPosition,
+  setupScrollListener,
+  cleanupScrollListener,
+} = useSelect({
+  options: [],
+  isOpen,
+  dropdownId,
+  position: positionRef,
+  width: widthRef,
+  maxWidth: maxWidthRef,
+  desiredMaxHeight: desiredMaxHeightRef,
 });
 
-// Width class
-const widthClass = computed(() => {
-  if (props.width) {
-    switch (props.width) {
-      case 'sm':
-        return 'w-20 sm:w-24';
-      case 'md':
-        return 'w-32 sm:w-48';
-      case 'lg':
-        return 'w-48 sm:w-64';
-      default:
-        return props.width;
-    }
-  }
-  return 'w-full';
-});
-
-// Max width style
-const maxWidthStyle = computed(() => {
-  if (props.maxWidth) {
-    return { maxWidth: props.maxWidth };
-  }
-  return {};
-});
-
-// Max height style for dropdown
-const maxHeightStyle = computed(() => {
-  if (props.maxHeight) {
-    return { maxHeight: props.maxHeight };
-  }
-  return {};
-});
-
-// Calculate dropdown position when opened
-function updateDropdownPosition() {
-  if (!isOpen.value || !triggerRef.value) return;
-
-  const triggerRect = triggerRef.value.getBoundingClientRect();
-  const dropdownHeight = 200;
-  const viewportHeight = window.innerHeight;
-
-  let top: number;
-  let position: 'top' | 'bottom' = dropdownPosition.value;
-
-  if (props.position === 'auto') {
-    const spaceBelow = viewportHeight - triggerRect.bottom;
-    const spaceAbove = triggerRect.top;
-
-    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-      position = 'top';
-    } else {
-      position = 'bottom';
-    }
-  }
-
-  if (position === 'bottom') {
-    top = triggerRect.bottom + window.scrollY + 4;
-  } else {
-    top = triggerRect.top + window.scrollY - dropdownHeight - 4;
-  }
-
-  dropdownPositionStyle.value = {
-    position: 'fixed',
-    left: `${triggerRect.left}px`,
-    top: `${top}px`,
-    width: `${triggerRect.width}px`,
-    zIndex: '9999',
-  };
-}
+// Use dropdown position style directly (maxHeight is calculated dynamically)
+const dropdownStyle = computed(() => dropdownPositionStyle.value);
 
 // Check if an option is selected
 function isSelected(value: string | number): boolean {
@@ -172,34 +125,6 @@ function toggleOption(option: SelectOption) {
 
   emit('update:modelValue', newValues);
 }
-
-// Select all
-function selectAll() {
-  const enabledOptions = flatOptions.value.filter((opt) => !opt.disabled);
-  emit(
-    'update:modelValue',
-    enabledOptions.map((opt) => opt.value)
-  );
-}
-
-// Deselect all
-function deselectAll() {
-  emit('update:modelValue', []);
-}
-
-// Check if all enabled options are selected
-const allSelected = computed(() => {
-  const enabledOptions = flatOptions.value.filter((opt) => !opt.disabled);
-  if (enabledOptions.length === 0) return false;
-  return enabledOptions.every((opt) => isSelected(opt.value));
-});
-
-// Check if some (but not all) enabled options are selected
-const someSelected = computed(() => {
-  const enabledOptions = flatOptions.value.filter((opt) => !opt.disabled);
-  const selectedCount = enabledOptions.filter((opt) => isSelected(opt.value)).length;
-  return selectedCount > 0 && selectedCount < enabledOptions.length;
-});
 
 // Display text for trigger button
 const displayText = computed(() => {
@@ -224,42 +149,31 @@ function toggleDropdown() {
   if (isOpen.value) {
     registerAsOpen();
     resetIndex();
+    setupScrollListener();
     nextTick(updateDropdownPosition);
+    if (props.searchable) {
+      nextTick(() => {
+        searchInputRef.value?.focus();
+      });
+    }
   } else {
     unregisterAsOpen();
+    cleanupScrollListener();
   }
 }
+
+// Watch for dropdown state changes to clear search
+watch(isOpen, (open) => {
+  if (!open) {
+    searchQuery.value = '';
+  }
+});
 
 // Handle click on trigger
 function handleTriggerClick(event: MouseEvent) {
   event.stopPropagation();
   toggleDropdown();
 }
-
-// Handle scroll to update position
-function handleScroll() {
-  if (isOpen.value) {
-    updateDropdownPosition();
-  }
-}
-
-// Handle window resize
-function handleResize() {
-  if (isOpen.value) {
-    updateDropdownPosition();
-  }
-}
-
-// Add/remove event listeners for scroll and resize
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll, true);
-  window.addEventListener('resize', handleResize);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll, true);
-  window.removeEventListener('resize', handleResize);
-});
 
 // Get option class
 function getOptionClass(option: SelectOption, index: number): string {
@@ -293,6 +207,11 @@ const selectedOptions = computed(() => {
     .map((value) => flatOptions.value.find((opt) => opt.value === value))
     .filter(Boolean) as SelectOption[];
 });
+
+// Clean up scroll listener on unmount
+onUnmounted(() => {
+  cleanupScrollListener();
+});
 </script>
 
 <template>
@@ -324,6 +243,7 @@ const selectedOptions = computed(() => {
       :tabindex="disabled ? -1 : 0"
       @click="handleTriggerClick"
     >
+      <PhChecks :size="16" class="text-accent flex-shrink-0 mr-1.5" />
       <span class="select-text truncate flex-1 text-left">
         {{ displayText }}
       </span>
@@ -331,47 +251,32 @@ const selectedOptions = computed(() => {
     </button>
 
     <!-- Dropdown menu -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!shouldTeleport">
       <div
         v-if="isOpen"
         ref="dropdownRef"
         class="select-dropdown"
-        :style="{ ...dropdownPositionStyle, ...maxHeightStyle }"
+        :style="dropdownStyle"
         @mouseleave="handleMouseLeave"
       >
-        <!-- Select all / deselect all -->
-        <div
-          v-if="showSelectAll"
-          class="select-all-container"
-          @click="allSelected ? deselectAll() : selectAll()"
-        >
+        <!-- Search input -->
+        <div v-if="searchable" class="select-search">
           <input
-            type="checkbox"
-            :checked="allSelected"
-            :indeterminate="someSelected"
-            class="select-checkbox"
-            tabindex="-1"
+            ref="searchInputRef"
+            v-model="searchQuery"
+            type="text"
+            :placeholder="t('common.select.searchPlaceholder')"
           />
-          <span>
-            {{ allSelected ? t('common.select.deselectAll') : t('common.select.selectAll') }}
-          </span>
         </div>
 
         <!-- Options -->
         <div
-          v-for="(option, index) in options"
+          v-for="(option, index) in filteredOptions"
           :key="option.value"
           :class="getOptionClass(option, index)"
           @click.stop="toggleOption(option)"
           @mouseenter="selectedIndex = index"
         >
-          <input
-            type="checkbox"
-            :checked="isSelected(option.value)"
-            :disabled="option.disabled"
-            class="select-checkbox"
-            tabindex="-1"
-          />
           <span
             v-if="option.color"
             class="w-3 h-3 rounded-full flex-shrink-0"
@@ -387,7 +292,9 @@ const selectedOptions = computed(() => {
 
         <!-- Empty state -->
         <div v-if="flatOptions.length === 0" class="select-empty">
-          {{ t('common.select.noOptions') }}
+          {{
+            searchable && searchQuery ? t('common.select.noResults') : t('common.select.noOptions')
+          }}
         </div>
       </div>
     </Teleport>
@@ -403,26 +310,5 @@ const selectedOptions = computed(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-input[type='checkbox']:indeterminate {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--accent-color);
-  border-radius: 3px;
-  background-color: var(--bg-primary);
-  position: relative;
-}
-
-input[type='checkbox']:indeterminate::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 2px;
-  background-color: var(--accent-color);
 }
 </style>

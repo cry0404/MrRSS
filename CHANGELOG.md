@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Refactored the dropdown input component for better usability and supported searching. (#697)
+
 ### Fixed
 
 - Striped leaked thinking content in AI translation results. (@MidnightCrowing)

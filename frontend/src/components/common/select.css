@@ -32,16 +32,9 @@
 
 /* Dropdown menu */
 .select-dropdown {
-  @apply absolute left-0 right-0 border border-border rounded-md bg-bg-primary;
-  @apply max-h-60 overflow-y-auto z-50 shadow-lg scroll-smooth;
-}
-
-.select-dropdown.position-bottom {
-  @apply top-full mt-1;
-}
-
-.select-dropdown.position-top {
-  @apply bottom-full mb-1;
+  @apply border border-border rounded-md bg-bg-primary;
+  @apply overflow-y-auto shadow-lg scroll-smooth;
+  /* Position and dimensions are set via inline styles by useSelect */
 }
 
 /* Select option */
@@ -113,6 +106,22 @@
 /* Custom input section */
 .select-custom-input {
   @apply p-2 border-t border-border;
+}
+
+/* Search input section */
+.select-search {
+  @apply border-b border-border;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--bg-primary);
+}
+
+.select-search input {
+  @apply w-full px-2.5 py-2 bg-transparent text-text-primary;
+  @apply focus:outline-none;
+  @apply text-sm;
+  min-height: 38px;
 }
 
 /* Placeholder text */

@@ -59,6 +59,7 @@ function openDocumentation() {
         :model-value="props.modelValue"
         :options="scriptOptions"
         :class="{ 'border-red-500': props.mode === 'add' && props.isInvalid }"
+        :searchable="true"
         @update:model-value="emit('update:modelValue', String($event))"
       />
     </div>

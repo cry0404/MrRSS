@@ -114,7 +114,12 @@ function handleSelectChange(value: string | number) {
     </div>
 
     <!-- Available tags dropdown -->
-    <BaseSelect :model-value="''" :options="tagOptions" @update:model-value="handleSelectChange" />
+    <BaseSelect
+      :model-value="''"
+      :options="tagOptions"
+      :searchable="true"
+      @update:model-value="handleSelectChange"
+    />
 
     <!-- Create new tag button -->
     <button

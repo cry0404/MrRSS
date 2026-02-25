@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhCheckSquare, PhSquare } from '@phosphor-icons/vue';
 import BaseModal from '@/components/common/BaseModal.vue';
@@ -14,15 +14,8 @@ interface Props {
   options?: MultiSelectOption[];
   confirmText?: string;
   cancelText?: string;
+  searchable?: boolean;
 }
-
-withDefaults(defineProps<Props>(), {
-  title: 'Select',
-  message: '',
-  options: () => [],
-  confirmText: undefined,
-  cancelText: undefined,
-});
 
 // Use i18n translations if not provided
 const getConfirmText = (customText?: string) => customText || t('common.confirm');
@@ -34,7 +27,29 @@ const emit = defineEmits<{
   close: [];
 }>();
 
+const props = withDefaults(defineProps<Props>(), {
+  title: 'Select',
+  message: '',
+  options: () => [],
+  confirmText: undefined,
+  cancelText: undefined,
+  searchable: false,
+});
+
 const selectedValues = ref<string[]>([]);
+const searchQuery = ref('');
+
+// Filter options based on search query
+const filteredOptions = computed(() => {
+  if (!props.searchable || !searchQuery.value.trim()) {
+    return props.options;
+  }
+
+  const query = searchQuery.value.toLowerCase().trim();
+  return props.options.filter((option: MultiSelectOption) =>
+    option.label.toLowerCase().includes(query)
+  );
+});
 
 onMounted(() => {
   // Initialize with no selection
@@ -78,10 +93,20 @@ function handleClose() {
         {{ message }}
       </p>
 
+      <!-- Search Input -->
+      <div v-if="searchable" class="mb-2">
+        <input
+          v-model="searchQuery"
+          type="text"
+          :placeholder="t('common.select.searchPlaceholder')"
+          class="w-full px-2 py-1 bg-bg-secondary text-text-primary text-xs focus:outline-none"
+        />
+      </div>
+
       <!-- Options List -->
       <div class="max-h-64 overflow-y-auto border border-border rounded-lg bg-bg-secondary">
         <div
-          v-for="option in options"
+          v-for="option in filteredOptions"
           :key="option.value"
           class="flex items-center gap-2 px-3 py-2 hover:bg-bg-tertiary cursor-pointer transition-colors border-b border-border last:border-0"
           @click="toggleOption(option.value)"
@@ -110,8 +135,11 @@ function handleClose() {
         </div>
 
         <!-- Empty State -->
-        <div v-if="options.length === 0" class="px-3 py-8 text-center text-text-secondary text-sm">
-          {{ t('modal.tag.noTags') }}
+        <div
+          v-if="filteredOptions.length === 0"
+          class="px-3 py-8 text-center text-text-secondary text-sm"
+        >
+          {{ searchable && searchQuery ? t('common.select.noResults') : t('modal.tag.noTags') }}
         </div>
       </div>
 
@@ -119,7 +147,7 @@ function handleClose() {
       <div v-if="selectedValues.length > 0" class="mt-2 text-xs text-text-secondary">
         {{
           t('common.search.totalAndSelected', {
-            total: options.length,
+            total: filteredOptions.length,
             selected: selectedValues.length,
           })
         }}

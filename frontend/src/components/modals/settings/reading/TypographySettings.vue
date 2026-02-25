@@ -150,6 +150,7 @@ function updateSetting(key: keyof SettingsData, value: any) {
       <BaseSelect
         :model-value="settings.content_font_family"
         :options="fontOptions"
+        :searchable="true"
         width="w-36 sm:w-48"
         max-height="max-h-60"
         @update:model-value="updateSetting('content_font_family', $event)"

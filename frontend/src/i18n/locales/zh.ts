@@ -256,6 +256,8 @@ const zh: TranslationMessages = {
       noOptions: '无选项',
       selectAll: '全选',
       deselectAll: '取消全选',
+      searchPlaceholder: '搜索...',
+      noResults: '未找到结果',
     },
     input: {
       customValue: '输入自定义值...',

@@ -62,6 +62,7 @@ function handleSelectChange(value: string | number) {
       :options="categoryOptions"
       :allow-custom-input="true"
       :custom-input-placeholder="t('modal.feed.enterCategoryName')"
+      :searchable="true"
       @update:model-value="handleSelectChange"
       @custom-input="handleCustomInput"
     />

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted, onUnmounted, type PropType } from 'vue';
+import { ref, computed, watch, nextTick, onUnmounted, type PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhCaretDown, PhX } from '@phosphor-icons/vue';
 import {
   type SelectOption,
+  type SelectOptionGroup,
   type SelectOptions,
   isOptionGroup,
   flattenOptions,
@@ -84,10 +85,50 @@ const emit = defineEmits<{
 const isOpen = ref(false);
 const customInputValue = ref('');
 const customInputRef = ref<HTMLInputElement>();
-const dropdownPositionStyle = ref<Record<string, string>>({});
+const searchQuery = ref('');
+const searchInputRef = ref<HTMLInputElement>();
 
-// Flatten options for navigation
-const flatOptions = computed(() => flattenOptions(props.options));
+// Reactive refs for computed values passed to useSelect
+const positionRef = computed(() => props.position);
+const widthRef = computed(() => props.width);
+const maxWidthRef = computed(() => props.maxWidth);
+const desiredMaxHeightRef = computed(() => props.maxHeight);
+
+// Filter options based on search query
+const filteredOptions = computed(() => {
+  if (!props.searchable || !searchQuery.value.trim()) {
+    return props.options;
+  }
+
+  const query = searchQuery.value.toLowerCase().trim();
+  const result: SelectOptions = [];
+
+  for (const item of props.options) {
+    if (isOptionGroup(item)) {
+      // Filter options within group
+      const filteredGroupOptions = item.options.filter((option) =>
+        option.label.toLowerCase().includes(query)
+      );
+      // Only include group if it has matching options
+      if (filteredGroupOptions.length > 0) {
+        (result as SelectOptionGroup[]).push({
+          label: item.label,
+          options: filteredGroupOptions,
+        });
+      }
+    } else {
+      // Filter single option
+      if (item.label.toLowerCase().includes(query)) {
+        (result as SelectOption[]).push(item);
+      }
+    }
+  }
+
+  return result;
+});
+
+// Flatten filtered options for navigation
+const filteredFlatOptions = computed(() => flattenOptions(filteredOptions.value));
 
 // Find current selected option
 const selectedOption = computed(() => findOption(props.options, props.modelValue));
@@ -100,95 +141,39 @@ const displayText = computed(() => {
   return props.placeholder || t('common.select.placeholder');
 });
 
-// Use select composable for click outside and hover management
+// Use select composable for shared functionality
 const {
   selectedIndex,
   triggerRef,
   dropdownRef,
+  dropdownPositionStyle,
+  widthClass,
+  maxWidthStyle,
+  shouldTeleport,
   resetIndex,
   registerAsOpen,
   unregisterAsOpen,
   handleMouseLeave,
-} = useSelect(flatOptions.value, isOpen, dropdownId);
-
-// Compute dropdown position
-const dropdownPosition = computed(() => {
-  if (props.position === 'auto') {
-    return 'bottom';
-  }
-  return props.position;
+  updateDropdownPosition,
+  setupScrollListener,
+  cleanupScrollListener,
+} = useSelect({
+  options: [],
+  isOpen,
+  dropdownId,
+  position: positionRef,
+  width: widthRef,
+  maxWidth: maxWidthRef,
+  desiredMaxHeight: desiredMaxHeightRef,
 });
 
-// Width class
-const widthClass = computed(() => {
-  if (props.width) {
-    switch (props.width) {
-      case 'sm':
-        return 'w-20 sm:w-24';
-      case 'md':
-        return 'w-32 sm:w-48';
-      case 'lg':
-        return 'w-48 sm:w-64';
-      default:
-        return props.width;
-    }
-  }
-  return 'w-full';
+// Use dropdown position style directly (maxHeight is calculated dynamically)
+const dropdownStyle = computed(() => dropdownPositionStyle.value);
+
+// Reset selected index when search query changes
+watch(searchQuery, () => {
+  resetIndex();
 });
-
-// Max width style
-const maxWidthStyle = computed(() => {
-  if (props.maxWidth) {
-    return { maxWidth: props.maxWidth };
-  }
-  return {};
-});
-
-// Max height style for dropdown
-const maxHeightStyle = computed(() => {
-  if (props.maxHeight) {
-    return { maxHeight: props.maxHeight };
-  }
-  return {};
-});
-
-// Calculate dropdown position when opened
-function updateDropdownPosition() {
-  if (!isOpen.value || !triggerRef.value) return;
-
-  const triggerRect = triggerRef.value.getBoundingClientRect();
-  const dropdownHeight = 200; // Approximate max height
-  const viewportHeight = window.innerHeight;
-
-  let top: number;
-  let position: 'top' | 'bottom' = dropdownPosition.value;
-
-  // Auto-detect position
-  if (props.position === 'auto') {
-    const spaceBelow = viewportHeight - triggerRect.bottom;
-    const spaceAbove = triggerRect.top;
-
-    if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-      position = 'top';
-    } else {
-      position = 'bottom';
-    }
-  }
-
-  if (position === 'bottom') {
-    top = triggerRect.bottom + window.scrollY + 4; // 4px margin
-  } else {
-    top = triggerRect.top + window.scrollY - dropdownHeight - 4; // Approximate
-  }
-
-  dropdownPositionStyle.value = {
-    position: 'fixed',
-    left: `${triggerRect.left}px`,
-    top: `${top}px`,
-    width: `${triggerRect.width}px`,
-    zIndex: '9999',
-  };
-}
 
 // Toggle dropdown
 function toggleDropdown() {
@@ -197,10 +182,13 @@ function toggleDropdown() {
   if (isOpen.value) {
     registerAsOpen();
     resetIndex();
+    // Set up scroll listener for the container
+    setupScrollListener();
     // Calculate position after DOM update
     nextTick(updateDropdownPosition);
   } else {
     unregisterAsOpen();
+    cleanupScrollListener();
   }
 }
 
@@ -210,6 +198,7 @@ function selectOption(option: SelectOption) {
   emit('update:modelValue', option.value);
   isOpen.value = false;
   unregisterAsOpen();
+  cleanupScrollListener();
 }
 
 // Clear selection
@@ -225,6 +214,7 @@ function handleCustomInput() {
     customInputValue.value = '';
     isOpen.value = false;
     unregisterAsOpen();
+    cleanupScrollListener();
   }
 }
 
@@ -232,20 +222,6 @@ function handleCustomInput() {
 function handleTriggerClick(event: MouseEvent) {
   event.stopPropagation();
   toggleDropdown();
-}
-
-// Handle scroll to update position
-function handleScroll() {
-  if (isOpen.value) {
-    updateDropdownPosition();
-  }
-}
-
-// Handle window resize
-function handleResize() {
-  if (isOpen.value) {
-    updateDropdownPosition();
-  }
 }
 
 // Watch for model value changes from parent
@@ -262,18 +238,14 @@ watch(isOpen, (open) => {
     nextTick(() => {
       customInputRef.value?.focus();
     });
+  } else if (open && props.searchable) {
+    nextTick(() => {
+      searchInputRef.value?.focus();
+    });
+  } else if (!open) {
+    // Clear search when dropdown closes
+    searchQuery.value = '';
   }
-});
-
-// Add/remove event listeners for scroll and resize
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll, true);
-  window.addEventListener('resize', handleResize);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll, true);
-  window.removeEventListener('resize', handleResize);
 });
 
 // Get option class
@@ -307,6 +279,11 @@ function getTriggerClass(): string {
   }
   return classes.join(' ');
 }
+
+// Clean up scroll listener on unmount
+onUnmounted(() => {
+  cleanupScrollListener();
+});
 </script>
 
 <template>
@@ -335,16 +312,26 @@ function getTriggerClass(): string {
     </button>
 
     <!-- Dropdown menu -->
-    <Teleport to="body">
+    <Teleport to="body" :disabled="!shouldTeleport">
       <div
         v-if="isOpen"
         ref="dropdownRef"
         class="select-dropdown"
-        :style="{ ...dropdownPositionStyle, ...maxHeightStyle }"
+        :style="dropdownStyle"
         @mouseleave="handleMouseLeave"
       >
+        <!-- Search input -->
+        <div v-if="searchable" class="select-search">
+          <input
+            ref="searchInputRef"
+            v-model="searchQuery"
+            type="text"
+            :placeholder="t('common.select.searchPlaceholder')"
+          />
+        </div>
+
         <!-- Render grouped options -->
-        <template v-for="(item, groupIndex) in options" :key="groupIndex">
+        <template v-for="(item, groupIndex) in filteredOptions" :key="groupIndex">
           <!-- Option group -->
           <template v-if="isOptionGroup(item)">
             <div class="select-group-label">
@@ -353,10 +340,10 @@ function getTriggerClass(): string {
             <div
               v-for="option in item.options"
               :key="option.value"
-              :class="getOptionClass(option, flatOptions.indexOf(option))"
+              :class="getOptionClass(option, filteredFlatOptions.indexOf(option))"
               :style="option.style"
               @click.stop="selectOption(option)"
-              @mouseenter="selectedIndex = flatOptions.indexOf(option)"
+              @mouseenter="selectedIndex = filteredFlatOptions.indexOf(option)"
             >
               <slot name="option" :option="option">
                 {{ option.label }}
@@ -367,10 +354,10 @@ function getTriggerClass(): string {
           <!-- Single option -->
           <div
             v-else
-            :class="getOptionClass(item, flatOptions.indexOf(item))"
+            :class="getOptionClass(item, filteredFlatOptions.indexOf(item))"
             :style="item.style"
             @click.stop="selectOption(item)"
-            @mouseenter="selectedIndex = flatOptions.indexOf(item)"
+            @mouseenter="selectedIndex = filteredFlatOptions.indexOf(item)"
           >
             <slot name="option" :option="item">
               {{ item.label }}
@@ -391,8 +378,10 @@ function getTriggerClass(): string {
         </div>
 
         <!-- Empty state -->
-        <div v-if="flatOptions.length === 0 && !allowCustomInput" class="select-empty">
-          {{ t('common.select.noOptions') }}
+        <div v-if="filteredFlatOptions.length === 0 && !allowCustomInput" class="select-empty">
+          {{
+            searchable && searchQuery ? t('common.select.noResults') : t('common.select.noOptions')
+          }}
         </div>
       </div>
     </Teleport>
