@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhProhibit, PhTrash } from '@phosphor-icons/vue';
+import BaseSelect from '@/components/common/BaseSelect.vue';
 import {
   useRuleOptions,
   type Condition,
@@ -9,6 +11,7 @@ import {
   isNumberField,
   needsOperator,
 } from '@/composables/rules/useRuleOptions';
+import type { SelectOption } from '@/types/select';
 
 const { t } = useI18n();
 
@@ -53,15 +56,35 @@ const emit = defineEmits<{
   remove: [];
 }>();
 
-function handleFieldChange(event: Event): void {
-  const target = event.target as HTMLSelectElement;
-  emit('update:field', target.value);
-}
+// Build options for BaseSelect
+const fieldSelectOptions = computed<SelectOption[]>(() => {
+  return fieldOptions.map((opt) => ({
+    value: opt.value,
+    label: t(opt.labelKey),
+  }));
+});
 
-function handleOperatorChange(event: Event): void {
-  const target = event.target as HTMLSelectElement;
-  emit('update:operator', target.value);
-}
+const operatorSelectOptions = computed<SelectOption[]>(() => {
+  return textOperatorOptions.map((opt) => ({
+    value: opt.value,
+    label: t(opt.labelKey),
+  }));
+});
+
+const booleanSelectOptions = computed<SelectOption[]>(() => {
+  return booleanOptions.map((opt) => ({
+    value: opt.value,
+    label: t(opt.labelKey),
+  }));
+});
+
+const updateStatusOptions = computed<SelectOption[]>(() => {
+  return [
+    { value: '', label: t('modal.filter.updateSuccess') },
+    { value: 'success', label: t('modal.filter.updateSuccess') },
+    { value: 'failed', label: t('modal.filter.updateFailed') },
+  ];
+});
 
 function handleValueChange(event: Event): void {
   const target = event.target as HTMLInputElement;
@@ -113,15 +136,11 @@ function getMultiSelectDisplayText(): string {
         <label class="block text-[10px] sm:text-xs text-text-secondary mb-1">{{
           t('modal.filter.filterField')
         }}</label>
-        <select
-          :value="condition.field"
-          class="select-field w-full text-xs sm:text-sm"
-          @change="handleFieldChange"
-        >
-          <option v-for="opt in fieldOptions" :key="opt.value" :value="opt.value">
-            {{ t(opt.labelKey) }}
-          </option>
-        </select>
+        <BaseSelect
+          :model-value="condition.field"
+          :options="fieldSelectOptions"
+          @update:model-value="emit('update:field', String($event))"
+        />
       </div>
 
       <!-- Operator selector (only for article_title) -->
@@ -129,15 +148,11 @@ function getMultiSelectDisplayText(): string {
         <label class="block text-[10px] sm:text-xs text-text-secondary mb-1">{{
           t('modal.filter.filterOperator')
         }}</label>
-        <select
-          :value="condition.operator"
-          class="select-field w-full text-xs sm:text-sm"
-          @change="handleOperatorChange"
-        >
-          <option v-for="opt in textOperatorOptions" :key="opt.value" :value="opt.value">
-            {{ t(opt.labelKey) }}
-          </option>
-        </select>
+        <BaseSelect
+          :model-value="condition.operator"
+          :options="operatorSelectOptions"
+          @update:model-value="emit('update:operator', String($event))"
+        />
       </div>
 
       <!-- Value input -->
@@ -156,16 +171,12 @@ function getMultiSelectDisplayText(): string {
         />
 
         <!-- Boolean select -->
-        <select
+        <BaseSelect
           v-else-if="isBooleanField(condition.field)"
-          :value="condition.value"
-          class="select-field w-full text-xs sm:text-sm"
-          @change="handleValueChange"
-        >
-          <option v-for="opt in booleanOptions" :key="opt.value" :value="opt.value">
-            {{ t(opt.labelKey) }}
-          </option>
-        </select>
+          :model-value="condition.value"
+          :options="booleanSelectOptions"
+          @update:model-value="emit('update:value', String($event))"
+        />
 
         <!-- Number input -->
         <input
@@ -178,16 +189,12 @@ function getMultiSelectDisplayText(): string {
         />
 
         <!-- Special dropdown for feed_last_update_status -->
-        <select
+        <BaseSelect
           v-else-if="condition.field === 'feed_last_update_status'"
-          :value="condition.value"
-          class="select-field w-full text-xs sm:text-sm"
-          @change="handleValueChange"
-        >
-          <option value="">{{ t('modal.filter.updateSuccess') }}</option>
-          <option value="success">{{ t('modal.filter.updateSuccess') }}</option>
-          <option value="failed">{{ t('modal.filter.updateFailed') }}</option>
-        </select>
+          :model-value="condition.value"
+          :options="updateStatusOptions"
+          @update:model-value="emit('update:value', String($event))"
+        />
 
         <!-- Multi-select dropdown for feed name -->
         <div v-else-if="condition.field === 'feed_name'" class="dropdown-container">
@@ -361,15 +368,13 @@ function getMultiSelectDisplayText(): string {
   @apply p-1.5 sm:p-2 border border-border rounded-md bg-bg-primary text-text-primary focus:border-accent focus:outline-none transition-colors;
   height: 38px;
 }
-.select-field {
-  @apply p-1.5 sm:p-2 border border-border rounded-md bg-bg-primary text-text-primary focus:border-accent focus:outline-none transition-colors cursor-pointer;
-  height: 38px;
-}
+
 .date-field {
   @apply p-1.5 sm:p-2 border border-border rounded-md bg-bg-primary text-text-primary focus:border-accent focus:outline-none transition-colors cursor-pointer;
   color-scheme: light dark;
   height: 38px;
 }
+
 .btn-danger-icon {
   @apply p-1.5 sm:p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer;
   height: 38px;

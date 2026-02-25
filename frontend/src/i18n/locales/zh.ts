@@ -244,11 +244,21 @@ const zh: TranslationMessages = {
     },
     search: {
       itemsSelected: '已选 {count} 项',
+      item: '项',
       noSearchResults: '没有匹配的订阅源',
       searchFeeds: '搜索订阅源...',
       selectAll: '全选',
       selectItems: '选择项目',
       totalAndSelected: '共 {total} 个，已选 {selected} 个',
+    },
+    select: {
+      placeholder: '请选择',
+      noOptions: '无选项',
+      selectAll: '全选',
+      deselectAll: '取消全选',
+    },
+    input: {
+      customValue: '输入自定义值...',
     },
     time: {
       days: '天',

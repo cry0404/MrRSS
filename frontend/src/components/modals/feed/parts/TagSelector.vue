@@ -3,6 +3,8 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAppStore } from '@/stores/app';
 import { PhX, PhPlus } from '@phosphor-icons/vue';
+import BaseSelect from '@/components/common/BaseSelect.vue';
+import type { SelectOption } from '@/types/select';
 import TagFormModal from '../../settings/tags/TagFormModal.vue';
 
 interface Props {
@@ -19,6 +21,18 @@ const { t } = useI18n();
 const store = useAppStore();
 
 const availableTags = computed(() => store.tags || []);
+
+// Build options for BaseSelect
+const tagOptions = computed<SelectOption[]>(() => {
+  return [
+    { value: '', label: t('modal.tag.selectTags') },
+    ...availableTags.value.map((tag) => ({
+      value: tag.id,
+      label: tag.name,
+      disabled: props.selectedTags.includes(tag.id),
+    })),
+  ];
+});
 
 // New tag creation state
 const showNewTagModal = ref(false);
@@ -69,6 +83,13 @@ async function handleSaveTag(name: string, color: string) {
     window.showToast(t('common.errors.createFailed'), 'error');
   }
 }
+
+// Handle select change
+function handleSelectChange(value: string | number) {
+  if (value !== '') {
+    toggleTag(Number(value));
+  }
+}
 </script>
 
 <template>
@@ -93,22 +114,7 @@ async function handleSaveTag(name: string, color: string) {
     </div>
 
     <!-- Available tags dropdown -->
-    <div class="relative">
-      <select
-        class="select-field w-full"
-        @change="toggleTag(Number(($event.target as HTMLSelectElement).value))"
-      >
-        <option value="">{{ t('modal.tag.selectTags') }}</option>
-        <option
-          v-for="tag in availableTags"
-          :key="tag.id"
-          :value="tag.id"
-          :disabled="selectedTags.includes(tag.id)"
-        >
-          {{ tag.name }}
-        </option>
-      </select>
-    </div>
+    <BaseSelect :model-value="''" :options="tagOptions" @update:model-value="handleSelectChange" />
 
     <!-- Create new tag button -->
     <button
@@ -135,31 +141,5 @@ async function handleSaveTag(name: string, color: string) {
 <style scoped>
 @reference "../../../style.css";
 
-.select-field {
-  @apply p-2 sm:p-2.5 border border-border rounded-md bg-bg-tertiary text-text-primary text-xs sm:text-sm focus:border-accent focus:outline-none transition-colors cursor-pointer;
-  box-sizing: border-box;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 2.5rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-  background-position: right 0.5rem center;
-  background-repeat: no-repeat;
-  background-size: 1.5em 1.5em;
-}
-
-.animate-fade-in {
-  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalFadeIn {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+/* Styles are now handled by BaseSelect and select.css */
 </style>

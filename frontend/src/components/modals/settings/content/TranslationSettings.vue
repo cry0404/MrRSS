@@ -24,6 +24,7 @@ import {
   ToggleControl,
   KeyValueList,
 } from '@/components/settings';
+import BaseSelect from '@/components/common/BaseSelect.vue';
 import AIProfileSelector from '@/components/modals/settings/ai/AIProfileSelector.vue';
 import '@/components/settings/styles.css';
 import type { SettingsData } from '@/types/settings';
@@ -157,19 +158,18 @@ const getErrorClass = (condition: boolean) => (condition ? 'border-red-500' : ''
         :title="t('setting.content.translationProvider')"
         :description="t('setting.content.translationProviderDesc')"
       >
-        <select
-          :value="settings.translation_provider"
-          class="input-field w-32 sm:w-48 text-xs sm:text-sm"
-          @change="
-            updateSetting('translation_provider', ($event.target as HTMLSelectElement).value)
-          "
-        >
-          <option value="google">{{ t('setting.content.googleTranslate') }}</option>
-          <option value="deepl">{{ t('setting.content.deeplApi') }}</option>
-          <option value="baidu">{{ t('setting.content.baiduTranslate') }}</option>
-          <option value="ai">{{ t('setting.content.aiTranslation') }}</option>
-          <option value="custom">{{ t('setting.translation.custom.title') }}</option>
-        </select>
+        <BaseSelect
+          :model-value="settings.translation_provider"
+          :options="[
+            { value: 'google', label: t('setting.content.googleTranslate') },
+            { value: 'deepl', label: t('setting.content.deeplApi') },
+            { value: 'baidu', label: t('setting.content.baiduTranslate') },
+            { value: 'ai', label: t('setting.content.aiTranslation') },
+            { value: 'custom', label: t('setting.translation.custom.title') },
+          ]"
+          width="w-32 sm:w-48"
+          @update:model-value="updateSetting('translation_provider', $event)"
+        />
       </SubSettingItem>
 
       <!-- Google Translate Endpoint -->
@@ -179,20 +179,21 @@ const getErrorClass = (condition: boolean) => (condition ? 'border-red-500' : ''
         :title="t('setting.content.googleTranslateEndpoint')"
         :description="t('setting.content.googleTranslateEndpointDesc')"
       >
-        <select
-          :value="settings.google_translate_endpoint"
-          class="input-field w-32 sm:w-48 text-xs sm:text-sm"
-          @change="
-            updateSetting('google_translate_endpoint', ($event.target as HTMLSelectElement).value)
-          "
-        >
-          <option value="translate.googleapis.com">
-            {{ t('setting.content.googleTranslateEndpointDefault') }}
-          </option>
-          <option value="clients5.google.com">
-            {{ t('setting.content.googleTranslateEndpointAlternate') }}
-          </option>
-        </select>
+        <BaseSelect
+          :model-value="settings.google_translate_endpoint"
+          :options="[
+            {
+              value: 'translate.googleapis.com',
+              label: t('setting.content.googleTranslateEndpointDefault'),
+            },
+            {
+              value: 'clients5.google.com',
+              label: t('setting.content.googleTranslateEndpointAlternate'),
+            },
+          ]"
+          width="w-32 sm:w-48"
+          @update:model-value="updateSetting('google_translate_endpoint', $event)"
+        />
       </SubSettingItem>
 
       <!-- DeepL API Key -->
@@ -388,16 +389,15 @@ const getErrorClass = (condition: boolean) => (condition ? 'border-red-500' : ''
           :title="t('setting.translation.custom.method')"
           :description="t('setting.translation.custom.methodDesc')"
         >
-          <select
-            :value="settings.custom_translation_method || 'POST'"
-            class="input-field w-24 sm:w-32 text-xs sm:text-sm"
-            @change="
-              updateSetting('custom_translation_method', ($event.target as HTMLSelectElement).value)
-            "
-          >
-            <option value="GET">GET</option>
-            <option value="POST">POST</option>
-          </select>
+          <BaseSelect
+            :model-value="settings.custom_translation_method || 'POST'"
+            :options="[
+              { value: 'GET', label: 'GET' },
+              { value: 'POST', label: 'POST' },
+            ]"
+            width="w-24 sm:w-32"
+            @update:model-value="updateSetting('custom_translation_method', $event)"
+          />
         </SubSettingItem>
 
         <!-- Custom Translation Headers -->
@@ -541,19 +541,20 @@ const getErrorClass = (condition: boolean) => (condition ? 'border-red-500' : ''
         :title="t('setting.content.targetLanguage')"
         :description="t('setting.content.targetLanguageDesc')"
       >
-        <select
-          :value="settings.target_language"
-          class="input-field w-24 sm:w-48 text-xs sm:text-sm"
-          @change="updateSetting('target_language', ($event.target as HTMLSelectElement).value)"
-        >
-          <option value="en">{{ t('common.language.english') }}</option>
-          <option value="es">{{ t('common.language.spanish') }}</option>
-          <option value="fr">{{ t('common.language.french') }}</option>
-          <option value="de">{{ t('common.language.german') }}</option>
-          <option value="zh">{{ t('common.language.simplifiedChinese') }}</option>
-          <option value="zh-TW">{{ t('common.language.traditionalChinese') }}</option>
-          <option value="ja">{{ t('common.language.japanese') }}</option>
-        </select>
+        <BaseSelect
+          :model-value="settings.target_language"
+          :options="[
+            { value: 'en', label: t('common.language.english') },
+            { value: 'es', label: t('common.language.spanish') },
+            { value: 'fr', label: t('common.language.french') },
+            { value: 'de', label: t('common.language.german') },
+            { value: 'zh', label: t('common.language.simplifiedChinese') },
+            { value: 'zh-TW', label: t('common.language.traditionalChinese') },
+            { value: 'ja', label: t('common.language.japanese') },
+          ]"
+          width="w-24 sm:w-48"
+          @update:model-value="updateSetting('target_language', $event)"
+        />
       </SubSettingItem>
 
       <!-- Cache Management -->
@@ -583,7 +584,5 @@ const getErrorClass = (condition: boolean) => (condition ? 'border-red-500' : ''
 <style scoped>
 @reference "../../../../style.css";
 
-.input-field {
-  @apply p-1.5 sm:p-2.5 border border-border rounded-md bg-bg-secondary text-text-primary focus:border-accent focus:outline-none transition-colors;
-}
+/* Styles are now handled by BaseSelect and select.css */
 </style>

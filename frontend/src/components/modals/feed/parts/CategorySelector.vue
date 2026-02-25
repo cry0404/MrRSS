@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import BaseSelect from '@/components/common/BaseSelect.vue';
+import type { SelectOption } from '@/types/select';
 
 interface Props {
   category: string;
@@ -22,6 +25,28 @@ const { t } = useI18n();
 function handleCategoryChange(value: string) {
   emit('handle-category-change', value);
 }
+
+// Build options for BaseSelect
+const categoryOptions = computed<SelectOption[]>(() => {
+  return [
+    { value: '', label: t('sidebar.feedList.uncategorized') },
+    ...props.existingCategories.map((cat) => ({
+      value: cat,
+      label: cat,
+    })),
+  ];
+});
+
+// Handle custom input from BaseSelect
+function handleCustomInput(value: string) {
+  emit('update:category', value);
+  emit('update:categorySelection', value);
+}
+
+// Handle select value change
+function handleSelectChange(value: string | number) {
+  handleCategoryChange(String(value));
+}
 </script>
 
 <template>
@@ -29,16 +54,19 @@ function handleCategoryChange(value: string) {
     <label class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary">{{
       t('common.form.category')
     }}</label>
-    <select
+
+    <!-- Using BaseSelect with custom input support -->
+    <BaseSelect
       v-if="!props.showCustomCategory"
-      :value="props.categorySelection"
-      class="input-field w-full"
-      @change="handleCategoryChange(($event.target as HTMLSelectElement).value)"
-    >
-      <option value="">{{ t('sidebar.feedList.uncategorized') }}</option>
-      <option v-for="cat in props.existingCategories" :key="cat" :value="cat">{{ cat }}</option>
-      <option value="__custom__">{{ t('modal.feed.customCategory') }}</option>
-    </select>
+      :model-value="props.categorySelection"
+      :options="categoryOptions"
+      :allow-custom-input="true"
+      :custom-input-placeholder="t('modal.feed.enterCategoryName')"
+      @update:model-value="handleSelectChange"
+      @custom-input="handleCustomInput"
+    />
+
+    <!-- Custom category input (legacy mode for backward compatibility) -->
     <div v-else class="flex gap-2">
       <input
         :value="props.category"
@@ -68,16 +96,5 @@ function handleCategoryChange(value: string) {
 .input-field {
   @apply w-full p-2 sm:p-2.5 border border-border rounded-md bg-bg-tertiary text-text-primary text-xs sm:text-sm focus:border-accent focus:outline-none transition-colors;
   box-sizing: border-box;
-}
-
-select.input-field {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 2.5rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-  background-position: right 0.5rem center;
-  background-repeat: no-repeat;
-  background-size: 1.5em 1.5em;
 }
 </style>

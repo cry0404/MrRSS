@@ -248,11 +248,21 @@ const en: TranslationMessages = {
     },
     search: {
       itemsSelected: '{count} items selected',
+      item: 'item',
       noSearchResults: 'No feeds match your search',
       searchFeeds: 'Search feeds...',
       selectAll: 'Select All',
       selectItems: 'Select items',
       totalAndSelected: '{total} total, {selected} selected',
+    },
+    select: {
+      placeholder: 'Select...',
+      noOptions: 'No options',
+      selectAll: 'Select All',
+      deselectAll: 'Deselect All',
+    },
+    input: {
+      customValue: 'Enter custom value...',
     },
     time: {
       days: 'days',
