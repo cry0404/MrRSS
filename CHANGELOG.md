@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Supported more translation providers. (#690)
+
 ### Changed
 
 - Refactored the dropdown input component for better usability and supported searching. (#697)

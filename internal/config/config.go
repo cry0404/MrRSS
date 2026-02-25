@@ -77,6 +77,9 @@ type Defaults struct {
 	MediaCacheMaxAgeDays          int    `json:"media_cache_max_age_days"`
 	MediaCacheMaxSizeMb           int    `json:"media_cache_max_size_mb"`
 	MediaProxyFallback            bool   `json:"media_proxy_fallback"`
+	MicrosoftAPIKey               string `json:"microsoft_api_key"`
+	MicrosoftEndpoint             string `json:"microsoft_endpoint"`
+	MicrosoftRegion               string `json:"microsoft_region"`
 	NetworkBandwidthMbps          string `json:"network_bandwidth_mbps"`
 	NetworkLatencyMs              string `json:"network_latency_ms"`
 	NetworkSpeed                  string `json:"network_speed"`
@@ -108,6 +111,9 @@ type Defaults struct {
 	SummaryProvider               string `json:"summary_provider"`
 	SummaryTriggerMode            string `json:"summary_trigger_mode"`
 	TargetLanguage                string `json:"target_language"`
+	TencentRegion                 string `json:"tencent_region"`
+	TencentSecretId               string `json:"tencent_secret_id"`
+	TencentSecretKey              string `json:"tencent_secret_key"`
 	Theme                         string `json:"theme"`
 	TranslationEnabled            bool   `json:"translation_enabled"`
 	TranslationOnlyMode           bool   `json:"translation_only_mode"`
@@ -254,6 +260,12 @@ func GetString(key string) string {
 		return strconv.Itoa(defaults.MediaCacheMaxSizeMb)
 	case "media_proxy_fallback":
 		return strconv.FormatBool(defaults.MediaProxyFallback)
+	case "microsoft_api_key":
+		return defaults.MicrosoftAPIKey
+	case "microsoft_endpoint":
+		return defaults.MicrosoftEndpoint
+	case "microsoft_region":
+		return defaults.MicrosoftRegion
 	case "network_bandwidth_mbps":
 		return defaults.NetworkBandwidthMbps
 	case "network_latency_ms":
@@ -316,6 +328,12 @@ func GetString(key string) string {
 		return defaults.SummaryTriggerMode
 	case "target_language":
 		return defaults.TargetLanguage
+	case "tencent_region":
+		return defaults.TencentRegion
+	case "tencent_secret_id":
+		return defaults.TencentSecretId
+	case "tencent_secret_key":
+		return defaults.TencentSecretKey
 	case "theme":
 		return defaults.Theme
 	case "translation_enabled":

@@ -163,9 +163,12 @@ async function clearTranslationCache() {
             { value: 'google', label: t('setting.content.googleTranslate') },
             { value: 'deepl', label: t('setting.content.deeplApi') },
             { value: 'baidu', label: t('setting.content.baiduTranslate') },
+            { value: 'microsoft', label: t('setting.content.microsoftTranslate') },
+            { value: 'tencent', label: t('setting.content.tencentTranslate') },
             { value: 'ai', label: t('setting.content.aiTranslation') },
             { value: 'custom', label: t('setting.translation.custom.title') },
           ]"
+          :searchable="true"
           width="w-32 sm:w-48"
           @update:model-value="updateSetting('translation_provider', $event)"
         />
@@ -264,6 +267,119 @@ async function clearTranslationCache() {
             :error="settings.translation_provider === 'baidu' && !settings.baidu_secret_key?.trim()"
             width="md"
             @update:model-value="updateSetting('baidu_secret_key', $event)"
+          />
+        </SubSettingItem>
+      </template>
+
+      <!-- Microsoft Translate Settings -->
+      <template v-if="settings.translation_provider === 'microsoft'">
+        <SubSettingItem
+          :icon="PhKey"
+          :title="t('setting.content.microsoftApiKey')"
+          :description="t('setting.content.microsoftApiKeyDesc')"
+          required
+        >
+          <InputControl
+            :model-value="settings.microsoft_api_key"
+            type="password"
+            :placeholder="t('setting.content.microsoftApiKeyPlaceholder')"
+            :error="
+              settings.translation_provider === 'microsoft' && !settings.microsoft_api_key?.trim()
+            "
+            width="md"
+            @update:model-value="updateSetting('microsoft_api_key', $event)"
+          />
+        </SubSettingItem>
+
+        <SubSettingItem
+          :icon="PhLink"
+          :title="t('setting.content.microsoftRegion')"
+          :description="t('setting.content.microsoftRegionDesc')"
+        >
+          <InputControl
+            :model-value="settings.microsoft_region"
+            type="text"
+            :placeholder="t('setting.content.microsoftRegionPlaceholder')"
+            width="md"
+            @update:model-value="updateSetting('microsoft_region', $event)"
+          />
+        </SubSettingItem>
+
+        <SubSettingItem
+          :icon="PhLink"
+          :title="t('setting.content.microsoftEndpoint')"
+          :description="t('setting.content.microsoftEndpointDesc')"
+        >
+          <InputControl
+            :model-value="settings.microsoft_endpoint"
+            type="text"
+            :placeholder="t('setting.content.microsoftEndpointPlaceholder')"
+            width="lg"
+            @update:model-value="updateSetting('microsoft_endpoint', $event)"
+          />
+        </SubSettingItem>
+      </template>
+
+      <!-- Tencent Translate Settings -->
+      <template v-if="settings.translation_provider === 'tencent'">
+        <SubSettingItem
+          :icon="PhKey"
+          :title="t('setting.content.tencentSecretId')"
+          :description="t('setting.content.tencentSecretIdDesc')"
+          required
+        >
+          <InputControl
+            :model-value="settings.tencent_secret_id"
+            type="text"
+            :placeholder="t('setting.content.tencentSecretIdPlaceholder')"
+            :error="
+              settings.translation_provider === 'tencent' && !settings.tencent_secret_id?.trim()
+            "
+            width="md"
+            @update:model-value="updateSetting('tencent_secret_id', $event)"
+          />
+        </SubSettingItem>
+
+        <SubSettingItem
+          :icon="PhKey"
+          :title="t('setting.content.tencentSecretKey')"
+          :description="t('setting.content.tencentSecretKeyDesc')"
+          required
+        >
+          <InputControl
+            :model-value="settings.tencent_secret_key"
+            type="password"
+            :placeholder="t('setting.content.tencentSecretKeyPlaceholder')"
+            :error="
+              settings.translation_provider === 'tencent' && !settings.tencent_secret_key?.trim()
+            "
+            width="md"
+            @update:model-value="updateSetting('tencent_secret_key', $event)"
+          />
+        </SubSettingItem>
+
+        <SubSettingItem
+          :icon="PhGlobe"
+          :title="t('setting.content.tencentRegion')"
+          :description="t('setting.content.tencentRegionDesc')"
+        >
+          <BaseSelect
+            :model-value="settings.tencent_region || 'ap-guangzhou'"
+            :options="[
+              { value: 'ap-guangzhou', label: ' Guangzhou (ap-guangzhou)' },
+              { value: 'ap-shanghai', label: 'Shanghai (ap-shanghai)' },
+              { value: 'ap-beijing', label: 'Beijing (ap-beijing)' },
+              { value: 'ap-chengdu', label: 'Chengdu (ap-chengdu)' },
+              { value: 'ap-hongkong', label: 'Hong Kong (ap-hongkong)' },
+              { value: 'ap-singapore', label: 'Singapore (ap-singapore)' },
+              { value: 'ap-tokyo', label: 'Tokyo (ap-tokyo)' },
+              { value: 'na-toronto', label: 'Toronto (na-toronto)' },
+              { value: 'na-ashburn', label: 'Ashburn (na-ashburn)' },
+              { value: 'na-siliconvalley', label: 'Silicon Valley (na-siliconvalley)' },
+              { value: 'eu-frankfurt', label: 'Frankfurt (eu-frankfurt)' },
+            ]"
+            width="w-40 sm:w-64"
+            @update:model-value="updateSetting('tencent_region', $event)"
           />
         </SubSettingItem>
       </template>

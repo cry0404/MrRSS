@@ -72,6 +72,9 @@ export function generateInitialSettings(): SettingsData {
     media_cache_max_age_days: settingsDefaults.media_cache_max_age_days,
     media_cache_max_size_mb: settingsDefaults.media_cache_max_size_mb,
     media_proxy_fallback: settingsDefaults.media_proxy_fallback,
+    microsoft_api_key: settingsDefaults.microsoft_api_key,
+    microsoft_endpoint: settingsDefaults.microsoft_endpoint,
+    microsoft_region: settingsDefaults.microsoft_region,
     network_bandwidth_mbps: settingsDefaults.network_bandwidth_mbps,
     network_latency_ms: settingsDefaults.network_latency_ms,
     network_speed: settingsDefaults.network_speed,
@@ -103,6 +106,9 @@ export function generateInitialSettings(): SettingsData {
     summary_provider: settingsDefaults.summary_provider,
     summary_trigger_mode: settingsDefaults.summary_trigger_mode,
     target_language: settingsDefaults.target_language,
+    tencent_region: settingsDefaults.tencent_region,
+    tencent_secret_id: settingsDefaults.tencent_secret_id,
+    tencent_secret_key: settingsDefaults.tencent_secret_key,
     theme: settingsDefaults.theme,
     translation_enabled: settingsDefaults.translation_enabled,
     translation_only_mode: settingsDefaults.translation_only_mode,
@@ -197,6 +203,9 @@ export function parseSettingsData(data: Record<string, string>): SettingsData {
     media_cache_max_size_mb:
       parseInt(data.media_cache_max_size_mb) || settingsDefaults.media_cache_max_size_mb,
     media_proxy_fallback: data.media_proxy_fallback === 'true',
+    microsoft_api_key: data.microsoft_api_key || settingsDefaults.microsoft_api_key,
+    microsoft_endpoint: data.microsoft_endpoint || settingsDefaults.microsoft_endpoint,
+    microsoft_region: data.microsoft_region || settingsDefaults.microsoft_region,
     network_bandwidth_mbps: data.network_bandwidth_mbps || settingsDefaults.network_bandwidth_mbps,
     network_latency_ms: data.network_latency_ms || settingsDefaults.network_latency_ms,
     network_speed: data.network_speed || settingsDefaults.network_speed,
@@ -229,6 +238,9 @@ export function parseSettingsData(data: Record<string, string>): SettingsData {
     summary_provider: data.summary_provider || settingsDefaults.summary_provider,
     summary_trigger_mode: data.summary_trigger_mode || settingsDefaults.summary_trigger_mode,
     target_language: data.target_language || settingsDefaults.target_language,
+    tencent_region: data.tencent_region || settingsDefaults.tencent_region,
+    tencent_secret_id: data.tencent_secret_id || settingsDefaults.tencent_secret_id,
+    tencent_secret_key: data.tencent_secret_key || settingsDefaults.tencent_secret_key,
     theme: data.theme || settingsDefaults.theme,
     translation_enabled: data.translation_enabled === 'true',
     translation_only_mode: data.translation_only_mode === 'true',
@@ -363,6 +375,9 @@ export function buildAutoSavePayload(settingsRef: Ref<SettingsData>): Record<str
     media_proxy_fallback: (
       settingsRef.value.media_proxy_fallback ?? settingsDefaults.media_proxy_fallback
     ).toString(),
+    microsoft_api_key: settingsRef.value.microsoft_api_key ?? settingsDefaults.microsoft_api_key,
+    microsoft_endpoint: settingsRef.value.microsoft_endpoint ?? settingsDefaults.microsoft_endpoint,
+    microsoft_region: settingsRef.value.microsoft_region ?? settingsDefaults.microsoft_region,
     network_bandwidth_mbps:
       settingsRef.value.network_bandwidth_mbps ?? settingsDefaults.network_bandwidth_mbps,
     network_latency_ms: settingsRef.value.network_latency_ms ?? settingsDefaults.network_latency_ms,
@@ -415,6 +430,9 @@ export function buildAutoSavePayload(settingsRef: Ref<SettingsData>): Record<str
     summary_trigger_mode:
       settingsRef.value.summary_trigger_mode ?? settingsDefaults.summary_trigger_mode,
     target_language: settingsRef.value.target_language ?? settingsDefaults.target_language,
+    tencent_region: settingsRef.value.tencent_region ?? settingsDefaults.tencent_region,
+    tencent_secret_id: settingsRef.value.tencent_secret_id ?? settingsDefaults.tencent_secret_id,
+    tencent_secret_key: settingsRef.value.tencent_secret_key ?? settingsDefaults.tencent_secret_key,
     theme: settingsRef.value.theme ?? settingsDefaults.theme,
     translation_enabled: (
       settingsRef.value.translation_enabled ?? settingsDefaults.translation_enabled
