@@ -124,6 +124,9 @@ type Defaults struct {
 	WindowWidth                   string `json:"window_width"`
 	WindowX                       string `json:"window_x"`
 	WindowY                       string `json:"window_y"`
+	ZoteroAPIKey                  string `json:"zotero_api_key"`
+	ZoteroEnabled                 bool   `json:"zotero_enabled"`
+	ZoteroUserId                  string `json:"zotero_user_id"`
 }
 
 var defaults Defaults
@@ -354,6 +357,12 @@ func GetString(key string) string {
 		return defaults.WindowX
 	case "window_y":
 		return defaults.WindowY
+	case "zotero_api_key":
+		return defaults.ZoteroAPIKey
+	case "zotero_enabled":
+		return strconv.FormatBool(defaults.ZoteroEnabled)
+	case "zotero_user_id":
+		return defaults.ZoteroUserId
 	default:
 		return ""
 	}

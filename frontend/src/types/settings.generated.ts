@@ -111,5 +111,8 @@ export interface SettingsData {
   window_width: string;
   window_x: string;
   window_y: string;
+  zotero_api_key: string;
+  zotero_enabled: boolean;
+  zotero_user_id: string;
   [key: string]: unknown; // Allow additional properties
 }

@@ -119,6 +119,9 @@ export function generateInitialSettings(): SettingsData {
     window_width: settingsDefaults.window_width,
     window_x: settingsDefaults.window_x,
     window_y: settingsDefaults.window_y,
+    zotero_api_key: settingsDefaults.zotero_api_key,
+    zotero_enabled: settingsDefaults.zotero_enabled,
+    zotero_user_id: settingsDefaults.zotero_user_id,
   } as SettingsData;
 }
 
@@ -251,6 +254,9 @@ export function parseSettingsData(data: Record<string, string>): SettingsData {
     window_width: data.window_width || settingsDefaults.window_width,
     window_x: data.window_x || settingsDefaults.window_x,
     window_y: data.window_y || settingsDefaults.window_y,
+    zotero_api_key: data.zotero_api_key || settingsDefaults.zotero_api_key,
+    zotero_enabled: data.zotero_enabled === 'true',
+    zotero_user_id: data.zotero_user_id || settingsDefaults.zotero_user_id,
   } as SettingsData;
 }
 
@@ -445,5 +451,10 @@ export function buildAutoSavePayload(settingsRef: Ref<SettingsData>): Record<str
     update_interval: (
       settingsRef.value.update_interval ?? settingsDefaults.update_interval
     ).toString(),
+    zotero_api_key: settingsRef.value.zotero_api_key ?? settingsDefaults.zotero_api_key,
+    zotero_enabled: (
+      settingsRef.value.zotero_enabled ?? settingsDefaults.zotero_enabled
+    ).toString(),
+    zotero_user_id: settingsRef.value.zotero_user_id ?? settingsDefaults.zotero_user_id,
   };
 }

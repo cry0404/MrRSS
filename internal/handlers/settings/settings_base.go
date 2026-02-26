@@ -123,6 +123,9 @@ var AllSettings = []SettingDef{
 	{Key: "window_width", Encrypted: false},
 	{Key: "window_x", Encrypted: false},
 	{Key: "window_y", Encrypted: false},
+	{Key: "zotero_api_key", Encrypted: true},
+	{Key: "zotero_enabled", Encrypted: false},
+	{Key: "zotero_user_id", Encrypted: false},
 }
 
 // GetAllSettings reads all settings from the database and returns them as a map.

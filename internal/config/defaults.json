@@ -104,5 +104,8 @@
   "window_maximized": "false",
   "window_width": "1024",
   "window_x": "0",
-  "window_y": "0"
+  "window_y": "0",
+  "zotero_api_key": "",
+  "zotero_enabled": false,
+  "zotero_user_id": ""
 }

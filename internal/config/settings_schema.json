@@ -494,6 +494,27 @@
       "encrypted": false,
       "frontend_key": "notionPageId"
     },
+    "zotero_enabled": {
+      "type": "bool",
+      "default": false,
+      "category": "integrations",
+      "encrypted": false,
+      "frontend_key": "zoteroEnabled"
+    },
+    "zotero_api_key": {
+      "type": "string",
+      "default": "",
+      "category": "integrations",
+      "encrypted": true,
+      "frontend_key": "zoteroAPIKey"
+    },
+    "zotero_user_id": {
+      "type": "string",
+      "default": "",
+      "category": "integrations",
+      "encrypted": false,
+      "frontend_key": "zoteroUserID"
+    },
     "window_x": {
       "type": "string",
       "default": "0",
