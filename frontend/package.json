@@ -46,7 +46,7 @@
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/test-utils": "^2.4.6",
     "@wailsio/runtime": "^3.0.0-alpha.79",
-    "autoprefixer": "^10.4.24",
+    "autoprefixer": "^10.4.27",
     "cypress": "^15.10.0",
     "eslint": "^9.39.2",
     "eslint-plugin-vue": "^10.8.0",
