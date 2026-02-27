@@ -37,12 +37,10 @@ const { logicOptions, onFieldChange: handleFieldChange } = useFilterFields();
 
 const {
   conditions,
-  openDropdownIndex,
   initializeConditions,
   addCondition,
   removeCondition,
   toggleNegate,
-  toggleDropdown,
   getValidConditions,
 } = useFilterConditions();
 
@@ -189,7 +187,6 @@ function save() {
             <RuleConditionItem
               :condition="condition"
               :index="index"
-              :is-dropdown-open="openDropdownIndex === index"
               @update:field="
                 (value) => {
                   condition.field = value;
@@ -200,7 +197,6 @@ function save() {
               @update:value="(value) => (condition.value = value)"
               @update:values="(values) => (condition.values = values)"
               @update:negate="toggleNegate(index)"
-              @toggle-dropdown="toggleDropdown(index)"
               @remove="removeCondition(index)"
             />
           </div>

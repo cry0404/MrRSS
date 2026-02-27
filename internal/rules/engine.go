@@ -97,6 +97,28 @@ func (e *Engine) ApplyRulesToArticles(articles []models.Article) (int, error) {
 	// Rules without a position field (backward compatibility) are treated as position 0
 	sortRulesByPosition(rules)
 
+	// Check if any rule uses article_content field
+	needsContent := rulesUseArticleContent(rules)
+
+	// Pre-fetch article contents if needed
+	var articleContents map[int64]string
+	if needsContent && len(articles) > 0 {
+		articleIDs := make([]int64, len(articles))
+		for i, art := range articles {
+			articleIDs[i] = art.ID
+		}
+		contents, err := e.db.GetArticleContentsBatch(articleIDs)
+		if err != nil {
+			log.Printf("Error fetching article contents: %v", err)
+			// Continue without content, rules that need content will simply not match
+			articleContents = make(map[int64]string)
+		} else {
+			articleContents = contents
+		}
+	} else {
+		articleContents = make(map[int64]string)
+	}
+
 	// Get feeds for category and title lookup
 	feeds, err := e.db.GetFeeds()
 	if err != nil {
@@ -135,7 +157,7 @@ func (e *Engine) ApplyRulesToArticles(articles []models.Article) (int, error) {
 			}
 
 			// Check if article matches conditions
-			if matchesConditions(article, rule.Conditions, feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags) {
+			if matchesConditions(article, rule.Conditions, feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags, articleContents) {
 				// Apply actions
 				for _, action := range rule.Actions {
 					if err := e.applyAction(article.ID, action); err != nil {
@@ -160,6 +182,28 @@ func (e *Engine) ApplyRule(rule Rule) (int, error) {
 	articles, err := e.db.GetArticles("", 0, "", true, batchSize, 0)
 	if err != nil {
 		return 0, err
+	}
+
+	// Check if rule uses article_content field
+	needsContent := ruleUsesArticleContent(rule)
+
+	// Pre-fetch article contents if needed
+	var articleContents map[int64]string
+	if needsContent && len(articles) > 0 {
+		articleIDs := make([]int64, len(articles))
+		for i, art := range articles {
+			articleIDs[i] = art.ID
+		}
+		contents, err := e.db.GetArticleContentsBatch(articleIDs)
+		if err != nil {
+			log.Printf("Error fetching article contents: %v", err)
+			// Continue without content, rules that need content will simply not match
+			articleContents = make(map[int64]string)
+		} else {
+			articleContents = contents
+		}
+	} else {
+		articleContents = make(map[int64]string)
 	}
 
 	// Get feeds for category and title lookup
@@ -194,7 +238,7 @@ func (e *Engine) ApplyRule(rule Rule) (int, error) {
 
 	affected := 0
 	for _, article := range articles {
-		if matchesConditions(article, rule.Conditions, feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags) {
+		if matchesConditions(article, rule.Conditions, feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags, articleContents) {
 			for _, action := range rule.Actions {
 				if err := e.applyAction(article.ID, action); err != nil {
 					log.Printf("Error applying action %s to article %d: %v", action, article.ID, err)
@@ -208,18 +252,40 @@ func (e *Engine) ApplyRule(rule Rule) (int, error) {
 	return affected, nil
 }
 
+// ruleUsesArticleContent checks if a single rule uses article_content field
+func ruleUsesArticleContent(rule Rule) bool {
+	for _, condition := range rule.Conditions {
+		if condition.Field == "article_content" {
+			return true
+		}
+	}
+	return false
+}
+
+// rulesUseArticleContent checks if any rule uses article_content field
+func rulesUseArticleContent(rules []Rule) bool {
+	for _, rule := range rules {
+		for _, condition := range rule.Conditions {
+			if condition.Field == "article_content" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // matchesConditions checks if an article matches the rule conditions
-func matchesConditions(article models.Article, conditions []Condition, feedCategories map[int64]string, feedTitles map[int64]string, feedTypes map[int64]string, feedIsImageMode map[int64]bool, feedIsFreshRSS map[int64]bool, feedTags map[int64][]string) bool {
+func matchesConditions(article models.Article, conditions []Condition, feedCategories map[int64]string, feedTitles map[int64]string, feedTypes map[int64]string, feedIsImageMode map[int64]bool, feedIsFreshRSS map[int64]bool, feedTags map[int64][]string, articleContents map[int64]string) bool {
 	// If no conditions, apply to all articles
 	if len(conditions) == 0 {
 		return true
 	}
 
-	result := evaluateCondition(article, conditions[0], feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags)
+	result := evaluateCondition(article, conditions[0], feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags, articleContents)
 
 	for i := 1; i < len(conditions); i++ {
 		condition := conditions[i]
-		conditionResult := evaluateCondition(article, condition, feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags)
+		conditionResult := evaluateCondition(article, condition, feedCategories, feedTitles, feedTypes, feedIsImageMode, feedIsFreshRSS, feedTags, articleContents)
 
 		switch condition.Logic {
 		case "and":
@@ -233,7 +299,7 @@ func matchesConditions(article models.Article, conditions []Condition, feedCateg
 }
 
 // evaluateCondition evaluates a single rule condition
-func evaluateCondition(article models.Article, condition Condition, feedCategories map[int64]string, feedTitles map[int64]string, feedTypes map[int64]string, feedIsImageMode map[int64]bool, feedIsFreshRSS map[int64]bool, feedTags map[int64][]string) bool {
+func evaluateCondition(article models.Article, condition Condition, feedCategories map[int64]string, feedTitles map[int64]string, feedTypes map[int64]string, feedIsImageMode map[int64]bool, feedIsFreshRSS map[int64]bool, feedTags map[int64][]string, articleContents map[int64]string) bool {
 	var result bool
 
 	switch condition.Field {
@@ -267,6 +333,79 @@ func evaluateCondition(article models.Article, condition Condition, feedCategori
 				}
 			default:
 				result = strings.Contains(lowerTitle, lowerValue)
+			}
+		}
+
+	case "article_content":
+		// Filter by article content (if cached)
+		if condition.Value == "" {
+			result = true
+		} else {
+			content, hasContent := articleContents[article.ID]
+			if !hasContent {
+				// No content cached, treat as not matching
+				result = false
+			} else {
+				lowerValue := strings.ToLower(condition.Value)
+				lowerContent := strings.ToLower(content)
+				switch condition.Operator {
+				case "exact":
+					result = lowerContent == lowerValue
+				case "regex":
+					matched, err := regexp.MatchString(condition.Value, content)
+					if err != nil {
+						log.Printf("Invalid regex pattern: %v", err)
+						result = false
+					} else {
+						result = matched
+					}
+				default:
+					result = strings.Contains(lowerContent, lowerValue)
+				}
+			}
+		}
+
+	case "author":
+		if condition.Value == "" {
+			result = true
+		} else {
+			lowerValue := strings.ToLower(condition.Value)
+			lowerAuthor := strings.ToLower(article.Author)
+			switch condition.Operator {
+			case "exact":
+				result = lowerAuthor == lowerValue
+			case "regex":
+				matched, err := regexp.MatchString(condition.Value, article.Author)
+				if err != nil {
+					log.Printf("Invalid regex pattern: %v", err)
+					result = false
+				} else {
+					result = matched
+				}
+			default:
+				result = strings.Contains(lowerAuthor, lowerValue)
+			}
+		}
+
+	case "url":
+		if condition.Value == "" {
+			result = true
+		} else {
+			lowerValue := strings.ToLower(condition.Value)
+			lowerURL := strings.ToLower(article.URL)
+			switch condition.Operator {
+			case "exact":
+				result = lowerURL == lowerValue
+			case "regex":
+				matched, err := regexp.MatchString(condition.Value, article.URL)
+				if err != nil {
+					log.Printf("Invalid regex pattern: %v", err)
+					result = false
+				} else {
+					result = matched
+				}
+			default:
+				result = strings.Contains(lowerURL, lowerValue)
 			}
 		}
 

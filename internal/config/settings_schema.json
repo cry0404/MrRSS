@@ -123,6 +123,48 @@
       "encrypted": true,
       "frontend_key": "baiduSecretKey"
     },
+    "microsoft_api_key": {
+      "type": "string",
+      "default": "",
+      "category": "translation",
+      "encrypted": true,
+      "frontend_key": "microsoftAPIKey"
+    },
+    "microsoft_region": {
+      "type": "string",
+      "default": "",
+      "category": "translation",
+      "encrypted": false,
+      "frontend_key": "microsoftRegion"
+    },
+    "microsoft_endpoint": {
+      "type": "string",
+      "default": "",
+      "category": "translation",
+      "encrypted": false,
+      "frontend_key": "microsoftEndpoint"
+    },
+    "tencent_secret_id": {
+      "type": "string",
+      "default": "",
+      "category": "translation",
+      "encrypted": false,
+      "frontend_key": "tencentSecretID"
+    },
+    "tencent_secret_key": {
+      "type": "string",
+      "default": "",
+      "category": "translation",
+      "encrypted": true,
+      "frontend_key": "tencentSecretKey"
+    },
+    "tencent_region": {
+      "type": "string",
+      "default": "ap-guangzhou",
+      "category": "translation",
+      "encrypted": false,
+      "frontend_key": "tencentRegion"
+    },
     "custom_translation_enabled": {
       "type": "bool",
       "default": false,
@@ -451,6 +493,27 @@
       "category": "integrations",
       "encrypted": false,
       "frontend_key": "notionPageId"
+    },
+    "zotero_enabled": {
+      "type": "bool",
+      "default": false,
+      "category": "integrations",
+      "encrypted": false,
+      "frontend_key": "zoteroEnabled"
+    },
+    "zotero_api_key": {
+      "type": "string",
+      "default": "",
+      "category": "integrations",
+      "encrypted": true,
+      "frontend_key": "zoteroAPIKey"
+    },
+    "zotero_user_id": {
+      "type": "string",
+      "default": "",
+      "category": "integrations",
+      "encrypted": false,
+      "frontend_key": "zoteroUserID"
     },
     "window_x": {
       "type": "string",

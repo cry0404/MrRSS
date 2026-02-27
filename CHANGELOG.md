@@ -5,6 +5,25 @@ All notable changes to MrRSS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.21] - 2026-02-27
+
+### Added
+
+- Added support for additional translation providers. (#690)
+- Enabled exporting to Zotero. (#735)
+- Enhanced error messages for feed refresh failures in the settings page. (#518)
+- Introduced an option to mark all articles as read from the bottom of the article list. (#667)
+
+### Changed
+
+- Refactored the dropdown input component to improve usability and added search functionality. (#697)
+
+### Fixed
+
+- Removed leaked thinking content from AI translation results. (@MidnightCrowing)
+- Fixed a bug where rules might not apply correctly in certain scenarios. (#698)
+- Resolved multiple minor styling inconsistencies. (#510, #648, #650, #697)
+
 ## [1.3.20] - 2026-02-13
 
 ### Changed

@@ -20,10 +20,10 @@ require (
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/wailsapp/wails/v3 v3.0.0-alpha.62
-	golang.org/x/crypto v0.47.0
-	golang.org/x/net v0.49.0
-	golang.org/x/text v0.33.0
-	modernc.org/sqlite v1.44.3
+	golang.org/x/crypto v0.48.0
+	golang.org/x/net v0.50.0
+	golang.org/x/text v0.34.0
+	modernc.org/sqlite v1.46.1
 )
 
 require (
@@ -38,7 +38,7 @@ require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/chromedp/cdproto v0.0.0-20250724212937-08a3db8b4327 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.8.2 // indirect
@@ -97,10 +97,10 @@ require (
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
-	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/mod v0.32.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/tools v0.40.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/tools v0.41.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	modernc.org/libc v1.67.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

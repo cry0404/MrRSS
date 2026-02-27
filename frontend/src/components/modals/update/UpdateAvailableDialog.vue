@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhArrowCircleUp, PhDownloadSimple, PhCircleNotch, PhGear } from '@phosphor-icons/vue';
 import BaseModal from '@/components/common/BaseModal.vue';
@@ -50,6 +50,30 @@ const updateButtonText = computed(() => {
   } else {
     return t('setting.update.updateNow');
   }
+});
+
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    // Only trigger update if not downloading/installing and download URL is available
+    if (!props.downloadingUpdate && !props.installingUpdate && props.updateInfo.download_url) {
+      handleUpdate();
+    }
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    // Only allow closing if not downloading/installing
+    if (!props.downloadingUpdate && !props.installingUpdate) {
+      handleClose();
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
 });
 </script>
 

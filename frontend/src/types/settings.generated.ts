@@ -64,6 +64,9 @@ export interface SettingsData {
   media_cache_max_age_days: number;
   media_cache_max_size_mb: number;
   media_proxy_fallback: boolean;
+  microsoft_api_key: string;
+  microsoft_endpoint: string;
+  microsoft_region: string;
   network_bandwidth_mbps: string;
   network_latency_ms: string;
   network_speed: string;
@@ -95,6 +98,9 @@ export interface SettingsData {
   summary_provider: string;
   summary_trigger_mode: string;
   target_language: string;
+  tencent_region: string;
+  tencent_secret_id: string;
+  tencent_secret_key: string;
   theme: string;
   translation_enabled: boolean;
   translation_only_mode: boolean;
@@ -105,5 +111,8 @@ export interface SettingsData {
   window_width: string;
   window_x: string;
   window_y: string;
+  zotero_api_key: string;
+  zotero_enabled: boolean;
+  zotero_user_id: string;
   [key: string]: unknown; // Allow additional properties
 }
