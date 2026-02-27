@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supported more translation providers. (#690)
 - Supported exporting to Zotero. (#735)
 - Added detailed error messages for feed refresh failures in settings page. (#518)
+- Supported marking all articles as read at the bottom of the article list. (#667)
 
 ### Changed
 

@@ -86,7 +86,10 @@ const en: TranslationMessages = {
       actionUnfavorite: 'Remove from Favorites',
       addToFavorite: 'Add to Favorites',
     },
-    list: {},
+    list: {
+      markAllVisibleAsRead: 'Mark All Visible as Read',
+      allArticlesLoaded: 'All articles loaded',
+    },
     navigation: {
       goToAllArticles: 'Go to All Articles',
       goToFavorites: 'Go to Favorites',

@@ -83,7 +83,10 @@ const zh: TranslationMessages = {
       actionUnfavorite: '取消收藏',
       addToFavorite: '添加到收藏',
     },
-    list: {},
+    list: {
+      markAllVisibleAsRead: '全部标记为已读',
+      allArticlesLoaded: '已加载全部文章',
+    },
     navigation: {
       goToAllArticles: '转到所有文章',
       goToFavorites: '转到收藏',
