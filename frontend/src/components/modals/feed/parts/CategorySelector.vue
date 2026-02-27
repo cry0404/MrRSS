@@ -28,24 +28,38 @@ function handleCategoryChange(value: string) {
 
 // Build options for BaseSelect
 const categoryOptions = computed<SelectOption[]>(() => {
-  return [
-    { value: '', label: t('sidebar.feedList.uncategorized') },
-    ...props.existingCategories.map((cat) => ({
-      value: cat,
-      label: cat,
-    })),
-  ];
-});
+  const options: SelectOption[] = [{ value: '', label: t('sidebar.feedList.uncategorized') }];
 
-// Handle custom input from BaseSelect
-function handleCustomInput(value: string) {
-  emit('update:category', value);
-  emit('update:categorySelection', value);
-}
+  // Add existing categories
+  props.existingCategories.forEach((cat) => {
+    options.push({ value: cat, label: cat });
+  });
+
+  // If current category is not in the list and not empty, add it
+  // This handles newly added categories that haven't been saved yet
+  if (
+    props.categorySelection &&
+    props.categorySelection !== '' &&
+    !props.existingCategories.includes(props.categorySelection)
+  ) {
+    options.push({ value: props.categorySelection, label: props.categorySelection });
+  }
+
+  return options;
+});
 
 // Handle select value change
 function handleSelectChange(value: string | number) {
   handleCategoryChange(String(value));
+}
+
+// Handle add new category from dropdown
+function handleAddCategory(categoryName: string) {
+  // Update the category values
+  emit('update:category', categoryName);
+  emit('update:categorySelection', categoryName);
+  // Also trigger handleCategoryChange to ensure proper state management
+  emit('handle-category-change', categoryName);
 }
 </script>
 
@@ -55,16 +69,16 @@ function handleSelectChange(value: string | number) {
       t('common.form.category')
     }}</label>
 
-    <!-- Using BaseSelect with custom input support -->
+    <!-- Using BaseSelect with add new option support -->
     <BaseSelect
       v-if="!props.showCustomCategory"
       :model-value="props.categorySelection"
       :options="categoryOptions"
-      :allow-custom-input="true"
-      :custom-input-placeholder="t('modal.feed.enterCategoryName')"
-      :searchable="true"
+      allow-add
+      :add-placeholder="t('modal.feed.enterCategoryName')"
+      :position="'auto'"
       @update:model-value="handleSelectChange"
-      @custom-input="handleCustomInput"
+      @add="handleAddCategory"
     />
 
     <!-- Custom category input (legacy mode for backward compatibility) -->

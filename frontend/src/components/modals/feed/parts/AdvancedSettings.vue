@@ -282,6 +282,7 @@ function handleRefreshModeChange(value: string | number) {
         <BaseSelect
           :model-value="props.refreshMode"
           :options="refreshModeOptions"
+          :position="'auto'"
           @update:model-value="handleRefreshModeChange"
         />
       </div>

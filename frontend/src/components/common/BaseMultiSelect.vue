@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onUnmounted, type PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PhCaretDown, PhCheck, PhChecks } from '@phosphor-icons/vue';
+import { PhCaretDown, PhCheck, PhChecks, PhPlus } from '@phosphor-icons/vue';
 import { type SelectOption, flattenOptions } from '@/types/select';
 import { useSelect } from '@/composables/ui/useSelect';
 import './select.css';
@@ -52,15 +52,26 @@ const props = defineProps({
     type: String as PropType<'chips' | 'counter'>,
     default: 'counter',
   },
+  allowAdd: {
+    type: Boolean,
+    default: false,
+  },
+  addPlaceholder: {
+    type: String,
+    default: '',
+  },
 });
 
 const emit = defineEmits<{
   'update:modelValue': [value: (string | number)[]];
+  add: [value: string];
 }>();
 
 const isOpen = ref(false);
 const searchQuery = ref('');
 const searchInputRef = ref<HTMLInputElement>();
+const addInputValue = ref('');
+const addInputRef = ref<HTMLInputElement>();
 
 // Reactive refs for computed values passed to useSelect
 const positionRef = computed(() => props.position);
@@ -151,7 +162,11 @@ function toggleDropdown() {
     resetIndex();
     setupScrollListener();
     nextTick(updateDropdownPosition);
-    if (props.searchable) {
+    if (props.allowAdd) {
+      nextTick(() => {
+        addInputRef.value?.focus();
+      });
+    } else if (props.searchable) {
       nextTick(() => {
         searchInputRef.value?.focus();
       });
@@ -162,10 +177,23 @@ function toggleDropdown() {
   }
 }
 
+// Handle add new option
+function handleAddOption() {
+  if (addInputValue.value.trim()) {
+    emit('add', addInputValue.value.trim());
+    addInputValue.value = '';
+    // Keep dropdown open for adding more options
+    nextTick(() => {
+      addInputRef.value?.focus();
+    });
+  }
+}
+
 // Watch for dropdown state changes to clear search
 watch(isOpen, (open) => {
   if (!open) {
     searchQuery.value = '';
+    addInputValue.value = '';
   }
 });
 
@@ -288,6 +316,29 @@ onUnmounted(() => {
             :size="16"
             :class="['flex-shrink-0', isSelected(option.value) ? 'text-white' : 'text-accent']"
           />
+        </div>
+
+        <!-- Add new option section -->
+        <div v-if="allowAdd" class="select-add-section">
+          <div class="select-add-input-wrapper">
+            <input
+              ref="addInputRef"
+              v-model="addInputValue"
+              type="text"
+              :placeholder="addPlaceholder || t('common.select.addNewPlaceholder')"
+              class="input-field w-full text-xs sm:text-sm"
+              @keydown.enter="handleAddOption"
+            />
+            <button
+              type="button"
+              class="select-add-button"
+              :disabled="!addInputValue.trim()"
+              :title="t('common.select.addNew')"
+              @click.stop="handleAddOption"
+            >
+              <PhPlus :size="16" />
+            </button>
+          </div>
         </div>
 
         <!-- Empty state -->

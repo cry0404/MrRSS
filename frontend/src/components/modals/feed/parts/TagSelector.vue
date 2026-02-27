@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAppStore } from '@/stores/app';
-import { PhX, PhPlus } from '@phosphor-icons/vue';
+import { PhX } from '@phosphor-icons/vue';
 import BaseSelect from '@/components/common/BaseSelect.vue';
 import type { SelectOption } from '@/types/select';
 import TagFormModal from '../../settings/tags/TagFormModal.vue';
@@ -51,12 +51,9 @@ function removeTag(tagId: number) {
   );
 }
 
-function openNewTagModal() {
-  showNewTagModal.value = true;
-}
-
 function closeNewTagModal() {
   showNewTagModal.value = false;
+  pendingTagName.value = '';
 }
 
 async function handleSaveTag(name: string, color: string) {
@@ -74,6 +71,7 @@ async function handleSaveTag(name: string, color: string) {
       // Auto-select the newly created tag
       emit('update:selectedTags', [...props.selectedTags, newTag.id]);
       closeNewTagModal();
+      pendingTagName.value = '';
       window.showToast(t('modal.tag.tagCreated'), 'success');
     } else {
       window.showToast(t('common.errors.createFailed'), 'error');
@@ -90,6 +88,14 @@ function handleSelectChange(value: string | number) {
     toggleTag(Number(value));
   }
 }
+
+// Handle add new tag from dropdown
+function handleAddNewTag(tagName: string) {
+  pendingTagName.value = tagName;
+  showNewTagModal.value = true;
+}
+
+const pendingTagName = ref('');
 </script>
 
 <template>
@@ -117,25 +123,19 @@ function handleSelectChange(value: string | number) {
     <BaseSelect
       :model-value="''"
       :options="tagOptions"
-      :searchable="true"
+      allow-add
+      :add-placeholder="t('modal.tag.createNew')"
+      :position="'auto'"
       @update:model-value="handleSelectChange"
+      @add="handleAddNewTag"
     />
-
-    <!-- Create new tag button -->
-    <button
-      type="button"
-      class="mt-2 text-xs text-accent hover:text-accent-hover transition-colors flex items-center gap-1"
-      @click="openNewTagModal"
-    >
-      <PhPlus :size="14" />
-      {{ t('modal.tag.createNew') }}
-    </button>
 
     <!-- New tag modal -->
     <Teleport to="body">
       <TagFormModal
         v-if="showNewTagModal"
         :editing-tag="null"
+        :initial-name="pendingTagName"
         @close="closeNewTagModal"
         @save="handleSaveTag"
       />

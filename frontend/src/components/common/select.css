@@ -180,3 +180,21 @@
   @apply px-2 sm:px-3 py-3 text-text-secondary text-xs sm:text-sm;
   @apply text-center;
 }
+
+/* Add new option section */
+.select-add-section {
+  @apply p-2 border-t border-border;
+}
+
+.select-add-input-wrapper {
+  @apply flex items-center gap-2;
+}
+
+.select-add-button {
+  @apply p-1.5 rounded bg-accent text-white;
+  @apply hover:opacity-90 active:scale-95 transition-all;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+  @apply flex items-center justify-center;
+  min-width: 32px;
+  height: 32px;
+}

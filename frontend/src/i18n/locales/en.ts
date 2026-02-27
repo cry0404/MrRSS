@@ -260,6 +260,8 @@ const en: TranslationMessages = {
       noOptions: 'No options',
       searchPlaceholder: 'Search...',
       noResults: 'No results found',
+      addNew: 'Add New',
+      addNewPlaceholder: 'Enter new value...',
     },
     input: {
       customValue: 'Enter custom value...',

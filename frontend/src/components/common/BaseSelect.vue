@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onUnmounted, type PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PhCaretDown, PhX } from '@phosphor-icons/vue';
+import { PhCaretDown, PhX, PhPlus } from '@phosphor-icons/vue';
 import {
   type SelectOption,
   type SelectOptionGroup,
@@ -75,11 +75,20 @@ const props = defineProps({
     type: String as PropType<'primary' | 'secondary'>,
     default: 'primary',
   },
+  allowAdd: {
+    type: Boolean,
+    default: false,
+  },
+  addPlaceholder: {
+    type: String,
+    default: '',
+  },
 });
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | number];
   'custom-input': [value: string];
+  add: [value: string];
 }>();
 
 const isOpen = ref(false);
@@ -87,6 +96,8 @@ const customInputValue = ref('');
 const customInputRef = ref<HTMLInputElement>();
 const searchQuery = ref('');
 const searchInputRef = ref<HTMLInputElement>();
+const addInputValue = ref('');
+const addInputRef = ref<HTMLInputElement>();
 
 // Reactive refs for computed values passed to useSelect
 const positionRef = computed(() => props.position);
@@ -218,6 +229,18 @@ function handleCustomInput() {
   }
 }
 
+// Handle add new option
+function handleAddOption() {
+  if (addInputValue.value.trim()) {
+    emit('add', addInputValue.value.trim());
+    addInputValue.value = '';
+    // Keep dropdown open for adding more options
+    nextTick(() => {
+      addInputRef.value?.focus();
+    });
+  }
+}
+
 // Handle click on trigger
 function handleTriggerClick(event: MouseEvent) {
   event.stopPropagation();
@@ -238,13 +261,18 @@ watch(isOpen, (open) => {
     nextTick(() => {
       customInputRef.value?.focus();
     });
+  } else if (open && props.allowAdd) {
+    nextTick(() => {
+      addInputRef.value?.focus();
+    });
   } else if (open && props.searchable) {
     nextTick(() => {
       searchInputRef.value?.focus();
     });
   } else if (!open) {
-    // Clear search when dropdown closes
+    // Clear search and add input when dropdown closes
     searchQuery.value = '';
+    addInputValue.value = '';
   }
 });
 
@@ -375,6 +403,29 @@ onUnmounted(() => {
             class="input-field w-full text-xs sm:text-sm"
             @keydown.enter="handleCustomInput"
           />
+        </div>
+
+        <!-- Add new option section -->
+        <div v-if="allowAdd" class="select-add-section">
+          <div class="select-add-input-wrapper">
+            <input
+              ref="addInputRef"
+              v-model="addInputValue"
+              type="text"
+              :placeholder="addPlaceholder || t('common.select.addNewPlaceholder')"
+              class="input-field w-full text-xs sm:text-sm"
+              @keydown.enter="handleAddOption"
+            />
+            <button
+              type="button"
+              class="select-add-button"
+              :disabled="!addInputValue.trim()"
+              :title="t('common.select.addNew')"
+              @click.stop="handleAddOption"
+            >
+              <PhPlus :size="16" />
+            </button>
+          </div>
         </div>
 
         <!-- Empty state -->

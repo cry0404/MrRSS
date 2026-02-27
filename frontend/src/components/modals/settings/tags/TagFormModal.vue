@@ -9,9 +9,12 @@ import ModalFooter from '@/components/common/ModalFooter.vue';
 
 interface Props {
   editingTag: Tag | null;
+  initialName?: string;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  initialName: '',
+});
 
 const emit = defineEmits<{
   close: [];
@@ -46,7 +49,7 @@ watch(
       newTagName.value = tag.name;
       newTagColor.value = tag.color;
     } else {
-      newTagName.value = '';
+      newTagName.value = props.initialName || '';
       newTagColor.value = '#3B82F6';
     }
   },
