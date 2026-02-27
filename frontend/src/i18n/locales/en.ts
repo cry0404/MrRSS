@@ -258,8 +258,6 @@ const en: TranslationMessages = {
     select: {
       placeholder: 'Select...',
       noOptions: 'No options',
-      selectAll: 'Select All',
-      deselectAll: 'Deselect All',
       searchPlaceholder: 'Search...',
       noResults: 'No results found',
     },
@@ -324,7 +322,6 @@ const en: TranslationMessages = {
       addNewFeed: 'Add New Feed',
       addSubscription: 'Add Subscription',
       categoryPlaceholder: 'e.g. Tech/News',
-      customCategory: 'Custom Category...',
       deleteFeedMessage: 'Are you sure you want to delete this feed?',
       deleteFeedTitle: 'Delete Feed',
       deleteMultipleFeedsMessage: 'Are you sure you want to delete these {count} feeds?',
@@ -714,6 +711,7 @@ const en: TranslationMessages = {
       custom: {
         bodyTemplate: 'Request Body Template',
         bodyTemplateDesc: 'Use placeholders in your request body',
+        bodyTemplatePlaceholder: 'Enter request body template',
         endpoint: 'API Endpoint',
         endpointDesc: 'The API endpoint URL for the translation service',
         endpointPlaceholder: 'https://api.example.com/translate',

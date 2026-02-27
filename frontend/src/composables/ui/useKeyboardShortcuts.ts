@@ -2,7 +2,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useAppStore } from '@/stores/app';
 import { openInBrowser } from '@/utils/browser';
 
-export interface KeyboardShortcuts {
+interface KeyboardShortcuts {
   nextArticle: string;
   previousArticle: string;
   nextArticleArrow: string;
@@ -26,7 +26,7 @@ export interface KeyboardShortcuts {
   goToReadLater: string;
 }
 
-export interface KeyboardShortcutCallbacks {
+interface KeyboardShortcutCallbacks {
   onOpenSettings: () => void;
   onAddFeed: () => void;
   onMarkAllRead: () => Promise<void>;

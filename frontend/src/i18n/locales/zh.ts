@@ -254,8 +254,6 @@ const zh: TranslationMessages = {
     select: {
       placeholder: '请选择',
       noOptions: '无选项',
-      selectAll: '全选',
-      deselectAll: '取消全选',
       searchPlaceholder: '搜索...',
       noResults: '未找到结果',
     },
@@ -318,7 +316,6 @@ const zh: TranslationMessages = {
       addNewFeed: '添加新订阅',
       addSubscription: '添加订阅',
       categoryPlaceholder: '例如 科技/新闻',
-      customCategory: '自定义分类...',
       deleteFeedMessage: '确定要删除这个订阅吗？',
       deleteFeedTitle: '删除订阅',
       deleteMultipleFeedsMessage: '确定要删除这 {count} 个订阅吗？',
@@ -703,6 +700,7 @@ const zh: TranslationMessages = {
       custom: {
         bodyTemplate: '请求体模板',
         bodyTemplateDesc: '在请求体中使用占位符',
+        bodyTemplatePlaceholder: '输入请求体模板',
         endpoint: 'API 端点',
         endpointDesc: '翻译服务的 API 端点 URL',
         endpointPlaceholder: 'https://api.example.com/translate',
