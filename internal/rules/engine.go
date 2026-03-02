@@ -3,6 +3,7 @@ package rules
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -125,6 +126,18 @@ func (e *Engine) ApplyRulesToArticles(articles []models.Article) (int, error) {
 		return 0, err
 	}
 
+	// Collect feed IDs for batch tag loading
+	feedIDs := make([]int64, len(feeds))
+	for i, feed := range feeds {
+		feedIDs[i] = feed.ID
+	}
+
+	// Batch load all tags at once (fixes N+1 query problem)
+	tagsMap, err := e.db.GetTagsForFeeds(feedIDs)
+	if err != nil {
+		return 0, fmt.Errorf("failed to load tags for feeds: %w", err)
+	}
+
 	// Create maps of feed ID to feed data
 	feedCategories := make(map[int64]string)
 	feedTitles := make(map[int64]string)
@@ -140,8 +153,8 @@ func (e *Engine) ApplyRulesToArticles(articles []models.Article) (int, error) {
 		feedIsImageMode[feed.ID] = feed.IsImageMode
 		feedIsFreshRSS[feed.ID] = feed.IsFreshRSSSource
 
-		// Build tag names list for this feed
-		tags, _ := e.db.GetFeedTags(feed.ID)
+		// Build tag names list for this feed from pre-loaded tags
+		tags := tagsMap[feed.ID]
 		tagNames := make([]string, len(tags))
 		for i, tag := range tags {
 			tagNames[i] = tag.Name
@@ -212,6 +225,18 @@ func (e *Engine) ApplyRule(rule Rule) (int, error) {
 		return 0, err
 	}
 
+	// Collect feed IDs for batch tag loading
+	feedIDs := make([]int64, len(feeds))
+	for i, feed := range feeds {
+		feedIDs[i] = feed.ID
+	}
+
+	// Batch load all tags at once (fixes N+1 query problem)
+	tagsMap, err := e.db.GetTagsForFeeds(feedIDs)
+	if err != nil {
+		return 0, fmt.Errorf("failed to load tags for feeds: %w", err)
+	}
+
 	// Create maps of feed ID to feed data
 	feedCategories := make(map[int64]string)
 	feedTitles := make(map[int64]string)
@@ -227,8 +252,8 @@ func (e *Engine) ApplyRule(rule Rule) (int, error) {
 		feedIsImageMode[feed.ID] = feed.IsImageMode
 		feedIsFreshRSS[feed.ID] = feed.IsFreshRSSSource
 
-		// Build tag names list for this feed
-		tags, _ := e.db.GetFeedTags(feed.ID)
+		// Build tag names list for this feed from pre-loaded tags
+		tags := tagsMap[feed.ID]
 		tagNames := make([]string, len(tags))
 		for i, tag := range tags {
 			tagNames[i] = tag.Name
