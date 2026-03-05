@@ -12,11 +12,11 @@ import {
   PhCode,
   PhEyeSlash,
   PhCheckCircle,
-  PhXCircle,
   PhImage,
   PhMagnifyingGlass,
   PhX,
   PhTag,
+  PhWarningCircle,
 } from '@phosphor-icons/vue';
 import type { Feed } from '@/types/models';
 import { formatRelativeTime } from '@/utils/date';
@@ -28,6 +28,46 @@ import { useFeedManagement } from '@/composables/feed/useFeedManagement';
 const store = useAppStore();
 const { t, locale } = useI18n();
 const { addTagsToFeeds } = useFeedManagement();
+
+// Error tooltip state
+const errorTooltipStates = ref<Record<number, boolean>>({});
+
+function getFriendlyErrorMessage(error: string): string {
+  if (!error) return '';
+
+  // Network related errors
+  if (error.includes('timeout') || error.includes('Timeout')) {
+    return t('modal.feed.errorTimeout');
+  }
+  if (error.includes('connection') || error.includes('Connection')) {
+    return t('modal.feed.errorConnection');
+  }
+  if (error.includes('dns') || error.includes('DNS')) {
+    return t('modal.feed.errorDNS');
+  }
+  if (error.includes('certificate') || error.includes('SSL') || error.includes('TLS')) {
+    return t('modal.feed.errorCertificate');
+  }
+
+  // HTTP errors
+  if (error.includes('404')) {
+    return t('modal.feed.errorNotFound');
+  }
+  if (error.includes('401') || error.includes('403')) {
+    return t('modal.feed.errorUnauthorized');
+  }
+  if (error.includes('500') || error.includes('502') || error.includes('503')) {
+    return t('modal.feed.errorServer');
+  }
+
+  // Feed format errors
+  if (error.includes('XML') || error.includes('parse') || error.includes('invalid')) {
+    return t('modal.feed.errorInvalidFormat');
+  }
+
+  // Return original error if no specific message found
+  return error;
+}
 
 const emit = defineEmits<{
   'add-feed': [];
@@ -626,12 +666,43 @@ function handleManageTags() {
               class="text-green-500"
               :title="t('setting.update.updateSuccess')"
             />
-            <PhXCircle
+            <div
               v-else-if="feed.last_update_status === 'failed'"
-              :size="18"
-              class="text-red-500"
-              :title="feed.last_error || t('setting.update.updateFailed')"
-            />
+              class="relative shrink-0"
+              @mouseenter="errorTooltipStates[feed.id] = true"
+              @mouseleave="errorTooltipStates[feed.id] = false"
+            >
+              <PhWarningCircle :size="18" class="text-yellow-500 shrink-0 cursor-help" />
+
+              <!-- Error tooltip -->
+              <Transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-150"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+              >
+                <div
+                  v-if="errorTooltipStates[feed.id]"
+                  class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-max max-w-[200px] bg-bg-secondary rounded-lg shadow-xl"
+                >
+                  <div class="px-2.5 py-2">
+                    <div class="flex items-start gap-2">
+                      <PhWarningCircle :size="14" class="text-yellow-500 shrink-0 mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <div class="text-xs font-semibold text-text-primary mb-1">
+                          {{ t('setting.update.updateFailed') }}
+                        </div>
+                        <div class="text-xs text-text-secondary break-words leading-relaxed">
+                          {{ getFriendlyErrorMessage(feed.last_error || '') }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </div>
             <span v-else class="text-text-tertiary text-sm">?</span>
           </div>
 

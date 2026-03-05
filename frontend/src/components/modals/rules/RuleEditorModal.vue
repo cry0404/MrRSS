@@ -21,12 +21,10 @@ const { t } = useI18n();
 const { actionOptions } = useRuleOptions();
 
 const {
-  openDropdownIndex,
   addCondition: addConditionHelper,
   removeCondition: removeConditionHelper,
   onFieldChange,
   toggleNegate,
-  toggleDropdown,
 } = useRuleConditions();
 
 const {
@@ -198,7 +196,6 @@ async function handleClose(checkUnsaved = false): Promise<void> {
     }
   }
 
-  openDropdownIndex.value = null;
   emit('close');
 }
 </script>
@@ -259,7 +256,6 @@ async function handleClose(checkUnsaved = false): Promise<void> {
             <RuleConditionItem
               :condition="condition"
               :index="index"
-              :is-dropdown-open="openDropdownIndex === index"
               @update:field="
                 (value) => {
                   condition.field = value;
@@ -270,7 +266,6 @@ async function handleClose(checkUnsaved = false): Promise<void> {
               @update:value="(value) => (condition.value = value)"
               @update:values="(values) => (condition.values = values)"
               @update:negate="handleToggleNegate(index)"
-              @toggle-dropdown="toggleDropdown(index)"
               @remove="removeCondition(index)"
             />
           </div>
