@@ -99,6 +99,7 @@ export function generateInitialSettings(): SettingsData {
     shortcuts: settingsDefaults.shortcuts,
     shortcuts_enabled: settingsDefaults.shortcuts_enabled,
     show_article_preview_images: settingsDefaults.show_article_preview_images,
+    show_floating_toc: settingsDefaults.show_floating_toc,
     show_hidden_articles: settingsDefaults.show_hidden_articles,
     startup_on_boot: settingsDefaults.startup_on_boot,
     summary_enabled: settingsDefaults.summary_enabled,
@@ -234,6 +235,7 @@ export function parseSettingsData(data: Record<string, string>): SettingsData {
     shortcuts: data.shortcuts || settingsDefaults.shortcuts,
     shortcuts_enabled: data.shortcuts_enabled === 'true',
     show_article_preview_images: data.show_article_preview_images === 'true',
+    show_floating_toc: data.show_floating_toc === 'true',
     show_hidden_articles: data.show_hidden_articles === 'true',
     startup_on_boot: data.startup_on_boot === 'true',
     summary_enabled: data.summary_enabled === 'true',
@@ -421,6 +423,9 @@ export function buildAutoSavePayload(settingsRef: Ref<SettingsData>): Record<str
     ).toString(),
     show_article_preview_images: (
       settingsRef.value.show_article_preview_images ?? settingsDefaults.show_article_preview_images
+    ).toString(),
+    show_floating_toc: (
+      settingsRef.value.show_floating_toc ?? settingsDefaults.show_floating_toc
     ).toString(),
     show_hidden_articles: (
       settingsRef.value.show_hidden_articles ?? settingsDefaults.show_hidden_articles

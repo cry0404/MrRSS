@@ -975,6 +975,8 @@ const zh: TranslationMessages = {
       showAdvancedSettings: '显示高级设置',
       showArticlePreviewImages: '显示预览图片',
       showArticlePreviewImagesDesc: '在文章列表中显示预览图片',
+      showFloatingToc: '显示浮动目录',
+      showFloatingTocDesc: '在桌面端阅读视图中显示右侧浮动目录',
       showHiddenArticles: '显示隐藏文章',
       showHiddenArticlesDesc: '在全部文章列表中显示隐藏的文章',
       showOnlyUnread: '仅显示未读文章',

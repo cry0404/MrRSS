@@ -91,6 +91,7 @@ export interface SettingsData {
   shortcuts: string;
   shortcuts_enabled: boolean;
   show_article_preview_images: boolean;
+  show_floating_toc: boolean;
   show_hidden_articles: boolean;
   startup_on_boot: boolean;
   summary_enabled: boolean;

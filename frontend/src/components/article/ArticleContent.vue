@@ -6,6 +6,7 @@ import type { Article } from '@/types/models';
 import ArticleTitle from './parts/ArticleTitle.vue';
 import ArticleSummary from './parts/ArticleSummary.vue';
 import ArticleBody from './parts/ArticleBody.vue';
+import FloatingToc from './parts/FloatingToc.vue';
 import AudioPlayer from './parts/AudioPlayer.vue';
 import VideoPlayer from './parts/VideoPlayer.vue';
 import ArticleChatButton from './ArticleChatButton.vue';
@@ -64,6 +65,7 @@ function handleRetryLoad() {
 const { settings: appSettings, fetchSettings } = useSettings();
 const store = useAppStore();
 const isChatPanelOpen = ref(false);
+const articleScrollContainer = ref<HTMLElement | null>(null);
 
 // Full-text fetching state
 const isFetchingFullArticle = ref(false);
@@ -123,6 +125,8 @@ const showChatButton = computed(() => {
     // Removed: props.showContent requirement - chat should work in both modes
   );
 });
+
+const showFloatingToc = computed(() => appSettings.value.show_floating_toc);
 
 // Computed to check if full-text fetching should be shown
 const showFullTextButton = computed(() => {
@@ -872,77 +876,86 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
-    class="flex-1 overflow-y-scroll bg-bg-primary p-3 sm:p-6 scroll-smooth"
-    @click="handleContainerClick"
-  >
+  <div class="relative flex-1 overflow-hidden bg-bg-primary">
     <div
-      class="max-w-3xl mx-auto bg-bg-primary"
-      :class="{
-        'hide-translations': !showTranslations,
-        'translation-only-mode': translationSettings.translationOnlyMode,
-      }"
+      ref="articleScrollContainer"
+      class="h-full overflow-y-scroll p-3 sm:p-6 scroll-smooth"
+      @click="handleContainerClick"
     >
-      <ArticleTitle
-        :article="article"
-        :translated-title="translatedTitle"
-        :is-translating-title="isTranslatingTitle"
-        :translation-enabled="translationEnabled"
-        :translation-skipped="translationSkipped"
-        :is-translating-content="isTranslatingContent"
-        @force-translate="forceTranslateContent"
-      />
+      <div
+        class="max-w-3xl mx-auto bg-bg-primary [container-type:inline-size]"
+        :class="{
+          'hide-translations': !showTranslations,
+          'translation-only-mode': translationSettings.translationOnlyMode,
+        }"
+      >
+        <ArticleTitle
+          :article="article"
+          :translated-title="translatedTitle"
+          :is-translating-title="isTranslatingTitle"
+          :translation-enabled="translationEnabled"
+          :translation-skipped="translationSkipped"
+          :is-translating-content="isTranslatingContent"
+          @force-translate="forceTranslateContent"
+        />
 
-      <!-- Audio Player (if article has audio) -->
-      <AudioPlayer
-        v-if="article.audio_url"
-        :audio-url="article.audio_url"
-        :article-title="article.title"
-      />
+        <!-- Audio Player (if article has audio) -->
+        <AudioPlayer
+          v-if="article.audio_url"
+          :audio-url="article.audio_url"
+          :article-title="article.title"
+        />
 
-      <!-- Video Player (if article has video) -->
-      <VideoPlayer
-        v-if="article.video_url"
-        :video-url="article.video_url"
-        :article-title="article.title"
-      />
+        <!-- Video Player (if article has video) -->
+        <VideoPlayer
+          v-if="article.video_url"
+          :video-url="article.video_url"
+          :article-title="article.title"
+        />
 
-      <ArticleSummary
-        v-if="summaryEnabled"
-        :summary-result="summaryResult"
-        :is-loading-summary="isLoadingSummary"
-        :translation-enabled="translationEnabled"
-        :summary-provider="summaryProvider"
-        :summary-trigger-mode="summaryTriggerMode"
-        :is-loading-content="props.isLoadingContent"
-        @generate-summary="generateSummary(props.article, true)"
-      />
+        <ArticleSummary
+          v-if="summaryEnabled"
+          :summary-result="summaryResult"
+          :is-loading-summary="isLoadingSummary"
+          :translation-enabled="translationEnabled"
+          :summary-provider="summaryProvider"
+          :summary-trigger-mode="summaryTriggerMode"
+          :is-loading-content="props.isLoadingContent"
+          @generate-summary="generateSummary(props.article, true)"
+        />
 
-      <ArticleBody
-        :article-content="displayContent"
-        :is-translating-content="isTranslatingContent"
-        :has-media-content="!!(article.audio_url || article.video_url)"
-        :is-loading-content="isLoadingContent"
-        @retry-load="handleRetryLoad"
-      />
+        <ArticleBody
+          :article-content="displayContent"
+          :is-translating-content="isTranslatingContent"
+          :has-media-content="!!(article.audio_url || article.video_url)"
+          :is-loading-content="isLoadingContent"
+          @retry-load="handleRetryLoad"
+        />
 
-      <!-- Full-text fetch button -->
-      <div v-if="showFullTextButton" class="flex justify-center mt-4 mb-4">
-        <button
-          :disabled="isFetchingFullArticle"
-          class="btn-secondary-compact flex items-center gap-2"
-          @click="() => fetchFullArticle()"
-        >
-          <PhSpinnerGap v-if="isFetchingFullArticle" :size="14" class="animate-spin" />
-          <PhArticleNyTimes v-else :size="14" />
-          <span>{{
-            isFetchingFullArticle
-              ? t('article.action.fetchingFullArticle')
-              : t('article.action.fetchFullArticle')
-          }}</span>
-        </button>
+        <!-- Full-text fetch button -->
+        <div v-if="showFullTextButton" class="flex justify-center mt-4 mb-4">
+          <button
+            :disabled="isFetchingFullArticle"
+            class="btn-secondary-compact flex items-center gap-2"
+            @click="() => fetchFullArticle()"
+          >
+            <PhSpinnerGap v-if="isFetchingFullArticle" :size="14" class="animate-spin" />
+            <PhArticleNyTimes v-else :size="14" />
+            <span>{{
+              isFetchingFullArticle
+                ? t('article.action.fetchingFullArticle')
+                : t('article.action.fetchFullArticle')
+            }}</span>
+          </button>
+        </div>
       </div>
     </div>
+
+    <FloatingToc
+      :enabled="showFloatingToc"
+      :article-id="article.id"
+      :scroll-container="articleScrollContainer"
+    />
 
     <!-- Chat Button (shown when content is loaded and chat is enabled) -->
     <ArticleChatButton v-if="showChatButton && !isChatPanelOpen" @click="isChatPanelOpen = true" />

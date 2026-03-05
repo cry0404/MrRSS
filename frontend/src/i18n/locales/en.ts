@@ -994,6 +994,8 @@ const en: TranslationMessages = {
       showAdvancedSettings: 'Show Advanced Settings',
       showArticlePreviewImages: 'Show Preview Images',
       showArticlePreviewImagesDesc: 'Display preview images in the article list',
+      showFloatingToc: 'Show Floating TOC',
+      showFloatingTocDesc: 'Show a desktop floating table of contents in article reading view',
       showHiddenArticles: 'Show Hidden Articles',
       showHiddenArticlesDesc: 'Show articles hidden in the All Articles list',
       showOnlyUnread: 'Show only unread articles',
