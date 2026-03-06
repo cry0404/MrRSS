@@ -601,7 +601,7 @@
     },
     "image_gallery_enabled": {
       "type": "bool",
-      "default": false,
+      "default": true,
       "category": "general",
       "encrypted": false,
       "frontend_key": "imageGalleryEnabled"

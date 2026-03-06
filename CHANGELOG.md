@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Supported floating TOC feature for articles. (@MidnightCrowing)
 - Supported Miniflux format OPML import. (#768)
-- Supported displaying Youtube and Bilibili video in image gallery view.
+- Supported displaying Youtube and Bilibili video in multimedia gallery view.
 
 ### Changed
 

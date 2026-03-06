@@ -336,8 +336,8 @@ function handleContextMenu(event: MouseEvent, article: Article): void {
 function openArticleDetail(): void {
   if (!selectedArticle.value) return;
 
-  // Set the current article ID in the store
-  store.currentArticleId = selectedArticle.value.id;
+  // Set the article's feed as current
+  store.currentFeedId = selectedArticle.value.feed_id;
 
   // Switch to 'all' filter to exit image gallery mode and show article detail
   store.setFilter('all');
@@ -352,6 +352,20 @@ function openArticleDetail(): void {
 function handleImageIndexUpdate(index: number): void {
   currentImageIndex.value = index;
 }
+
+// Watch for container ref to be set up and add scroll listener
+watch(
+  () => masonryLayout.containerRef.value,
+  (container) => {
+    if (container) {
+      // Remove any existing listener to avoid duplicates
+      container.removeEventListener('scroll', handleScroll);
+      // Add the scroll listener
+      container.addEventListener('scroll', handleScroll);
+    }
+  },
+  { immediate: true }
+);
 
 // Watch for articles changes and rearrange columns
 watch(
@@ -406,9 +420,6 @@ watch(
 
 onMounted(() => {
   galleryData.fetchImages();
-  if (masonryLayout.containerRef.value) {
-    masonryLayout.containerRef.value.addEventListener('scroll', handleScroll);
-  }
 
   // Setup resize observer
   masonryLayout.setupResizeObserver();

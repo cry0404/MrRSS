@@ -46,7 +46,7 @@ function getImageCount(article: Article): number {
 </script>
 
 <template>
-  <div ref="localContainerRef" class="flex-1 overflow-y-scroll scroll-smooth">
+  <div ref="localContainerRef" class="flex-1 overflow-y-auto scroll-smooth" style="min-height: 0">
     <!-- Masonry Grid -->
     <div v-if="columns.length > 0 && columns.some((col) => col.length > 0)" class="p-4 flex gap-4">
       <div v-for="(column, colIndex) in columns" :key="colIndex" class="flex-1 flex flex-col gap-4">
