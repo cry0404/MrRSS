@@ -9,12 +9,12 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown v1.6.0
 	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/abadojack/whatlanggo v1.0.1
-	github.com/antchfx/htmlquery v1.3.5
+	github.com/antchfx/htmlquery v1.3.6
 	github.com/antchfx/xmlquery v1.5.0
 	github.com/chromedp/chromedp v0.14.2
 	github.com/emersion/go-imap v1.2.1
 	github.com/emersion/go-imap-id v0.0.0-20190926060100-f94a56b9ecde
-	github.com/go-ego/gse v1.0.0
+	github.com/go-ego/gse v1.0.1
 	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a
 	github.com/longbridgeapp/opencc v0.3.13
 	github.com/mmcdole/gofeed v1.3.0
@@ -33,7 +33,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
-	github.com/antchfx/xpath v1.3.5 // indirect
+	github.com/antchfx/xpath v1.3.6 // indirect
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/chromedp/cdproto v0.0.0-20250724212937-08a3db8b4327 // indirect
