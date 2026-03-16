@@ -193,8 +193,6 @@ function openGitHubRelease() {
 </template>
 
 <style scoped>
-@reference "../../../../style.css";
-
 .btn {
   @apply px-3 sm:px-4 py-1.5 sm:py-2 rounded-md cursor-pointer flex items-center gap-1.5 sm:gap-2 font-medium transition-colors;
 }

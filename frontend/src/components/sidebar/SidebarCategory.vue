@@ -336,8 +336,6 @@ function handleCaretClick() {
 </template>
 
 <style scoped>
-@reference "../../style.css";
-
 .category-header {
   @apply px-2 sm:px-3 py-1.5 sm:py-2 cursor-pointer font-semibold text-xs sm:text-sm text-text-secondary flex items-center justify-between hover:bg-bg-tertiary hover:text-text-primary transition-colors;
   @apply sticky z-10 bg-bg-secondary;

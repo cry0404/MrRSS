@@ -298,8 +298,6 @@ defineExpose({
 </template>
 
 <style scoped>
-@reference "../../style.css";
-
 /* Activity bar slide transition */
 .activity-bar-slide-enter-active {
   transition:

@@ -168,8 +168,6 @@ function toggleActivityBar() {
 </template>
 
 <style scoped>
-@reference "../../style.css";
-
 .compact-sidebar-wrapper {
   position: relative;
   z-index: 20;

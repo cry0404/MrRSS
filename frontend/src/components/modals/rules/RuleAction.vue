@@ -63,8 +63,6 @@ function handleUpdate(value: string | number): void {
 </template>
 
 <style scoped>
-@reference "../../../style.css";
-
 .action-row {
   @apply flex items-center gap-2 p-2 bg-bg-secondary border border-border rounded-lg;
 }

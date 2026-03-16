@@ -767,6 +767,4 @@ function handleManageTags() {
   </Teleport>
 </template>
 
-<style scoped>
-@reference "../../../../style.css";
-</style>
+<style scoped></style>

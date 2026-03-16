@@ -226,8 +226,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-@reference "../../style.css";
-
 /* Desktop max-height for rounded modals */
 @media (min-width: 640px) {
   .rounded-2xl {

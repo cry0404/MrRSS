@@ -144,7 +144,5 @@ const pendingTagName = ref('');
 </template>
 
 <style scoped>
-@reference "../../../style.css";
-
 /* Styles are now handled by BaseSelect and select.css */
 </style>

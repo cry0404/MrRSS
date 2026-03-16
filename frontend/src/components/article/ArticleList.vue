@@ -1059,8 +1059,6 @@ async function markAllVisibleAsRead(): Promise<void> {
 </template>
 
 <style scoped>
-@reference "../../style.css";
-
 @media (min-width: 768px) {
   .article-list {
     width: var(--article-list-width, 400px);

@@ -192,8 +192,6 @@ defineEmits<{
 </template>
 
 <style scoped>
-@reference "../../style.css";
-
 .action-btn {
   @apply text-lg sm:text-xl cursor-pointer text-text-secondary p-1 sm:p-1.5 rounded-md transition-colors hover:bg-bg-tertiary hover:text-text-primary;
 }

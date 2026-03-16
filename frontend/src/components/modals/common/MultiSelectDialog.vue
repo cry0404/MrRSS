@@ -186,6 +186,4 @@ function isOptionSelected(value: string): boolean {
   </BaseModal>
 </template>
 
-<style scoped>
-@reference "../../../style.css";
-</style>
+<style scoped></style>
