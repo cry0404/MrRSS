@@ -109,3 +109,47 @@ func TestGenerate(t *testing.T) {
 		t.Error("Generated XML missing Feed 2 URL")
 	}
 }
+
+// TestParseSelfExportFormat tests that MrRSS's own exported OPML format (which includes both xmlUrl and feedURL)
+// can be parsed correctly without the feedURL empty string overwriting the valid xmlUrl.
+func TestParseSelfExportFormat(t *testing.T) {
+	xmlData := `
+	<?xml version="1.0" encoding="UTF-8"?>
+	<opml version="1.0">
+		<head>
+			<title>MrRSS Subscriptions</title>
+		</head>
+		<body>
+			<outline text="v2ex hot" title="v2ex hot" type="" xmlUrl="rsshub://v2ex/topics/hot" htmlUrl="" feedURL="" description="" category=""/>
+			<outline text="Hacker News" title="Hacker News" xmlUrl="https://hnrss.org/frontpage" feedURL="" />
+		</body>
+	</opml>`
+
+	r := strings.NewReader(xmlData)
+	feeds, err := Parse(r)
+	if err != nil {
+		t.Fatalf("Parse failed: %v", err)
+	}
+
+	if len(feeds) != 2 {
+		t.Errorf("Expected 2 feeds, got %d", len(feeds))
+	}
+
+	if len(feeds) > 0 {
+		if feeds[0].Title != "v2ex hot" {
+			t.Errorf("Expected first feed title 'v2ex hot', got '%s'", feeds[0].Title)
+		}
+		if feeds[0].URL != "rsshub://v2ex/topics/hot" {
+			t.Errorf("Expected first feed URL 'rsshub://v2ex/topics/hot', got '%s'", feeds[0].URL)
+		}
+	}
+
+	if len(feeds) > 1 {
+		if feeds[1].Title != "Hacker News" {
+			t.Errorf("Expected second feed title 'Hacker News', got '%s'", feeds[1].Title)
+		}
+		if feeds[1].URL != "https://hnrss.org/frontpage" {
+			t.Errorf("Expected second feed URL 'https://hnrss.org/frontpage', got '%s'", feeds[1].URL)
+		}
+	}
+}

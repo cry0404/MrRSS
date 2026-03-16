@@ -66,8 +66,8 @@ func normalizeOPMLAttributes(content []byte) []byte {
 		{regexp.MustCompile(`(?i)\sxmlurl=`), ` xmlUrl=`},
 		// htmlUrl variations
 		{regexp.MustCompile(`(?i)\shtmlurl=`), ` htmlUrl=`},
-		// Miniflux uses feedURL, normalize to xmlUrl
-		{regexp.MustCompile(`(?i)\sfeedurl=`), ` xmlUrl=`},
+		// Miniflux uses feedURL, normalize to feedURL to bind to Outline struct FeedURL attribute
+		{regexp.MustCompile(`(?i)\sfeedurl=`), ` feedURL=`},
 	}
 
 	result := content
