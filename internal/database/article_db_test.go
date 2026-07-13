@@ -224,6 +224,75 @@ func TestSaveArticlesBatchContextCancel(t *testing.T) {
 	}
 }
 
+func TestSaveArticlesUpdatePreservesRelatedData(t *testing.T) {
+	db := setupDBWithFeed(t)
+
+	var feedID int64
+	if err := db.QueryRow(`SELECT id FROM feeds WHERE url = ?`, "https://example.com/feed").Scan(&feedID); err != nil {
+		t.Fatalf("scan feed id: %v", err)
+	}
+
+	publishedAt := time.Date(2026, time.July, 13, 12, 0, 0, 0, time.UTC)
+	article := &models.Article{
+		FeedID:                feedID,
+		Title:                 "Article with related data",
+		URL:                   "https://example.com/article/original",
+		PublishedAt:           publishedAt,
+		HasValidPublishedTime: true,
+	}
+	if err := db.SaveArticles(context.Background(), []*models.Article{article}); err != nil {
+		t.Fatalf("initial SaveArticles error: %v", err)
+	}
+
+	var articleID int64
+	if err := db.QueryRow(`SELECT id FROM articles WHERE feed_id = ?`, feedID).Scan(&articleID); err != nil {
+		t.Fatalf("scan article id: %v", err)
+	}
+	if err := db.SetArticleContent(articleID, "cached content"); err != nil {
+		t.Fatalf("SetArticleContent error: %v", err)
+	}
+	sessionID, err := db.CreateChatSession(articleID, "Existing chat")
+	if err != nil {
+		t.Fatalf("CreateChatSession error: %v", err)
+	}
+	if _, err := db.CreateChatMessage(sessionID, "user", "Keep this message", ""); err != nil {
+		t.Fatalf("CreateChatMessage error: %v", err)
+	}
+
+	article.URL = "https://example.com/article/updated"
+	if err := db.SaveArticles(context.Background(), []*models.Article{article}); err != nil {
+		t.Fatalf("update SaveArticles error: %v", err)
+	}
+
+	var updatedArticleID int64
+	var updatedURL string
+	if err := db.QueryRow(`SELECT id, url FROM articles WHERE feed_id = ?`, feedID).Scan(&updatedArticleID, &updatedURL); err != nil {
+		t.Fatalf("scan updated article: %v", err)
+	}
+	if updatedArticleID != articleID {
+		t.Fatalf("article id changed from %d to %d", articleID, updatedArticleID)
+	}
+	if updatedURL != article.URL {
+		t.Fatalf("article URL = %q, want %q", updatedURL, article.URL)
+	}
+
+	content, found, err := db.GetArticleContent(articleID)
+	if err != nil {
+		t.Fatalf("GetArticleContent error: %v", err)
+	}
+	if !found || content != "cached content" {
+		t.Fatalf("article content was not preserved: found=%v content=%q", found, content)
+	}
+
+	session, err := db.GetChatSession(sessionID)
+	if err != nil {
+		t.Fatalf("GetChatSession error: %v", err)
+	}
+	if session == nil || session.MessageCount != 1 {
+		t.Fatalf("chat data was not preserved: session=%+v", session)
+	}
+}
+
 func TestArticleDeduplicationByUniqueID(t *testing.T) {
 	db := setupDBWithFeed(t)
 

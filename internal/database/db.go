@@ -21,10 +21,11 @@ func NewDB(dataSourceName string) (*DB, error) {
 	// Add busy_timeout to prevent "database is locked" errors
 	// Also enable WAL mode for better concurrency
 	// Add performance optimizations: increase cache size, set synchronous=NORMAL
+	// Enable foreign_keys to make ON DELETE CASCADE work (disabled by default in SQLite)
 	if !strings.Contains(dataSourceName, "?") {
-		dataSourceName += "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=cache_size(-32000)&_pragma=synchronous(NORMAL)"
+		dataSourceName += "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=cache_size(-32000)&_pragma=synchronous(NORMAL)&_pragma=foreign_keys(1)"
 	} else {
-		dataSourceName += "&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=cache_size(-32000)&_pragma=synchronous(NORMAL)"
+		dataSourceName += "&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=cache_size(-32000)&_pragma=synchronous(NORMAL)&_pragma=foreign_keys(1)"
 	}
 
 	db, err := sql.Open("sqlite", dataSourceName)

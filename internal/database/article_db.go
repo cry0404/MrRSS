@@ -51,7 +51,31 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.PrepareContext(ctx, `INSERT OR REPLACE INTO articles (feed_id, title, url, image_url, audio_url, video_url, published_at, translated_title, is_read, is_favorite, is_hidden, is_read_later, summary, unique_id, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	// Use DO UPDATE instead of INSERT OR REPLACE because REPLACE deletes the
+	// existing row before inserting a new one. With foreign keys enabled, that
+	// implicit delete would cascade to article contents and chat history.
+	stmt, err := tx.PrepareContext(ctx, `
+		INSERT INTO articles (
+			feed_id, title, url, image_url, audio_url, video_url, published_at,
+			translated_title, is_read, is_favorite, is_hidden, is_read_later,
+			summary, unique_id, author
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(unique_id) DO UPDATE SET
+			feed_id = excluded.feed_id,
+			title = excluded.title,
+			url = excluded.url,
+			image_url = excluded.image_url,
+			audio_url = excluded.audio_url,
+			video_url = excluded.video_url,
+			published_at = excluded.published_at,
+			translated_title = excluded.translated_title,
+			is_read = excluded.is_read,
+			is_favorite = excluded.is_favorite,
+			is_hidden = excluded.is_hidden,
+			is_read_later = excluded.is_read_later,
+			summary = excluded.summary,
+			author = excluded.author
+	`)
 	if err != nil {
 		return err
 	}
@@ -68,7 +92,7 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 		// Generate unique_id for deduplication
 		uniqueID := urlutil.GenerateArticleUniqueID(article.Title, article.FeedID, article.PublishedAt, article.HasValidPublishedTime)
 
-		// For INSERT OR REPLACE, we need to preserve existing status fields
+		// Preserve user-controlled status fields when refreshing an existing article.
 		// Check if article exists to preserve its status
 		var existingIsRead, existingIsFavorite, existingIsHidden, existingIsReadLater int
 		err := tx.QueryRowContext(ctx, "SELECT is_read, is_favorite, is_hidden, is_read_later FROM articles WHERE unique_id = ?", uniqueID).Scan(&existingIsRead, &existingIsFavorite, &existingIsHidden, &existingIsReadLater)

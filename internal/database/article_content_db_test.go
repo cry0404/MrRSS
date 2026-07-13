@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -15,6 +16,21 @@ func TestArticleContentCache(t *testing.T) {
 	// Initialize schema
 	if err := db.Init(); err != nil {
 		t.Fatalf("Failed to initialize database: %v", err)
+	}
+
+	// Helper: create a parent article row so FK constraint is satisfied.
+	// Requires a parent feed row because articles.feed_id REFERENCES feeds(id).
+	_, err = db.Exec(`INSERT INTO feeds (id, title, url) VALUES (1, 'Test Feed', 'https://example.com/feed')`)
+	if err != nil {
+		t.Fatalf("Failed to create test feed: %v", err)
+	}
+
+	createArticle := func(id int64) {
+		_, err := db.Exec(`INSERT INTO articles (id, feed_id, title, url) VALUES (?, 1, ?, ?)`,
+			id, "Test Article", fmt.Sprintf("https://example.com/%d", id))
+		if err != nil {
+			t.Fatalf("Failed to create article %d: %v", id, err)
+		}
 	}
 
 	t.Run("GetArticleContent - not found", func(t *testing.T) {
@@ -32,6 +48,7 @@ func TestArticleContentCache(t *testing.T) {
 
 	t.Run("Set and Get ArticleContent", func(t *testing.T) {
 		articleID := int64(1)
+		createArticle(articleID)
 		testContent := "<p>This is test article content</p>"
 
 		// Set content
@@ -54,6 +71,7 @@ func TestArticleContentCache(t *testing.T) {
 
 	t.Run("Update existing ArticleContent", func(t *testing.T) {
 		articleID := int64(2)
+		createArticle(articleID)
 		initialContent := "<p>Initial content</p>"
 		updatedContent := "<p>Updated content</p>"
 
@@ -88,6 +106,7 @@ func TestArticleContentCache(t *testing.T) {
 
 	t.Run("Delete ArticleContent", func(t *testing.T) {
 		articleID := int64(3)
+		createArticle(articleID)
 		testContent := "<p>Content to delete</p>"
 
 		// Set content
@@ -131,11 +150,15 @@ func TestArticleContentCache(t *testing.T) {
 	})
 
 	t.Run("GetArticleContentsBatch", func(t *testing.T) {
-		// Setup test data
+		// Setup test data — must create parent article rows for FK constraint
 		testData := map[int64]string{
 			10: "<p>Content for article 10</p>",
 			20: "<p>Content for article 20</p>",
 			30: "<p>Content for article 30</p>",
+		}
+
+		for articleID := range testData {
+			createArticle(articleID)
 		}
 
 		// Set contents for multiple articles

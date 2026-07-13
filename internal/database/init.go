@@ -2,6 +2,7 @@ package database
 
 import (
 	"MrRSS/internal/config"
+	"log"
 
 	_ "modernc.org/sqlite"
 )
@@ -49,8 +50,76 @@ func (db *DB) Init() error {
 		if err = applyAdditionalMigrations(db); err != nil {
 			return
 		}
+
+		// Migration: enable auto_vacuum in INCREMENTAL mode so that
+		// IncrementalVacuum() can reclaim freelist pages after deletions
+		// without requiring a full VACUUM (which locks the database).
+		// For existing databases created with auto_vacuum=NONE (value 0),
+		// we must run a full VACUUM once to convert to INCREMENTAL mode.
+		// This is guarded by a settings flag so it only runs once.
+		if migrationErr := migrateAutoVacuumIncremental(db); migrationErr != nil {
+			log.Printf("Warning: auto_vacuum migration failed: %v", migrationErr)
+			// Don't return error — the app can still work without incremental vacuum
+		}
 	})
 	return err
+}
+
+// migrateAutoVacuumIncremental switches the database to auto_vacuum=INCREMENTAL
+// mode. For new databases this is a no-op if already set. For existing databases
+// with auto_vacuum=NONE, a one-time VACUUM is required to convert the mode.
+// We use a settings flag to ensure the VACUUM only runs once.
+//
+// IMPORTANT: This function runs inside Init() before db.ready is closed.
+// It must NOT call methods that invoke WaitForReady (like GetSetting),
+// as that would deadlock. Use the underlying sql.DB methods directly.
+func migrateAutoVacuumIncremental(db *DB) error {
+	// Check if already migrated — use sql.DB directly to avoid WaitForReady deadlock
+	var done string
+	err := db.DB.QueryRow("SELECT value FROM settings WHERE key = 'auto_vacuum_migrated'").Scan(&done)
+	if err == nil && done == "1" {
+		return nil
+	}
+	// If error is sql.ErrNoRows, the setting doesn't exist yet — proceed with migration
+
+	// Check current auto_vacuum mode
+	var autoVacuum int64
+	err = db.DB.QueryRow("PRAGMA auto_vacuum").Scan(&autoVacuum)
+	if err != nil {
+		return err
+	}
+
+	// auto_vacuum values: 0=NONE, 1=FULL, 2=INCREMENTAL
+	if autoVacuum == 2 {
+		// Already in incremental mode, just mark as done
+		_, _ = db.DB.Exec(`INSERT OR REPLACE INTO settings (key, value) VALUES ('auto_vacuum_migrated', '1')`)
+		return nil
+	}
+
+	log.Println("Migrating database to auto_vacuum=INCREMENTAL mode (one-time VACUUM required)...")
+
+	// VACUUM requires exclusive access to the database. With a connection pool
+	// of 25, other idle connections can hold locks that prevent VACUUM from
+	// completing, causing deadlocks. Temporarily restrict to a single connection.
+	db.SetMaxOpenConns(1)
+	defer db.SetMaxOpenConns(25)
+
+	// Set to INCREMENTAL mode
+	if _, err := db.DB.Exec("PRAGMA auto_vacuum = INCREMENTAL"); err != nil {
+		return err
+	}
+
+	// VACUUM to apply the new auto_vacuum setting to the entire database.
+	// This also reclaims all freelist pages immediately.
+	if _, err := db.DB.Exec("VACUUM"); err != nil {
+		return err
+	}
+
+	// Mark migration as done
+	_, _ = db.DB.Exec(`INSERT OR REPLACE INTO settings (key, value) VALUES ('auto_vacuum_migrated', '1')`)
+	log.Println("auto_vacuum=INCREMENTAL migration completed")
+
+	return nil
 }
 
 // applyAdditionalMigrations applies migrations that need to run after schema initialization

@@ -98,12 +98,13 @@ func TestGetDataDir_PlatformSpecific(t *testing.T) {
 		originalHome := os.Getenv("HOME")
 		defer os.Setenv("HOME", originalHome)
 
-		os.Setenv("HOME", "/Users/testuser")
+		// Use tmp to avoid permission issues
+		os.Setenv("HOME", "/tmp/Users/testuser")
 		dir, err := GetDataDir()
 		if err != nil {
 			t.Fatalf("GetDataDir failed: %v", err)
 		}
-		expected := filepath.Join("/Users/testuser", "Library", "Application Support", "MrRSS")
+		expected := filepath.Join("/tmp/Users/testuser", "Library", "Application Support", "MrRSS")
 		if dir != expected {
 			t.Errorf("Expected %s, got %s", expected, dir)
 		}

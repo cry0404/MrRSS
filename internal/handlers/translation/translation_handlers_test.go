@@ -21,7 +21,25 @@ func setupDB(t *testing.T) *database.DB {
 	if err := db.Init(); err != nil {
 		t.Fatalf("failed to init db: %v", err)
 	}
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("failed to close db: %v", err)
+		}
+	})
 	return db
+}
+
+func insertTestFeed(t *testing.T, db *database.DB) int64 {
+	t.Helper()
+	res, err := db.Exec("INSERT INTO feeds (title, url) VALUES (?, ?)", "Test Feed", "https://example.com/feed.xml")
+	if err != nil {
+		t.Fatalf("insert feed failed: %v", err)
+	}
+	feedID, err := res.LastInsertId()
+	if err != nil {
+		t.Fatalf("get feed ID failed: %v", err)
+	}
+	return feedID
 }
 
 func TestHandleTranslateText_Success(t *testing.T) {
@@ -54,9 +72,10 @@ func TestHandleTranslateText_Success(t *testing.T) {
 
 func TestHandleTranslateArticle_SuccessAndDBUpdate(t *testing.T) {
 	db := setupDB(t)
+	feedID := insertTestFeed(t, db)
 
 	// insert an article
-	res, err := db.Exec("INSERT INTO articles (feed_id, title, url, published_at) VALUES (1, 't', 'u', datetime('now'))")
+	res, err := db.Exec("INSERT INTO articles (feed_id, title, url, published_at) VALUES (?, 't', 'u', datetime('now'))", feedID)
 	if err != nil {
 		t.Fatalf("insert article failed: %v", err)
 	}
@@ -100,9 +119,10 @@ func TestHandleTranslateArticle_SuccessAndDBUpdate(t *testing.T) {
 
 func TestHandleClearTranslations(t *testing.T) {
 	db := setupDB(t)
+	feedID := insertTestFeed(t, db)
 
 	// insert an article with translated title
-	res, err := db.Exec("INSERT INTO articles (feed_id, title, url, translated_title, published_at) VALUES (1, 't', 'u', 'x', datetime('now'))")
+	res, err := db.Exec("INSERT INTO articles (feed_id, title, url, translated_title, published_at) VALUES (?, 't', 'u', 'x', datetime('now'))", feedID)
 	if err != nil {
 		t.Fatalf("insert article failed: %v", err)
 	}
