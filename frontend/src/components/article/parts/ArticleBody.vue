@@ -161,6 +161,15 @@ onUnmounted(() => {
     </div>
   </div>
 
+  <!-- Content loading state -->
+  <div
+    v-else-if="props.isLoadingContent && !hasMediaContent"
+    class="flex flex-col items-center justify-center text-center text-text-secondary py-6 sm:py-8"
+  >
+    <PhSpinnerGap :size="36" class="mb-2 sm:mb-3 animate-spin opacity-70" />
+    <p class="text-sm sm:text-base">{{ t('article.content.fetchingArticleContent') }}</p>
+  </div>
+
   <!-- No content available with retry option -->
   <div v-else-if="!hasMediaContent" class="text-center text-text-secondary py-6 sm:py-8">
     <PhArticle :size="48" class="mb-2 sm:mb-3 opacity-50 mx-auto sm:w-16 sm:h-16" />

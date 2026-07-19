@@ -6,8 +6,11 @@ import (
 	"time"
 )
 
+const defaultMaxArticlesPerFeed = 15000
+
 // CleanupOldArticles removes articles based on age and status.
 // - Articles older than configured days: delete except favorited or read later
+// - Read article metadata beyond the per-feed retention limit
 // - Also checks database size against max_cache_size_mb setting
 func (db *DB) CleanupOldArticles() (int64, error) {
 	db.WaitForReady()
@@ -39,7 +42,16 @@ func (db *DB) CleanupOldArticles() (int64, error) {
 	count, _ := result.RowsAffected()
 	totalDeleted += count
 
-	// Step 2: Check database size and clean up if over limit
+	// Step 2: Apply per-feed article retention so high-volume feeds do not
+	// force low-volume feeds to lose their local history.
+	perFeedDeleted, err := db.CleanupReadArticlesOverPerFeedLimit(defaultMaxArticlesPerFeed)
+	if err != nil {
+		log.Printf("Error during per-feed retention cleanup: %v", err)
+	} else {
+		totalDeleted += perFeedDeleted
+	}
+
+	// Step 3: Check database size and clean up if over limit
 	sizeDeleted, err := db.CleanupBySize()
 	if err != nil {
 		log.Printf("Error during size-based cleanup: %v", err)
@@ -113,6 +125,48 @@ func (db *DB) CleanupUnimportantArticles() (int64, error) {
 		_, _ = db.IncrementalVacuum()
 	}
 
+	return count, nil
+}
+
+// CleanupReadArticlesOverPerFeedLimit removes old read articles above the
+// per-feed retention limit while preserving favorites, read-later items, and
+// unread metadata. Protected articles may cause a feed to exceed the limit.
+func (db *DB) CleanupReadArticlesOverPerFeedLimit(maxArticlesPerFeed int) (int64, error) {
+	db.WaitForReady()
+
+	if maxArticlesPerFeed <= 0 {
+		return 0, nil
+	}
+
+	result, err := db.Exec(`
+		WITH ranked_articles AS (
+			SELECT
+				id,
+				ROW_NUMBER() OVER (
+					PARTITION BY feed_id
+					ORDER BY published_at DESC, id DESC
+				) AS feed_rank
+			FROM articles
+		)
+		DELETE FROM articles
+		WHERE id IN (
+			SELECT articles.id
+			FROM articles
+			JOIN ranked_articles ON ranked_articles.id = articles.id
+			WHERE ranked_articles.feed_rank > ?
+			AND articles.is_read = 1
+			AND articles.is_favorite = 0
+			AND articles.is_read_later = 0
+		)
+	`, maxArticlesPerFeed)
+	if err != nil {
+		return 0, err
+	}
+
+	count, _ := result.RowsAffected()
+	if count > 0 {
+		_, _ = db.IncrementalVacuum()
+	}
 	return count, nil
 }
 
@@ -243,9 +297,9 @@ func (db *DB) ShouldCleanupBeforeSave() (bool, error) {
 	return currentSizeMB >= threshold, nil
 }
 
-// CleanupBySize removes oldest articles to keep database under max_cache_size_mb limit.
-// Protects favorited and read later articles.
-// Uses priority order: oldest read articles first, then older unread articles.
+// CleanupBySize reduces cached content first to keep database under max_cache_size_mb.
+// Article metadata is preserved whenever possible so refreshed feeds do not
+// reinsert old read items as new articles after cleanup.
 func (db *DB) CleanupBySize() (int64, error) {
 	db.WaitForReady()
 
@@ -274,7 +328,44 @@ func (db *DB) CleanupBySize() (int64, error) {
 	totalDeleted := int64(0)
 	targetSizeMB := float64(maxSizeMB) * 0.95 // Aim for 95% of limit
 
-	// Step 1: Delete oldest read articles (not favorited, not read later)
+	// Step 1: Delete oldest cached article contents. This saves most space while
+	// keeping article metadata, read status, favorites, and dedupe keys intact.
+	for currentSizeMB > targetSizeMB {
+		result, err := db.Exec(`
+			DELETE FROM article_contents
+			WHERE article_id IN (
+				SELECT article_id FROM article_contents
+				ORDER BY fetched_at ASC
+				LIMIT 100
+			)
+		`)
+		if err != nil {
+			break
+		}
+
+		count, _ := result.RowsAffected()
+		if count == 0 {
+			break // No more cached content to delete
+		}
+
+		totalDeleted += count
+		currentSizeMB, _ = db.GetDatabaseSizeMB()
+		log.Printf("Deleted %d cached article contents, current size: %.2f MB", count, currentSizeMB)
+	}
+
+	// Step 2: If still over limit, delete oldest read article metadata as a last resort.
+	if currentSizeMB > targetSizeMB {
+		count, err := db.CleanupReadArticlesOverPerFeedLimit(defaultMaxArticlesPerFeed)
+		if err != nil {
+			log.Printf("Per-feed article retention cleanup failed: %v", err)
+		} else if count > 0 {
+			totalDeleted += count
+			currentSizeMB, _ = db.GetDatabaseSizeMB()
+			log.Printf("Deleted %d read article metadata rows over per-feed limit, current size: %.2f MB", count, currentSizeMB)
+		}
+	}
+
+	// Step 3: If per-feed retention is not enough, delete oldest read article metadata.
 	for currentSizeMB > targetSizeMB {
 		result, err := db.Exec(`
 			DELETE FROM articles
@@ -298,33 +389,7 @@ func (db *DB) CleanupBySize() (int64, error) {
 
 		totalDeleted += count
 		currentSizeMB, _ = db.GetDatabaseSizeMB()
-		log.Printf("Deleted %d read articles, current size: %.2f MB", count, currentSizeMB)
-	}
-
-	// Step 2: If still over limit, delete oldest unread articles (not favorited, not read later)
-	for currentSizeMB > targetSizeMB {
-		result, err := db.Exec(`
-			DELETE FROM articles
-			WHERE id IN (
-				SELECT id FROM articles
-				WHERE is_favorite = 0
-				AND is_read_later = 0
-				ORDER BY published_at ASC
-				LIMIT 100
-			)
-		`)
-		if err != nil {
-			break
-		}
-
-		count, _ := result.RowsAffected()
-		if count == 0 {
-			break // No more articles to delete
-		}
-
-		totalDeleted += count
-		currentSizeMB, _ = db.GetDatabaseSizeMB()
-		log.Printf("Deleted %d unread articles, current size: %.2f MB", count, currentSizeMB)
+		log.Printf("Deleted %d read article metadata rows, current size: %.2f MB", count, currentSizeMB)
 	}
 
 	if totalDeleted > 0 {

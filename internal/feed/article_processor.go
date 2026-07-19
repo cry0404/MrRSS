@@ -67,6 +67,7 @@ func (f *Fetcher) processArticles(feed models.Feed, items []*gofeed.Item) []*Art
 
 		// Clean HTML to fix malformed tags that can cause rendering issues
 		content = textutil.CleanHTML(content)
+		originalSummary := textutil.CleanHTML(item.Description)
 
 		// Determine title: prefer media:title if available, then item.Title, then generate from content
 		title := item.Title
@@ -101,6 +102,7 @@ func (f *Fetcher) processArticles(feed models.Feed, items []*gofeed.Item) []*Art
 			PublishedAt:           published,
 			HasValidPublishedTime: hasValidPublishedTime,
 			TranslatedTitle:       translatedTitle,
+			OriginalSummary:       originalSummary,
 			Author:                author,
 		}
 
@@ -193,17 +195,12 @@ func resolveRelativeURL(imageURL string, feedURL string) string {
 // This is used as a fallback when no image metadata is available in RSS/Atom feeds
 // It's exported so it can be used by FreshRSS sync and other modules
 func ExtractFirstImageURLFromHTML(htmlContent string) string {
-	if htmlContent == "" {
+	urls := ExtractAllImageURLsFromHTML(htmlContent)
+	if len(urls) == 0 {
 		return ""
 	}
 
-	re := regexp.MustCompile(`<img[^>]+src="([^">]+)"`)
-	matches := re.FindStringSubmatch(htmlContent)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-
-	return ""
+	return urls[0]
 }
 
 // ExtractAllImageURLsFromHTML extracts all image URLs from HTML content
@@ -215,20 +212,36 @@ func ExtractAllImageURLsFromHTML(htmlContent string) []string {
 	}
 
 	var urls []string
-	re := regexp.MustCompile(`<img[^>]+src="([^">]+)"`)
-	matches := re.FindAllStringSubmatch(htmlContent, -1)
+	seen := make(map[string]struct{})
+	imgTagRe := regexp.MustCompile(`(?i)<img\b[^>]*>`)
+	attrNames := []string{"data-original", "data-src", "src"}
+	imgTags := imgTagRe.FindAllString(htmlContent, -1)
 
-	for _, match := range matches {
-		if len(match) > 1 {
-			// Unescape HTML entities (e.g., &amp; -> &) in the URL
-			// This is necessary because URLs in HTML attributes may be HTML-escaped
-			// but when returned as JSON or used directly in <img src>, they should not be
-			unescapedURL := html.UnescapeString(match[1])
-			urls = append(urls, unescapedURL)
+	for _, tag := range imgTags {
+		for _, attrName := range attrNames {
+			if imageURL := extractHTMLAttribute(tag, attrName); imageURL != "" {
+				unescapedURL := html.UnescapeString(imageURL)
+				if _, ok := seen[unescapedURL]; !ok {
+					urls = append(urls, unescapedURL)
+					seen[unescapedURL] = struct{}{}
+				}
+				break
+			}
 		}
 	}
 
 	return urls
+}
+
+func extractHTMLAttribute(tag string, attrName string) string {
+	re := regexp.MustCompile(`(?i)\s` + regexp.QuoteMeta(attrName) + `\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>]+))`)
+	matches := re.FindStringSubmatch(tag)
+	for i := 1; i < len(matches); i++ {
+		if strings.TrimSpace(matches[i]) != "" {
+			return strings.TrimSpace(matches[i])
+		}
+	}
+	return ""
 }
 
 // extractAudioURL extracts the audio URL from a feed item (for podcasts)

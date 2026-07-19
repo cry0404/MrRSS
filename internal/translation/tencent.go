@@ -174,11 +174,10 @@ func (t *TencentTranslator) calculateSignature(timestamp int64, payload []byte) 
 	httpRequestMethod := "POST"
 	canonicalURI := "/"
 	canonicalQueryString := ""
-	canonicalHeaders := fmt.Sprintf("content-type:%s\nhost:%s\nx-tc-action:%s\n",
+	canonicalHeaders := fmt.Sprintf("content-type:%s\nhost:%s\n",
 		"application/json; charset=utf-8",
-		"tmt.tencentcloudapi.com",
-		"TextTranslate")
-	signedHeaders := "content-type;host;x-tc-action"
+		"tmt.tencentcloudapi.com")
+	signedHeaders := "content-type;host"
 
 	// Hash payload
 	payloadHash := sha256Hex(payload)

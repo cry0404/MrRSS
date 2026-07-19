@@ -58,6 +58,7 @@ type Config struct {
 	EmailPassword   string // IMAP password
 	EmailFolder     string // IMAP folder to fetch from (default: INBOX)
 	EmailLastUID    int    // Last processed email UID
+	EmailAddress    string // Newsletter sender filter
 
 	// Network configuration
 	ProxyURL  string            // HTTP proxy URL

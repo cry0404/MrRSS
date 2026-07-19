@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +22,7 @@ import (
 	svc "MrRSS/internal/service"
 	"MrRSS/internal/statistics"
 	"MrRSS/internal/translation"
+	"MrRSS/internal/utils/httputil"
 	"MrRSS/internal/utils/textutil"
 	"MrRSS/internal/utils/urlutil"
 
@@ -180,9 +183,41 @@ func (h *Handler) GetArticleContent(articleID int64) (string, bool, error) {
 }
 
 // FetchFullArticleContent fetches the full article content from the original URL using readability.
-func (h *Handler) FetchFullArticleContent(url string) (string, error) {
-	// Use FromURL which handles the HTTP request internally
-	article, err := readability.FromURL(url, 30*time.Second)
+func (h *Handler) FetchFullArticleContent(articleURL string) (string, error) {
+	return h.FetchFullArticleContentWithFeed(articleURL, nil)
+}
+
+// FetchFullArticleContentWithFeed fetches full content using the same proxy semantics as feed refresh.
+func (h *Handler) FetchFullArticleContentWithFeed(articleURL string, feedConfig *models.Feed) (string, error) {
+	parsedURL, err := url.ParseRequestURI(articleURL)
+	if err != nil {
+		return "", fmt.Errorf("parse article URL: %w", err)
+	}
+
+	client, err := h.createArticleHTTPClient(feedConfig)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, articleURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("fetch page: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("fetch page: HTTP %d", resp.StatusCode)
+	}
+
+	article, err := readability.FromReader(resp.Body, parsedURL)
 	if err != nil {
 		return "", fmt.Errorf("readability parse: %w", err)
 	}
@@ -195,6 +230,34 @@ func (h *Handler) FetchFullArticleContent(url string) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+func (h *Handler) createArticleHTTPClient(feedConfig *models.Feed) (*http.Client, error) {
+	var proxyURL string
+	if feedConfig != nil && feedConfig.ProxyEnabled && feedConfig.ProxyURL != "" {
+		proxyURL = feedConfig.ProxyURL
+	} else if feedConfig != nil && feedConfig.ProxyEnabled {
+		proxyEnabled, _ := h.DB.GetSetting("proxy_enabled")
+		if proxyEnabled == "true" {
+			proxyURL = h.globalProxyURL()
+		}
+	} else if feedConfig == nil {
+		proxyEnabled, _ := h.DB.GetSetting("proxy_enabled")
+		if proxyEnabled == "true" {
+			proxyURL = h.globalProxyURL()
+		}
+	}
+
+	return httputil.CreateHTTPClient(proxyURL, 30*time.Second)
+}
+
+func (h *Handler) globalProxyURL() string {
+	proxyType, _ := h.DB.GetSetting("proxy_type")
+	proxyHost, _ := h.DB.GetSetting("proxy_host")
+	proxyPort, _ := h.DB.GetSetting("proxy_port")
+	proxyUsername, _ := h.DB.GetEncryptedSetting("proxy_username")
+	proxyPassword, _ := h.DB.GetEncryptedSetting("proxy_password")
+	return httputil.BuildProxyURL(proxyType, proxyHost, proxyPort, proxyUsername, proxyPassword)
 }
 
 // findMatchingFeedItem finds the best matching feed item for an article using multiple criteria

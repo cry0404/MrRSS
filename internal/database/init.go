@@ -164,6 +164,9 @@ func applyAdditionalMigrations(db *DB) error {
 	// Migration: Add summary column to articles table for AI-generated summaries
 	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN summary TEXT DEFAULT ''`)
 
+	// Migration: Add original_summary column for RSS-provided summaries/descriptions
+	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN original_summary TEXT DEFAULT ''`)
+
 	// Run complex table migrations
 	if err := migrateUniqueIDOnArticles(db.DB); err != nil {
 		return err

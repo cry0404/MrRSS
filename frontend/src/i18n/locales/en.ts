@@ -35,6 +35,7 @@ const en: TranslationMessages = {
       refresh: 'Refresh',
       refreshFeed: 'Refresh Feed',
       refreshFeedsShortcut: 'Refresh Feeds',
+      reloadContent: 'Reload Article Content',
       refreshing: 'Refreshing',
       removeFromFavorite: 'Remove from Favorites',
       removeFromFavorites: 'Remove from Favorites',
@@ -193,6 +194,7 @@ const en: TranslationMessages = {
       failedToCopy: 'Failed to copy',
       failedToOpenLink: 'Failed to open link',
       failedToTransformRSSHubURL: 'Failed to transform RSSHub URL',
+      fetchingArticleContent: 'Failed to reload article content',
       fetchingFullArticle: 'Failed to fetch full article content',
       invalidURLScheme: 'Invalid URL scheme',
       networkErrorCheckingUpdates:
@@ -233,6 +235,7 @@ const en: TranslationMessages = {
       simplifiedChinese: 'Simplified Chinese',
       spanish: 'Spanish',
       traditionalChinese: 'Traditional Chinese',
+      turkish: 'Turkish',
     },
     toast: {
       autoTranslateEnabled: 'Auto-translate enabled',
@@ -335,6 +338,7 @@ const en: TranslationMessages = {
       deleteMultipleFeedsTitle: 'Delete Multiple Feeds',
       dragToReorder: 'Drag to reorder or move to another category',
       duplicateFeedURL: 'A feed with this URL already exists',
+      duplicateFeedSelected: 'Opened the existing feed',
       editFeed: 'Edit Feed',
       editSubscription: 'Edit Subscription',
       email: 'Email Newsletter',
@@ -696,6 +700,7 @@ const en: TranslationMessages = {
       summaryManualTriggerDesc: 'Click the button to generate AI summary',
       summaryProvider: 'Summary Provider',
       summaryProviderDesc: 'Choose how to generate article summaries',
+      rssSummary: 'RSS Summary',
       summaryTooShort: 'Article is too short to generate a meaningful summary',
       summaryTriggerMode: 'Trigger Mode',
       summaryTriggerModeAuto: 'Auto Trigger',
@@ -1107,6 +1112,8 @@ const en: TranslationMessages = {
       noInstallerAvailable:
         'No installer available for your platform. Please download manually from',
       notNow: 'Not Now',
+      updateCheckEnabled: 'Check for Updates on Startup',
+      updateCheckEnabledDesc: 'Show an update prompt automatically when a new version is available',
       updateAvailable: 'Update available',
       updateFailed: 'Last update failed',
       updateNow: 'Update Now',

@@ -34,9 +34,14 @@ type CustomTranslatorConfig struct {
 // NewCustomTranslator creates a new custom translator with the given configuration
 // db is optional - if nil, no proxy will be used
 func NewCustomTranslator(config *CustomTranslatorConfig) *CustomTranslator {
+	client, err := CreateHTTPClientWithProxy(nil, time.Duration(config.Timeout)*time.Second)
+	if err != nil {
+		client = &http.Client{Timeout: time.Duration(config.Timeout) * time.Second}
+	}
+
 	return &CustomTranslator{
 		config: config,
-		client: &http.Client{Timeout: time.Duration(config.Timeout) * time.Second},
+		client: client,
 		db:     nil,
 	}
 }
@@ -266,6 +271,7 @@ func (t *CustomTranslator) extractByPath(data interface{}, path string) (interfa
 // Supported placeholders: {{text}}, {{target_lang}}, {{source_lang}}
 func (t *CustomTranslator) replacePlaceholders(template, text, targetLang string) string {
 	result := template
+	result = strings.ReplaceAll(result, `"{{text}}"`, escapeJSONString(text))
 	result = strings.ReplaceAll(result, "{{text}}", escapeJSONString(text))
 	result = strings.ReplaceAll(result, "{{target_lang}}", targetLang)
 	result = strings.ReplaceAll(result, "{{source_lang}}", "auto")

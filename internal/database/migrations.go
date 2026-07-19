@@ -40,6 +40,9 @@ func runMigrations(db *sql.DB) error {
 	// Migration: Add summary column for caching AI-generated summaries
 	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN summary TEXT DEFAULT ''`)
 
+	// Migration: Add original_summary column for RSS-provided summaries/descriptions
+	_, _ = db.Exec(`ALTER TABLE articles ADD COLUMN original_summary TEXT DEFAULT ''`)
+
 	// Migration: Add article_contents table for caching article content
 	// This uses a separate table to keep the articles table lightweight
 	_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS article_contents (
@@ -201,6 +204,7 @@ func migrateDropUniqueConstraintOnArticles(db *sql.DB) error {
 				is_hidden BOOLEAN DEFAULT 0,
 				is_read_later BOOLEAN DEFAULT 0,
 				summary TEXT DEFAULT '',
+				original_summary TEXT DEFAULT '',
 				unique_id TEXT UNIQUE,
 				FOREIGN KEY(feed_id) REFERENCES feeds(id)
 			)
@@ -208,9 +212,10 @@ func migrateDropUniqueConstraintOnArticles(db *sql.DB) error {
 		if err == nil {
 			// Copy data from old table to new table
 			_, _ = db.Exec(`
-				INSERT INTO articles_new (id, feed_id, title, url, image_url, audio_url, video_url, translated_title, published_at, is_read, is_favorite, is_hidden, is_read_later, summary, unique_id)
+				INSERT INTO articles_new (id, feed_id, title, url, image_url, audio_url, video_url, translated_title, published_at, is_read, is_favorite, is_hidden, is_read_later, summary, original_summary, unique_id)
 				SELECT id, feed_id, title, url, image_url, audio_url, video_url, translated_title, published_at, is_read, is_favorite, is_hidden, is_read_later,
 					COALESCE(summary, '') as summary,
+					COALESCE(original_summary, '') as original_summary,
 					LOWER(HEX(MD5(title || '|' || feed_id || '|' || COALESCE(strftime('%Y-%m-%d', published_at), '')))) as unique_id
 				FROM articles
 			`)

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { PhArrowClockwise, PhArrowsClockwise, PhClock } from '@phosphor-icons/vue';
+import { PhArrowClockwise, PhArrowsClockwise, PhBell, PhClock } from '@phosphor-icons/vue';
 import {
   SettingGroup,
+  SettingWithToggle,
   SettingWithSelect,
   SubSettingItem,
   NumberControl,
@@ -34,6 +35,14 @@ function updateSetting(key: keyof SettingsData, value: any) {
 
 <template>
   <SettingGroup :icon="PhArrowClockwise" :title="t('setting.update.updates')">
+    <SettingWithToggle
+      :icon="PhBell"
+      :title="t('setting.update.updateCheckEnabled')"
+      :description="t('setting.update.updateCheckEnabledDesc')"
+      :model-value="settings.update_check_enabled"
+      @update:model-value="updateSetting('update_check_enabled', $event)"
+    />
+
     <!-- Refresh Mode -->
     <SettingWithSelect
       :icon="PhArrowsClockwise"

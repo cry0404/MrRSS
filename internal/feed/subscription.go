@@ -1,6 +1,7 @@
 package feed
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -20,6 +21,7 @@ import (
 	"github.com/chromedp/chromedp"
 	"github.com/mmcdole/gofeed"
 	"golang.org/x/net/html"
+	htmlcharset "golang.org/x/net/html/charset"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -111,6 +113,35 @@ func sanitizeFeedXML(xmlContent string) string {
 	return cleaned
 }
 
+var xmlEncodingRegex = regexp.MustCompile(`(?i)<\?xml\s+[^>]*encoding\s*=\s*["']([^"']+)["']`)
+
+func decodeFeedBody(body []byte, contentType string) (string, error) {
+	if len(body) == 0 {
+		return "", nil
+	}
+
+	if match := xmlEncodingRegex.FindSubmatch(body); len(match) == 2 {
+		reader, err := htmlcharset.NewReaderLabel(string(match[1]), bytes.NewReader(body))
+		if err == nil {
+			decoded, readErr := io.ReadAll(reader)
+			if readErr != nil {
+				return "", readErr
+			}
+			return string(decoded), nil
+		}
+	}
+
+	reader, err := htmlcharset.NewReader(bytes.NewReader(body), contentType)
+	if err != nil {
+		return string(body), nil
+	}
+	decoded, err := io.ReadAll(reader)
+	if err != nil {
+		return "", err
+	}
+	return string(decoded), nil
+}
+
 // fetchAndSanitizeFeed fetches feed content and sanitizes it before parsing
 func (f *Fetcher) fetchAndSanitizeFeed(ctx context.Context, feedURL string) (string, error) {
 	debugTimer := NewDebugTimer(fmt.Sprintf("FetchSanitize-%s", feedURL), shouldEnableDebugLogging(feedURL))
@@ -170,7 +201,11 @@ func (f *Fetcher) fetchAndSanitizeFeed(ctx context.Context, feedURL string) (str
 	debugTimer.LogWithTime("Read %d bytes from response", len(body))
 	debugTimer.Stage("Body read complete")
 
-	xmlContent := string(body)
+	xmlContent, err := decodeFeedBody(body, resp.Header.Get("Content-Type"))
+	if err != nil {
+		debugTimer.LogWithTime("Failed to decode body: %v", err)
+		return "", fmt.Errorf("failed to decode response body: %w", err)
+	}
 
 	// Sanitize the XML to remove problematic links
 	debugTimer.LogWithTime("Sanitizing XML")

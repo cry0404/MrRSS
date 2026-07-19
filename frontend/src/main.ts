@@ -4,7 +4,7 @@ import PhosphorIcons from '@phosphor-icons/vue';
 import i18n, { locale } from './i18n';
 import './style.css';
 import App from './App.vue';
-import { useAppStore } from './stores/app';
+import { setSettingsFromRawData } from './composables/core/useSettings';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -48,6 +48,8 @@ async function initializeApp() {
     if (data.language) {
       locale.value = data.language;
     }
+
+    setSettingsFromRawData(data);
 
     // Start FreshRSS status polling if enabled
     // Note: Don't use store here - it will be initialized after mount

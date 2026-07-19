@@ -4,6 +4,7 @@ package ai
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -191,8 +192,25 @@ func (h *DeepSeekHandler) FormatEndpoint(endpoint, model string) string {
 		return "https://api.deepseek.com/v1/chat/completions"
 	}
 
-	// Use endpoint as-is (user should provide full API path)
-	return strings.TrimSuffix(endpoint, "/")
+	endpoint = strings.TrimSuffix(endpoint, "/")
+	parsedURL, err := url.Parse(endpoint)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return endpoint
+	}
+
+	switch strings.TrimSuffix(parsedURL.Path, "/") {
+	case "":
+		parsedURL.Path = "/v1/chat/completions"
+		return parsedURL.String()
+	case "/v1":
+		parsedURL.Path = "/v1/chat/completions"
+		return parsedURL.String()
+	case "/v1/chat/completions":
+		return parsedURL.String()
+	default:
+		// Custom DeepSeek-compatible gateways may expose their own route.
+		return endpoint
+	}
 }
 
 // GetRequiredHeaders returns the required HTTP headers for DeepSeek API

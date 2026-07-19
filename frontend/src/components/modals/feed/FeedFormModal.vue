@@ -89,7 +89,7 @@ const {
 
 const emit = defineEmits<{
   close: [];
-  added: [];
+  added: [feedId?: number];
   updated: [];
 }>();
 
@@ -194,7 +194,8 @@ async function submit() {
 
     if (res.ok) {
       if (props.mode === 'add') {
-        emit('added');
+        const result = await res.json().catch(() => ({}));
+        emit('added', result.feed_id);
         resetForm();
         window.showToast(t('modal.feed.feedAddedSuccess'), 'success');
       } else {
@@ -208,7 +209,21 @@ async function submit() {
 
       // Check if it's a duplicate URL error (409 Conflict)
       if (res.status === 409 || errorText.includes('already exists')) {
-        window.showToast(t('modal.feed.duplicateFeedURL'), 'error');
+        let existingFeedId: number | undefined;
+        try {
+          const errorData = JSON.parse(errorText);
+          existingFeedId = errorData.existing_feed_id;
+        } catch {
+          existingFeedId = undefined;
+        }
+
+        if (existingFeedId) {
+          emit('added', existingFeedId);
+          close();
+          window.showToast(t('modal.feed.duplicateFeedSelected'), 'info');
+        } else {
+          window.showToast(t('modal.feed.duplicateFeedURL'), 'error');
+        }
         return;
       }
 

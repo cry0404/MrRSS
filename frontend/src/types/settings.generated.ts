@@ -106,6 +106,7 @@ export interface SettingsData {
   translation_enabled: boolean;
   translation_only_mode: boolean;
   translation_provider: string;
+  update_check_enabled: boolean;
   update_interval: number;
   window_height: string;
   window_maximized: string;

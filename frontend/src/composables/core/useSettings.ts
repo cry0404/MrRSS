@@ -7,11 +7,16 @@ import type { SettingsData } from '@/types/settings';
 import type { ThemePreference } from '@/stores/app';
 import { generateInitialSettings, parseSettingsData } from './useSettings.generated';
 
+const sharedSettings: Ref<SettingsData> = ref(generateInitialSettings());
+
+export function setSettingsFromRawData(data: Record<string, string>) {
+  sharedSettings.value = parseSettingsData(data);
+}
+
 export function useSettings() {
   const { locale } = useI18n();
 
-  // Use generated helper for initial settings (alphabetically sorted)
-  const settings: Ref<SettingsData> = ref(generateInitialSettings());
+  const settings = sharedSettings;
 
   /**
    * Fetch settings from backend
@@ -22,7 +27,7 @@ export function useSettings() {
       const data = await res.json();
 
       // Use generated helper to parse settings (alphabetically sorted)
-      settings.value = parseSettingsData(data);
+      setSettingsFromRawData(data);
 
       return settings.value;
     } catch (e) {

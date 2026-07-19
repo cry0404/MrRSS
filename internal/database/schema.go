@@ -36,6 +36,7 @@ func initSchema(db *sql.DB) error {
 		is_hidden BOOLEAN DEFAULT 0,
 		is_read_later BOOLEAN DEFAULT 0,
 		summary TEXT DEFAULT '',
+		original_summary TEXT DEFAULT '',
 		unique_id TEXT UNIQUE,
 		FOREIGN KEY(feed_id) REFERENCES feeds(id)
 	);

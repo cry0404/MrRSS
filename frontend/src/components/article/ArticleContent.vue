@@ -21,6 +21,7 @@ import {
 } from '@/composables/article/useContentTranslation';
 import { useSettings } from '@/composables/core/useSettings';
 import { useAppStore } from '@/stores/app';
+import { openInBrowser } from '@/utils/browser';
 import { proxyImagesInHtml, isMediaCacheEnabled } from '@/utils/mediaProxy';
 import './ArticleContent.css';
 
@@ -31,6 +32,7 @@ interface SummaryResult {
   is_too_short: boolean;
   limit_reached?: boolean;
   used_fallback?: boolean;
+  source?: string;
   thinking?: string;
   error?: string;
 }
@@ -322,7 +324,7 @@ async function generateSummary(article: Article, force: boolean = false) {
   const result = await generateSummaryComposable(article, displayContent.value, force);
 
   // Update the article summary in store for caching
-  if (result?.summary) {
+  if (result?.summary && result.source !== 'rss') {
     store.updateArticleSummary(article.id, result.summary);
   }
 
@@ -334,8 +336,8 @@ async function generateSummary(article: Article, force: boolean = false) {
 function shouldAutoGenerateSummary(): boolean {
   if (!summaryEnabled.value) return false;
 
-  // For local provider, always auto-generate
-  if (summaryProvider.value === 'local') return true;
+  // Local and RSS summaries are inexpensive and do not consume AI quota.
+  if (summaryProvider.value === 'local' || summaryProvider.value === 'rss') return true;
 
   // For AI provider, check trigger mode
   if (summaryProvider.value === 'ai') {
@@ -593,15 +595,57 @@ async function translateContentParagraphs(content: string) {
 
   // Re-attach ALL event listeners after translation modifies the DOM
   // This includes unwrapping images from links, attaching image handlers, and link handlers
-  await reattachImageInteractions();
+  await reattachContentInteractions();
 
   isTranslatingContent.value = false;
 }
 
-async function reattachImageInteractions() {
-  if (!props.attachImageEventListeners || !props.articleContent) return;
+async function reattachContentInteractions() {
   await nextTick();
+  await reattachImageInteractions();
+  attachExternalLinkHandlers();
+}
+
+async function reattachImageInteractions() {
+  if (!props.attachImageEventListeners || !displayContent.value) return;
   props.attachImageEventListeners();
+}
+
+function resolveExternalHref(rawHref: string | null): string | null {
+  if (!rawHref || rawHref.startsWith('#')) return null;
+
+  try {
+    const url = props.article?.url ? new URL(rawHref, props.article.url) : new URL(rawHref);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+function attachExternalLinkHandlers() {
+  const container = articleScrollContainer.value;
+  if (!container) return;
+
+  container.querySelectorAll<HTMLAnchorElement>('.prose-content a[href]').forEach((link) => {
+    if (link.dataset.externalBrowserHandlerAttached === 'true') return;
+    if (link.querySelector('img')) return;
+
+    link.dataset.externalBrowserHandlerAttached = 'true';
+    link.addEventListener(
+      'click',
+      (event: MouseEvent) => {
+        const href = resolveExternalHref(link.getAttribute('href'));
+        if (!href) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        void openInBrowser(href);
+      },
+      { capture: true }
+    );
+  });
 }
 
 // Clear text selection when clicking outside the selected content
@@ -758,8 +802,8 @@ watch(
       // Enhance rendering first (math formulas, etc.)
       enhanceRendering('.prose-content');
 
-      // Re-attach image event listeners after rendering enhancements
-      await reattachImageInteractions();
+      // Re-attach image and link event listeners after rendering enhancements
+      await reattachContentInteractions();
 
       // Auto-fetch full article if setting is enabled
       // Don't auto-fetch if we're already fetching
@@ -825,8 +869,8 @@ onMounted(async () => {
     if (props.articleContent && !props.isLoadingContent) {
       await nextTick();
       enhanceRendering('.prose-content');
-      // Re-attach image event listeners after rendering
-      await reattachImageInteractions();
+      // Re-attach image and link event listeners after rendering
+      await reattachContentInteractions();
 
       // Auto-fetch full article if setting is enabled and content is already loaded
       if (
@@ -847,7 +891,7 @@ watch(
     if (content) {
       // Wait for v-html to update the DOM before attaching event listeners
       await nextTick();
-      await reattachImageInteractions();
+      await reattachContentInteractions();
     }
   },
   { immediate: true }
@@ -860,7 +904,7 @@ watch(fullArticleContent, async (content) => {
   if (content) {
     // Wait for v-html to update the DOM before attaching event listeners
     await nextTick();
-    await reattachImageInteractions();
+    await reattachContentInteractions();
   }
 });
 

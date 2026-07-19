@@ -3,6 +3,7 @@ package rsshub
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -72,11 +73,19 @@ func (c *Client) ValidateRoute(route string) error {
 
 // BuildURL converts a route to full RSSHub URL
 func (c *Client) BuildURL(route string) string {
-	url := fmt.Sprintf("%s/%s", c.Endpoint, route)
+	urlString := fmt.Sprintf("%s/%s", c.Endpoint, strings.TrimPrefix(route, "/"))
 	if c.APIKey != "" {
-		url = fmt.Sprintf("%s?key=%s", url, c.APIKey)
+		parsedURL, err := url.Parse(urlString)
+		if err != nil {
+			return urlString
+		}
+
+		query := parsedURL.Query()
+		query.Set("key", c.APIKey)
+		parsedURL.RawQuery = query.Encode()
+		urlString = parsedURL.String()
 	}
-	return url
+	return urlString
 }
 
 // IsRSSHubURL checks if a URL uses the rsshub:// protocol

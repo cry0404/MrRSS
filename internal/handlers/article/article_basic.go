@@ -18,6 +18,7 @@ import (
 // @Param        filter    query     string  false  "Filter: 'all', 'unread', 'favorite', 'read_later'"  Enums(all, unread, favorite, read_later)
 // @Param        feed_id   query     int64   false  "Filter by feed ID"
 // @Param        category  query     string  false  "Filter by category name"
+// @Param        only_unread query   bool    false  "Filter for only unread articles"
 // @Param        page      query     int     false  "Page number (default: 1)"  minimum(1)
 // @Param        limit     query     int     false  "Items per page (default: 50, max: 500)"  minimum(1)  maximum(500)
 // @Success      200  {array}   models.Article  "List of articles"
@@ -28,6 +29,7 @@ func HandleArticles(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	feedIDStr := r.URL.Query().Get("feed_id")
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
+	onlyUnread := r.URL.Query().Get("only_unread") == "true"
 
 	// Check if category parameter exists (even if empty string)
 	// We need to distinguish between "no category parameter" and "category='' for uncategorized"
@@ -62,7 +64,7 @@ func HandleArticles(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	showHiddenStr, _ := h.DB.GetSetting("show_hidden_articles")
 	showHidden := showHiddenStr == "true"
 
-	articles, err := h.DB.GetArticles(filter, feedID, category, showHidden, limit, offset)
+	articles, err := h.DB.GetArticlesWithUnreadFilter(filter, feedID, category, showHidden, onlyUnread, limit, offset)
 	if err != nil {
 		response.Error(w, err, http.StatusInternalServerError)
 		return

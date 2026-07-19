@@ -12,9 +12,12 @@ import {
   PhStar,
   PhClockCountdown,
   PhArrowSquareOut,
+  PhLinkSimple,
   PhTranslate,
+  PhArrowClockwise,
 } from '@phosphor-icons/vue';
 import type { Article } from '@/types/models';
+import { copyArticleLink } from '@/utils/clipboard';
 
 const { t } = useI18n();
 const { settings, fetchSettings } = useSettings();
@@ -47,10 +50,18 @@ defineEmits<{
   toggleReadLater: [];
   openOriginal: [];
   toggleTranslations: [];
+  reloadContent: [];
   exportToObsidian: [];
   exportToNotion: [];
   exportToZotero: [];
 }>();
+
+async function copyLink(article: Article) {
+  const success = await copyArticleLink(article.url);
+  if (success) {
+    window.showToast(t('common.toast.copiedToClipboard'), 'success');
+  }
+}
 </script>
 
 <template>
@@ -150,6 +161,20 @@ defineEmits<{
         @click="$emit('openOriginal')"
       >
         <PhArrowSquareOut :size="18" class="sm:w-5 sm:h-5" />
+      </button>
+      <button
+        class="action-btn"
+        :title="t('common.contextMenu.copyLink')"
+        @click="copyLink(article)"
+      >
+        <PhLinkSimple :size="18" class="sm:w-5 sm:h-5" />
+      </button>
+      <button
+        class="action-btn"
+        :title="t('article.action.reloadContent')"
+        @click="$emit('reloadContent')"
+      >
+        <PhArrowClockwise :size="18" class="sm:w-5 sm:h-5" />
       </button>
       <button
         v-if="settings.obsidian_enabled"

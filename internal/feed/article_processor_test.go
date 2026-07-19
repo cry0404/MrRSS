@@ -458,6 +458,45 @@ func TestProcessArticlesWithYouTubeFeed(t *testing.T) {
 	}
 }
 
+func TestExtractAllImageURLsFromHTMLHandlesLazyAndQuotedVariants(t *testing.T) {
+	html := `
+		<p>
+			<img src="https://example.com/a.jpg?x=1&amp;y=2">
+			<img src='https://example.com/b.jpg'>
+			<img src=https://example.com/c.jpg>
+			<img src="/placeholder.gif" data-src="https://cdn.example.com/lazy.jpg">
+			<img src="/placeholder.gif" data-original='https://cdn.example.com/original.jpg'>
+			<img src="https://example.com/a.jpg?x=1&amp;y=2">
+		</p>`
+
+	got := ExtractAllImageURLsFromHTML(html)
+	want := []string{
+		"https://example.com/a.jpg?x=1&y=2",
+		"https://example.com/b.jpg",
+		"https://example.com/c.jpg",
+		"https://cdn.example.com/lazy.jpg",
+		"https://cdn.example.com/original.jpg",
+	}
+
+	if len(got) != len(want) {
+		t.Fatalf("expected %d URLs, got %d: %#v", len(want), len(got), got)
+	}
+
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("URL %d expected %q, got %q", i, want[i], got[i])
+		}
+	}
+}
+
+func TestExtractFirstImageURLFromHTMLUsesLazyImageWhenPresent(t *testing.T) {
+	html := `<img src="/placeholder.gif" data-original="https://cdn.example.com/real.jpg">`
+
+	if got := ExtractFirstImageURLFromHTML(html); got != "https://cdn.example.com/real.jpg" {
+		t.Fatalf("expected lazy image URL, got %q", got)
+	}
+}
+
 func TestExtractBilibiliVideoURL(t *testing.T) {
 	tests := []struct {
 		name     string

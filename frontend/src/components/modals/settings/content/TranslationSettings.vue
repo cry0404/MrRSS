@@ -60,7 +60,7 @@ const customTemplates = [
     endpoint: 'http://localhost:8080/translate',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    bodyTemplate: '{"text": "%text%", "source_lang": "auto", "target_lang": "%target_lang%"}',
+    bodyTemplate: '{"text": %text%, "source_lang": "auto", "target_lang": "%target_lang%"}',
     responsePath: 'data',
   },
   {
@@ -68,7 +68,7 @@ const customTemplates = [
     endpoint: 'https://libretranslate.com/translate',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    bodyTemplate: '{"q": "%text%", "source": "auto", "target": "%target_lang%", "format": "text"}',
+    bodyTemplate: '{"q": %text%, "source": "auto", "target": "%target_lang%", "format": "text"}',
     responsePath: 'translatedText',
   },
   {
@@ -76,7 +76,7 @@ const customTemplates = [
     endpoint: 'https://translate.argosopentech.com/translate',
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    bodyTemplate: '{"q": "%text%", "source": "auto", "target": "%target_lang%"}',
+    bodyTemplate: '{"q": %text%, "source": "auto", "target": "%target_lang%"}',
     responsePath: 'translatedText',
   },
 ];
@@ -631,6 +631,7 @@ async function clearTranslationCache() {
             { value: 'zh', label: t('common.language.simplifiedChinese') },
             { value: 'zh-TW', label: t('common.language.traditionalChinese') },
             { value: 'ja', label: t('common.language.japanese') },
+            { value: 'tr', label: t('common.language.turkish') },
           ]"
           width="w-24 sm:w-48"
           @update:model-value="updateSetting('target_language', $event)"

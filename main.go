@@ -62,11 +62,12 @@ func getAppIcon() []byte {
 }
 
 type windowState struct {
-	width  int
-	height int
-	x      int
-	y      int
-	valid  atomic.Bool
+	width     int
+	height    int
+	x         int
+	y         int
+	valid     atomic.Bool
+	maximized atomic.Bool
 }
 
 type CombinedHandler struct {
@@ -259,7 +260,11 @@ func main() {
 						}
 						// Show and unminimize the window
 						mainWindow.Show()
-						mainWindow.Restore()
+						if lastWindowState.maximized.Load() {
+							mainWindow.Maximise()
+						} else {
+							mainWindow.Restore()
+						}
 					}
 				},
 			}
@@ -276,6 +281,7 @@ func main() {
 	windowX := 0
 	windowY := 0
 	restoredFromDB := false
+	restoredMaximized := false
 
 	// Try to restore window state from database
 	if x, err := db.GetSetting("window_x"); err == nil && x != "" {
@@ -311,6 +317,11 @@ func main() {
 				}
 			}
 		}
+	}
+
+	if maximized, err := db.GetSetting("window_maximized"); err == nil && maximized == "true" {
+		restoredMaximized = true
+		lastWindowState.maximized.Store(true)
 	}
 
 	// Determine background color based on theme setting
@@ -350,6 +361,9 @@ func main() {
 	if !restoredFromDB {
 		mainWindow.Center()
 	}
+	if restoredMaximized {
+		mainWindow.Maximise()
+	}
 
 	// Helper function to store window state
 	storeWindowState := func() {
@@ -359,6 +373,7 @@ func main() {
 
 		w, h := mainWindow.Size()
 		x, y := mainWindow.Position()
+		lastWindowState.maximized.Store(mainWindow.IsMaximised())
 
 		// Only store state if it's valid (reasonable size and position)
 		if w >= 400 && h >= 300 && w <= 4000 && h <= 3000 {
@@ -430,7 +445,11 @@ func main() {
 					mainWindow.SetPosition(x, y)
 				}
 				mainWindow.Show()
-				mainWindow.Restore()
+				if lastWindowState.maximized.Load() {
+					mainWindow.Maximise()
+				} else {
+					mainWindow.Restore()
+				}
 			}
 		})
 
@@ -453,7 +472,11 @@ func main() {
 		systemTray.OnClick(func() {
 			if mainWindow != nil {
 				mainWindow.Show()
-				mainWindow.Restore()
+				if lastWindowState.maximized.Load() {
+					mainWindow.Maximise()
+				} else {
+					mainWindow.Restore()
+				}
 			}
 		})
 	}
@@ -511,6 +534,21 @@ func main() {
 		storeWindowState()
 	})
 
+	mainWindow.RegisterHook(events.Common.WindowMaximise, func(e *application.WindowEvent) {
+		lastWindowState.maximized.Store(true)
+		if err := db.SetSetting("window_maximized", "true"); err != nil {
+			log.Printf("Failed to save maximized window state: %v", err)
+		}
+	})
+
+	mainWindow.RegisterHook(events.Common.WindowUnMaximise, func(e *application.WindowEvent) {
+		lastWindowState.maximized.Store(false)
+		if err := db.SetSetting("window_maximized", "false"); err != nil {
+			log.Printf("Failed to save unmaximized window state: %v", err)
+		}
+		storeWindowState()
+	})
+
 	// Setup tray on startup if close_to_tray is enabled
 	if shouldCloseToTray() {
 		setupSystemTray()
@@ -522,7 +560,11 @@ func main() {
 			log.Println("Dock icon clicked, showing window")
 			if mainWindow != nil {
 				mainWindow.Show()
-				mainWindow.Restore()
+				if lastWindowState.maximized.Load() {
+					mainWindow.Maximise()
+				} else {
+					mainWindow.Restore()
+				}
 			}
 		})
 	}

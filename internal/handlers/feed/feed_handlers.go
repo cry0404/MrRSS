@@ -108,8 +108,15 @@ func HandleAddFeed(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	var existingIsFreshRSS bool
 	err := h.DB.QueryRow("SELECT id, is_freshrss_source FROM feeds WHERE url = ?", feedURL).Scan(&existingID, &existingIsFreshRSS)
 	if err == nil && !existingIsFreshRSS {
-		// Feed exists and is not a FreshRSS feed - return conflict error
-		response.Error(w, err, http.StatusConflict)
+		// Feed exists and is not a FreshRSS feed - return its ID so the
+		// frontend can navigate to the existing subscription.
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		response.JSON(w, map[string]interface{}{
+			"success":          false,
+			"error":            "A feed with this URL already exists",
+			"existing_feed_id": existingID,
+		})
 		return
 	}
 

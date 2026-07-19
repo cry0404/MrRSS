@@ -54,8 +54,43 @@ func HandleSummarizeArticle(h *core.Handler, w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Check if article already has a cached summary in database
-	// If content is provided (for on-the-fly summarization), skip this check
+	// Get summary provider from settings (with default)
+	provider, err := h.DB.GetSetting("summary_provider")
+	if err != nil || provider == "" {
+		provider = "local" // Default to local algorithm
+	}
+
+	if provider == "rss" {
+		originalSummary, err := h.DB.GetArticleOriginalSummary(req.ArticleID)
+		if err != nil {
+			log.Printf("Error getting original article summary: %v", err)
+			response.Error(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		originalSummary = textutil.CleanHTML(originalSummary)
+		if originalSummary == "" {
+			response.JSON(w, map[string]interface{}{
+				"summary":      "",
+				"is_too_short": true,
+				"error":        "No RSS summary available for this article",
+			})
+			return
+		}
+
+		response.JSON(w, map[string]interface{}{
+			"summary":        originalSummary,
+			"html":           textutil.SanitizeHTML(originalSummary),
+			"sentence_count": 0,
+			"is_too_short":   false,
+			"cached":         true,
+			"source":         "rss",
+		})
+		return
+	}
+
+	// Check if article already has a cached generated summary in database.
+	// If content is provided (for on-the-fly summarization), skip this check.
 	if req.Content == "" {
 		article, err := h.DB.GetArticleByID(req.ArticleID)
 		if err == nil && article.Summary != "" && article.Summary != "<no content>" {
@@ -87,12 +122,6 @@ func HandleSummarizeArticle(h *core.Handler, w http.ResponseWriter, r *http.Requ
 			"error":        "No content available for this article",
 		})
 		return
-	}
-
-	// Get summary provider from settings (with default)
-	provider, err := h.DB.GetSetting("summary_provider")
-	if err != nil || provider == "" {
-		provider = "local" // Default to local algorithm
 	}
 
 	var result summary.SummaryResult

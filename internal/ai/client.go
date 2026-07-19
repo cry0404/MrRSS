@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"MrRSS/internal/utils/httputil"
 )
 
 // ClientConfig holds the configuration for the AI client
@@ -34,9 +36,14 @@ func NewClient(config ClientConfig) *Client {
 		config.Timeout = 30 * time.Second
 	}
 
+	httpClient, err := httputil.CreateHTTPClient("", config.Timeout)
+	if err != nil {
+		httpClient = &http.Client{Timeout: config.Timeout}
+	}
+
 	return &Client{
 		config: config,
-		client: &http.Client{Timeout: config.Timeout},
+		client: httpClient,
 	}
 }
 

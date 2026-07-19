@@ -85,6 +85,9 @@ func (e *EmailSource) Fetch(ctx context.Context, config *Config) (*gofeed.Feed, 
 	seqset.AddRange(fromUID, ^uint32(0))
 	criteria.Uid = seqset
 	criteria.Since = time.Now().AddDate(0, -1, 0) // Last month
+	if sender := strings.TrimSpace(config.EmailAddress); sender != "" {
+		criteria.Header.Add("From", sender)
+	}
 
 	uids, err := c.Search(criteria)
 	if err != nil {
@@ -110,7 +113,7 @@ func (e *EmailSource) Fetch(ctx context.Context, config *Config) (*gofeed.Feed, 
 		}
 		batchUIDs := uids[i:end]
 
-		items, err := e.fetchEmailBatch(c, batchUIDs)
+		items, err := e.fetchEmailBatch(c, batchUIDs, config.EmailAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -172,7 +175,7 @@ func (e *EmailSource) sendIMAPID(c *client.Client) error {
 }
 
 // fetchEmailBatch fetches and parses a batch of emails.
-func (e *EmailSource) fetchEmailBatch(c *client.Client, uids []uint32) ([]*gofeed.Item, error) {
+func (e *EmailSource) fetchEmailBatch(c *client.Client, uids []uint32, senderFilter string) ([]*gofeed.Item, error) {
 	seqset := new(imap.SeqSet)
 	seqset.AddNum(uids...)
 
@@ -187,12 +190,44 @@ func (e *EmailSource) fetchEmailBatch(c *client.Client, uids []uint32) ([]*gofee
 		if msg == nil {
 			continue
 		}
+		if !emailMessageMatchesSenderFilter(msg, senderFilter) {
+			continue
+		}
 		if item := e.parseEmailToItem(msg); item != nil {
 			items = append(items, item)
 		}
 	}
 
 	return items, nil
+}
+
+func emailMessageMatchesSenderFilter(msg *imap.Message, senderFilter string) bool {
+	filter := strings.ToLower(strings.TrimSpace(senderFilter))
+	if filter == "" {
+		return true
+	}
+	if msg == nil || msg.Envelope == nil || len(msg.Envelope.From) == 0 {
+		return false
+	}
+
+	for _, sender := range msg.Envelope.From {
+		if sender == nil {
+			continue
+		}
+		values := []string{
+			sender.Address(),
+			sender.MailboxName,
+			sender.HostName,
+			sender.PersonalName,
+		}
+		for _, value := range values {
+			if strings.Contains(strings.ToLower(strings.TrimSpace(value)), filter) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // parseEmailToItem converts an IMAP message to a gofeed Item.

@@ -270,16 +270,24 @@ export function useArticleDetail() {
   async function fetchArticleContent() {
     if (!article.value) return;
 
-    currentArticleId.value = article.value.id; // Track which article we're loading
+    const loadingArticleId = article.value.id;
+    currentArticleId.value = loadingArticleId; // Track which article we're loading
+    isLoadingContent.value = true;
 
     try {
-      const res = await fetch(`/api/articles/content?id=${article.value.id}`);
+      const res = await fetch(`/api/articles/content?id=${loadingArticleId}`);
+      if (currentArticleId.value !== loadingArticleId) return;
+
       if (res.ok) {
         const data = await res.json();
+        if (currentArticleId.value !== loadingArticleId) return;
+
         let content = data.content || '';
 
         // Proxy images if media cache is enabled
         const cacheEnabled = await isMediaCacheEnabled();
+        if (currentArticleId.value !== loadingArticleId) return;
+
         if (cacheEnabled && content) {
           // Use feed URL as referer for anti-hotlinking (more reliable than article URL)
           const feedUrl = data.feed_url || article.value.url;
@@ -291,20 +299,19 @@ export function useArticleDetail() {
         // Only show loading animation for non-cached content
         if (!data.cached) {
           // Content was fetched from feed, show loading and trigger watch
-          isLoadingContent.value = true;
           await nextTick(); // Ensure content is rendered first
-          isLoadingContent.value = false;
         }
-        // If cached, we don't touch isLoadingContent at all - no animation!
       } else {
         console.error('Failed to fetch article content');
         articleContent.value = '';
-        isLoadingContent.value = false;
       }
     } catch (e) {
       console.error('Error fetching article content:', e);
       articleContent.value = '';
-      isLoadingContent.value = false;
+    } finally {
+      if (currentArticleId.value === loadingArticleId) {
+        isLoadingContent.value = false;
+      }
     }
   }
 
@@ -312,6 +319,33 @@ export function useArticleDetail() {
   function handleRetryLoadContent() {
     if (article.value && showContent.value) {
       fetchArticleContent();
+    }
+  }
+
+  async function reloadArticleContent() {
+    if (!article.value) return;
+
+    const reloadingArticleId = article.value.id;
+    articleContent.value = '';
+    currentArticleId.value = null;
+    isLoadingContent.value = true;
+
+    try {
+      const res = await fetch(`/api/articles/reload-content?id=${reloadingArticleId}`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        throw new Error(`Reload content failed: ${res.status}`);
+      }
+      if (store.currentArticleId === reloadingArticleId) {
+        await fetchArticleContent();
+      }
+    } catch (e) {
+      console.error('Error reloading article content:', e);
+      window.showToast(t('common.errors.fetchingArticleContent'), 'error');
+      if (store.currentArticleId === reloadingArticleId) {
+        isLoadingContent.value = false;
+      }
     }
   }
 
@@ -893,6 +927,7 @@ export function useArticleDetail() {
     toggleReadLater,
     openOriginal,
     toggleContentView,
+    reloadArticleContent,
     closeImageViewer,
     copyImage,
     downloadImage,

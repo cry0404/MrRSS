@@ -25,6 +25,7 @@ func registerArticleRoutes(mux *http.ServeMux, h *core.Handler) {
 
 	// Article content
 	mux.HandleFunc("/api/articles/content", func(w http.ResponseWriter, r *http.Request) { article.HandleGetArticleContent(h, w, r) })
+	mux.HandleFunc("/api/articles/reload-content", func(w http.ResponseWriter, r *http.Request) { article.HandleReloadArticleContent(h, w, r) })
 	mux.HandleFunc("/api/articles/fetch-full", func(w http.ResponseWriter, r *http.Request) { article.HandleFetchFullArticle(h, w, r) })
 	mux.HandleFunc("/api/articles/extract-images", func(w http.ResponseWriter, r *http.Request) { article.HandleExtractAllImages(h, w, r) })
 

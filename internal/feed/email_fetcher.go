@@ -64,6 +64,9 @@ func (ef *EmailFetcher) FetchEmails(ctx context.Context, feed *models.Feed) ([]*
 	seqset.AddRange(fromUID, ^uint32(0)) // Use ^uint32(0) as max UID
 	criteria.Uid = seqset
 	criteria.Since = time.Now().AddDate(0, -1, 0) // Last 1 month
+	if sender := strings.TrimSpace(feed.EmailAddress); sender != "" {
+		criteria.Header.Add("From", sender)
+	}
 
 	uids, err := c.Search(criteria)
 	if err != nil {
@@ -91,7 +94,7 @@ func (ef *EmailFetcher) FetchEmails(ctx context.Context, feed *models.Feed) ([]*
 			maxUID = int(batchUIDs[len(batchUIDs)-1])
 		}
 
-		batchItems, err := ef.fetchEmailBatch(c, batchUIDs)
+		batchItems, err := ef.fetchEmailBatch(c, batchUIDs, feed.EmailAddress)
 		if err != nil {
 			return nil, err
 		}
@@ -169,7 +172,7 @@ func (ef *EmailFetcher) sendIMAPID(c *client.Client) error {
 }
 
 // fetchEmailBatch fetches and parses a batch of emails
-func (ef *EmailFetcher) fetchEmailBatch(c *client.Client, uids []uint32) ([]*gofeed.Item, error) {
+func (ef *EmailFetcher) fetchEmailBatch(c *client.Client, uids []uint32, senderFilter string) ([]*gofeed.Item, error) {
 	seqset := new(imap.SeqSet)
 	seqset.AddNum(uids...)
 
@@ -187,6 +190,10 @@ func (ef *EmailFetcher) fetchEmailBatch(c *client.Client, uids []uint32) ([]*gof
 			break
 		}
 
+		if !emailMatchesSenderFilter(msg, senderFilter) {
+			continue
+		}
+
 		item, err := ef.parseEmailToItem(msg)
 		if err != nil {
 			// Skip invalid emails but continue processing others
@@ -199,6 +206,35 @@ func (ef *EmailFetcher) fetchEmailBatch(c *client.Client, uids []uint32) ([]*gof
 	}
 
 	return items, nil
+}
+
+func emailMatchesSenderFilter(msg *imap.Message, senderFilter string) bool {
+	filter := strings.ToLower(strings.TrimSpace(senderFilter))
+	if filter == "" {
+		return true
+	}
+	if msg == nil || msg.Envelope == nil || len(msg.Envelope.From) == 0 {
+		return false
+	}
+
+	for _, sender := range msg.Envelope.From {
+		if sender == nil {
+			continue
+		}
+		values := []string{
+			sender.Address(),
+			sender.MailboxName,
+			sender.HostName,
+			sender.PersonalName,
+		}
+		for _, value := range values {
+			if strings.Contains(strings.ToLower(strings.TrimSpace(value)), filter) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // parseEmailToItem converts an IMAP message to a gofeed Item

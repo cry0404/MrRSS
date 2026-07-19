@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app';
 import { useI18n } from 'vue-i18n';
-import { ref, computed, onMounted, onUnmounted, type Ref } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, type Ref } from 'vue';
 import {
   PhRss,
   PhPlus,
@@ -187,17 +187,26 @@ const sortedFeeds = computed(() => {
   return feeds;
 });
 
+const selectableSortedFeeds = computed(() =>
+  sortedFeeds.value.filter((f) => !f.is_freshrss_source)
+);
+
+watch(
+  () => selectableSortedFeeds.value.map((feed) => feed.id),
+  (visibleIds) => {
+    const visibleIdSet = new Set(visibleIds);
+    selectedFeeds.value = selectedFeeds.value.filter((id) => visibleIdSet.has(id));
+  }
+);
+
 // Feed count statistics
 const totalFeeds = computed(() => store.feeds?.length || 0);
 const selectedCount = computed(() => selectedFeeds.value.length);
 
 const isAllSelected = computed(() => {
-  if (!store.feeds || store.feeds.length === 0) return false;
-  // Get non-FreshRSS feeds (RSSHub feeds can be selected)
-  const nonManagedFeeds = store.feeds.filter((f) => !f.is_freshrss_source);
-  if (nonManagedFeeds.length === 0) return false;
+  if (selectableSortedFeeds.value.length === 0) return false;
   // Check if all non-managed feeds are selected
-  return nonManagedFeeds.every((f) => selectedFeeds.value.includes(f.id));
+  return selectableSortedFeeds.value.every((f) => selectedFeeds.value.includes(f.id));
 });
 
 function toggleSort(field: SortField) {
@@ -211,10 +220,9 @@ function toggleSort(field: SortField) {
 
 function toggleSelectAll(e: Event) {
   const target = e.target as HTMLInputElement;
-  if (!store.feeds) return;
   if (target.checked) {
-    // Select only non-FreshRSS feeds (RSSHub feeds can be selected)
-    selectedFeeds.value = store.feeds.filter((f) => !f.is_freshrss_source).map((f) => f.id);
+    // Select only visible non-FreshRSS feeds (RSSHub feeds can be selected)
+    selectedFeeds.value = selectableSortedFeeds.value.map((f) => f.id);
   } else {
     selectedFeeds.value = [];
   }

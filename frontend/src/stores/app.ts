@@ -44,7 +44,7 @@ export interface AppActions {
   loadMore: () => Promise<void>;
   fetchFeeds: () => Promise<void>;
   fetchUnreadCounts: () => Promise<void>;
-  markAllAsRead: (feedId?: number) => Promise<void>;
+  markAllAsRead: (feedId?: number, category?: string) => Promise<void>;
   updateArticleSummary: (articleId: number, summary: string) => void;
   toggleTheme: () => void;
   setTheme: (preference: ThemePreference) => void;
@@ -185,6 +185,7 @@ export const useAppStore = defineStore('app', () => {
 
     let url = `/api/articles?page=${page.value}&limit=${limit}`;
     if (currentFilter.value) url += `&filter=${currentFilter.value}`;
+    if (showOnlyUnread.value && currentFilter.value !== 'unread') url += '&only_unread=true';
     if (currentFeedId.value) url += `&feed_id=${currentFeedId.value}`;
     if (currentCategory.value !== null)
       url += `&category=${encodeURIComponent(currentCategory.value)}`;
@@ -316,9 +317,16 @@ export const useAppStore = defineStore('app', () => {
         ? `/api/articles/mark-all-read?${params.toString()}`
         : '/api/articles/mark-all-read';
       await fetch(url, { method: 'POST' });
-      // Refresh articles and unread counts
-      await fetchArticles();
+      articles.value = articles.value.map((article) => {
+        if (feedId && article.feed_id !== feedId) return article;
+        if (category !== undefined) {
+          const feed = feedMap.value.get(article.feed_id);
+          if ((feed?.category || '') !== category) return article;
+        }
+        return { ...article, is_read: true };
+      });
       await fetchUnreadCounts();
+      await fetchFilterCounts();
     } catch {
       // Error handled silently
     }
@@ -389,8 +397,60 @@ export const useAppStore = defineStore('app', () => {
     applyTheme();
   }
 
+  async function refreshSelectedFeeds(): Promise<boolean> {
+    let feedIds: number[] = [];
+
+    if (currentFeedId.value) {
+      feedIds = [currentFeedId.value];
+    } else if (currentCategory.value !== null) {
+      feedIds = feeds.value
+        .filter((feed) => {
+          const feedCategory = feed.category || '';
+          if (currentCategory.value === '') {
+            return feedCategory === '';
+          }
+          return (
+            feedCategory === currentCategory.value ||
+            feedCategory.startsWith(`${currentCategory.value}/`)
+          );
+        })
+        .map((feed) => feed.id);
+    }
+
+    const hasScopedSelection = currentFeedId.value !== null || currentCategory.value !== null;
+    if (feedIds.length === 0) {
+      if (hasScopedSelection) {
+        return true;
+      }
+      return false;
+    }
+
+    refreshProgress.value.isRunning = true;
+    try {
+      await Promise.all(
+        feedIds.map(async (id) => {
+          const res = await fetch(`/api/feeds/refresh?id=${id}`, { method: 'POST' });
+          if (!res.ok) {
+            throw new Error(`Feed refresh API returned ${res.status}: ${res.statusText}`);
+          }
+        })
+      );
+      await fetchProgressOnce();
+      pollProgress();
+      return true;
+    } catch (e) {
+      console.error('Error refreshing selected feeds:', e);
+      refreshProgress.value.isRunning = false;
+      return true;
+    }
+  }
+
   // Auto Refresh
   async function refreshFeeds(): Promise<void> {
+    if (await refreshSelectedFeeds()) {
+      return;
+    }
+
     refreshProgress.value.isRunning = true;
     try {
       // First, trigger standard refresh
@@ -702,6 +762,9 @@ export const useAppStore = defineStore('app', () => {
   function toggleShowOnlyUnread(): void {
     showOnlyUnread.value = !showOnlyUnread.value;
     localStorage.setItem('showOnlyUnread', String(showOnlyUnread.value));
+    if (currentFilter.value !== 'imageGallery') {
+      void fetchArticles(false);
+    }
   }
 
   function setActiveFilters(filters: FilterCondition[]): void {

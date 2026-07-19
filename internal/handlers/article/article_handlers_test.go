@@ -142,6 +142,51 @@ func TestArticleActions_MarkRead_Favorite_Hide_ReadLater(t *testing.T) {
 	}
 }
 
+func TestHandleReloadArticleContentClearsOnlyArticleContent(t *testing.T) {
+	h := setupHandler(t)
+	feedID, err := h.DB.AddFeed(&models.Feed{Title: "Reload Feed", URL: "http://example.com/feed"})
+	if err != nil {
+		t.Fatalf("AddFeed: %v", err)
+	}
+
+	articleModel := &models.Article{
+		FeedID:      feedID,
+		Title:       "Reload Article",
+		URL:         "http://example.com/article",
+		PublishedAt: time.Now(),
+	}
+	if err := h.DB.SaveArticles(context.Background(), []*models.Article{articleModel}); err != nil {
+		t.Fatalf("SaveArticles: %v", err)
+	}
+
+	articles, err := h.DB.GetArticles("", feedID, "", true, 10, 0)
+	if err != nil || len(articles) == 0 {
+		t.Fatalf("GetArticles: %v", err)
+	}
+	articleID := articles[0].ID
+	if err := h.DB.SetArticleContent(articleID, "<p>cached</p>"); err != nil {
+		t.Fatalf("SetArticleContent: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/api/articles/reload-content?id="+fmt.Sprint(articleID), nil)
+	w := httptest.NewRecorder()
+	article.HandleReloadArticleContent(h, w, req)
+
+	if w.Result().StatusCode != http.StatusOK {
+		t.Fatalf("expected 200 OK, got %d: %s", w.Result().StatusCode, w.Body.String())
+	}
+
+	if _, found, err := h.DB.GetArticleContent(articleID); err != nil {
+		t.Fatalf("GetArticleContent: %v", err)
+	} else if found {
+		t.Fatalf("expected article content cache to be cleared")
+	}
+
+	if _, err := h.DB.GetArticleByID(articleID); err != nil {
+		t.Fatalf("article should remain after content reload: %v", err)
+	}
+}
+
 func TestHandleExportToObsidian(t *testing.T) {
 	h := setupHandler(t)
 
