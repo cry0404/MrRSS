@@ -365,11 +365,16 @@ function handleContextMenu(event: MouseEvent, article: Article): void {
 function openArticleDetail(): void {
   if (!selectedArticle.value) return;
 
-  // Set the article's feed as current
-  store.currentFeedId = selectedArticle.value.feed_id;
+  const article = selectedArticle.value;
 
-  // Switch to 'all' filter to exit image gallery mode and show article detail
-  store.setFilter('all');
+  // Jump back to the regular article view without using setFeed(), because image-mode
+  // feeds would otherwise route back to the image gallery.
+  store.currentFilter = 'all';
+  store.currentFeedId = article.feed_id;
+  store.currentCategory = null;
+  store.tempSelection = { feedId: article.feed_id, category: null };
+  store.currentArticleId = article.id;
+  void store.fetchArticles();
 
   // Close the image viewer
   closeImageViewer();

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Linux release builds by upgrading Wails v3 to the latest alpha and installing GTK4/WebKitGTK 6.0 build dependencies.
 - Fixed sidebar scrollbars so they stay hidden until the sidebar is hovered or focused. (#465)
 - Fixed summary card layout jumps by reserving space before automatic summary generation starts. (#654)
+- Fixed the image gallery "view article" action so it opens the selected article in the regular reader. (#572)
 
 ## [1.3.24] - 2026-07-19
 
