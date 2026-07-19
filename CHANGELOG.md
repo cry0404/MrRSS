@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed database cleanup and refresh regressions that caused existing articles to be fetched again, lose cached data, or reappear after cleanup. (#802, #904, #946) (@rogeryk)
 - Fixed repeated feed refresh behavior, unread filtering, bulk selection, and duplicate feed handling. (#562, #619, #669, #826, #873, #896, #917)
+- Fixed FreshRSS-synced feeds remaining after the FreshRSS integration is disabled. (#797)
 - Fixed lazy-loaded article images, XML encoding detection, and content loading states for article rendering. (#655, #804, #853, #876)
 - Fixed RSSHub route query preservation and subscription failures for some feeds. (#631, #894)
 - Fixed AI and translation provider compatibility issues, including Tencent, LibreTranslate, DeepSeek, Ollama, and newsletter sender handling. (#750, #911, #912, #920, #942)

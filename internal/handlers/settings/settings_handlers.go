@@ -59,11 +59,27 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		wasFreshRSSEnabled := false
+		if _, ok := req["freshrss_enabled"]; ok {
+			currentValue, err := h.DB.GetSetting("freshrss_enabled")
+			if err == nil {
+				wasFreshRSSEnabled = currentValue == "true"
+			}
+		}
+
 		// Save settings using the definition-driven approach
 		if err := SaveSettings(h, req); err != nil {
 			log.Printf("Failed to save settings: %v", err)
 			response.Error(w, err, http.StatusInternalServerError)
 			return
+		}
+
+		if shouldCleanupFreshRSSData(wasFreshRSSEnabled, req["freshrss_enabled"]) {
+			if err := h.DB.CleanupFreshRSSData(); err != nil {
+				log.Printf("Failed to cleanup FreshRSS data after disabling sync: %v", err)
+				response.Error(w, err, http.StatusInternalServerError)
+				return
+			}
 		}
 
 		// Re-fetch all settings after save to return updated values
@@ -73,4 +89,8 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func shouldCleanupFreshRSSData(wasEnabled bool, newValue string) bool {
+	return wasEnabled && strings.EqualFold(strings.TrimSpace(newValue), "false")
 }
