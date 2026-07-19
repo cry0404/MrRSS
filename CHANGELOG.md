@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.24] - 2026-07-19
+
+### Added
+
+- Added targeted refresh actions for the current article, feed, and category. (#555, #594)
+- Added support for using RSS-provided summaries directly. (#910)
+- Added per-feed refresh interval support and Turkish translation options. (#695, #902)
+- Added controls to disable update notifications and open article links in the system browser. (#801, #903)
+
+### Changed
+
+- Updated Go, frontend, website, and GitHub Actions dependencies for the release branch.
+
+### Fixed
+
+- Fixed database cleanup and refresh regressions that caused existing articles to be fetched again, lose cached data, or reappear after cleanup. (#802, #904, #946) (@rogeryk)
+- Fixed repeated feed refresh behavior, unread filtering, bulk selection, and duplicate feed handling. (#562, #619, #669, #826, #873, #896, #917)
+- Fixed lazy-loaded article images, XML encoding detection, and content loading states for article rendering. (#655, #804, #853, #876)
+- Fixed RSSHub route query preservation and subscription failures for some feeds. (#631, #894)
+- Fixed AI and translation provider compatibility issues, including Tencent, LibreTranslate, DeepSeek, Ollama, and newsletter sender handling. (#750, #911, #912, #920, #942)
+- Fixed window state and close behavior issues on macOS. (#643, #716, #770, #913)
+- Fixed compact/card layout visual jumps during initial settings load. (#663)
+
 ## [1.3.23] - 2026-03-26
 
 ### Fixed
