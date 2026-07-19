@@ -684,6 +684,7 @@ const zh: TranslationMessages = {
       summaryManualTriggerDesc: '点击按钮生成 AI 摘要',
       summaryProvider: '摘要服务',
       summaryProviderDesc: '选择生成文章摘要的方式',
+      rssSummary: 'RSS 原文摘要',
       summaryTooShort: '文章太短，无法生成有意义的摘要',
       summaryTriggerMode: '触发模式',
       summaryTriggerModeAuto: '自动触发',

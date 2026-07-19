@@ -21,6 +21,15 @@ func (db *DB) UpdateArticleSummary(id int64, summary string) error {
 	return err
 }
 
+// GetArticleOriginalSummary returns the RSS-provided summary/description for an article.
+func (db *DB) GetArticleOriginalSummary(id int64) (string, error) {
+	db.WaitForReady()
+
+	var summary string
+	err := db.QueryRow("SELECT COALESCE(original_summary, '') FROM articles WHERE id = ?", id).Scan(&summary)
+	return summary, err
+}
+
 // ClearAllTranslations clears all translated titles from articles.
 func (db *DB) ClearAllTranslations() error {
 	db.WaitForReady()

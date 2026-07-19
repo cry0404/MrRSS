@@ -32,6 +32,7 @@ interface SummaryResult {
   is_too_short: boolean;
   limit_reached?: boolean;
   used_fallback?: boolean;
+  source?: string;
   thinking?: string;
   error?: string;
 }
@@ -323,7 +324,7 @@ async function generateSummary(article: Article, force: boolean = false) {
   const result = await generateSummaryComposable(article, displayContent.value, force);
 
   // Update the article summary in store for caching
-  if (result?.summary) {
+  if (result?.summary && result.source !== 'rss') {
     store.updateArticleSummary(article.id, result.summary);
   }
 
@@ -335,8 +336,8 @@ async function generateSummary(article: Article, force: boolean = false) {
 function shouldAutoGenerateSummary(): boolean {
   if (!summaryEnabled.value) return false;
 
-  // For local provider, always auto-generate
-  if (summaryProvider.value === 'local') return true;
+  // Local and RSS summaries are inexpensive and do not consume AI quota.
+  if (summaryProvider.value === 'local' || summaryProvider.value === 'rss') return true;
 
   // For AI provider, check trigger mode
   if (summaryProvider.value === 'ai') {

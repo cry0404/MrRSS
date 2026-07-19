@@ -18,8 +18,8 @@ func (db *DB) SaveArticle(article *models.Article) error {
 
 	// Generate unique_id for deduplication
 	uniqueID := urlutil.GenerateArticleUniqueID(article.Title, article.FeedID, article.PublishedAt, article.HasValidPublishedTime)
-	query := `INSERT OR IGNORE INTO articles (feed_id, title, url, image_url, audio_url, video_url, published_at, translated_title, is_read, is_favorite, is_hidden, is_read_later, summary, unique_id, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	_, err := db.Exec(query, article.FeedID, article.Title, article.URL, article.ImageURL, article.AudioURL, article.VideoURL, article.PublishedAt, article.TranslatedTitle, article.IsRead, article.IsFavorite, article.IsHidden, article.IsReadLater, article.Summary, uniqueID, article.Author)
+	query := `INSERT OR IGNORE INTO articles (feed_id, title, url, image_url, audio_url, video_url, published_at, translated_title, is_read, is_favorite, is_hidden, is_read_later, summary, original_summary, unique_id, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	_, err := db.Exec(query, article.FeedID, article.Title, article.URL, article.ImageURL, article.AudioURL, article.VideoURL, article.PublishedAt, article.TranslatedTitle, article.IsRead, article.IsFavorite, article.IsHidden, article.IsReadLater, article.Summary, article.OriginalSummary, uniqueID, article.Author)
 	return err
 }
 
@@ -58,8 +58,8 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 		INSERT INTO articles (
 			feed_id, title, url, image_url, audio_url, video_url, published_at,
 			translated_title, is_read, is_favorite, is_hidden, is_read_later,
-			summary, unique_id, author
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			summary, original_summary, unique_id, author
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(unique_id) DO UPDATE SET
 			feed_id = excluded.feed_id,
 			title = excluded.title,
@@ -73,7 +73,7 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 			is_favorite = excluded.is_favorite,
 			is_hidden = excluded.is_hidden,
 			is_read_later = excluded.is_read_later,
-			summary = excluded.summary,
+			original_summary = excluded.original_summary,
 			author = excluded.author
 	`)
 	if err != nil {
@@ -108,7 +108,7 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 			isReadLater = existingIsReadLater == 1
 		}
 
-		_, err = stmt.ExecContext(ctx, article.FeedID, article.Title, article.URL, article.ImageURL, article.AudioURL, article.VideoURL, article.PublishedAt, article.TranslatedTitle, isRead, isFavorite, isHidden, isReadLater, article.Summary, uniqueID, article.Author)
+		_, err = stmt.ExecContext(ctx, article.FeedID, article.Title, article.URL, article.ImageURL, article.AudioURL, article.VideoURL, article.PublishedAt, article.TranslatedTitle, isRead, isFavorite, isHidden, isReadLater, article.Summary, article.OriginalSummary, uniqueID, article.Author)
 		if err != nil {
 			log.Println("Error saving article in batch:", err)
 			// Continue even if one fails

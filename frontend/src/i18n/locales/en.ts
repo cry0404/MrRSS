@@ -697,6 +697,7 @@ const en: TranslationMessages = {
       summaryManualTriggerDesc: 'Click the button to generate AI summary',
       summaryProvider: 'Summary Provider',
       summaryProviderDesc: 'Choose how to generate article summaries',
+      rssSummary: 'RSS Summary',
       summaryTooShort: 'Article is too short to generate a meaningful summary',
       summaryTriggerMode: 'Trigger Mode',
       summaryTriggerModeAuto: 'Auto Trigger',

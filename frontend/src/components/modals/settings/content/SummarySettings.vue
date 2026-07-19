@@ -92,6 +92,7 @@ const isClearingCache = ref(false);
         <BaseSelect
           :model-value="settings.summary_provider"
           :options="[
+            { value: 'rss', label: t('setting.content.rssSummary') },
             { value: 'local', label: t('setting.content.localAlgorithm') },
             { value: 'ai', label: t('setting.content.aiSummary') },
           ]"

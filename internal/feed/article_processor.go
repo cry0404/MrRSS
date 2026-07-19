@@ -67,6 +67,7 @@ func (f *Fetcher) processArticles(feed models.Feed, items []*gofeed.Item) []*Art
 
 		// Clean HTML to fix malformed tags that can cause rendering issues
 		content = textutil.CleanHTML(content)
+		originalSummary := textutil.CleanHTML(item.Description)
 
 		// Determine title: prefer media:title if available, then item.Title, then generate from content
 		title := item.Title
@@ -101,6 +102,7 @@ func (f *Fetcher) processArticles(feed models.Feed, items []*gofeed.Item) []*Art
 			PublishedAt:           published,
 			HasValidPublishedTime: hasValidPublishedTime,
 			TranslatedTitle:       translatedTitle,
+			OriginalSummary:       originalSummary,
 			Author:                author,
 		}
 
