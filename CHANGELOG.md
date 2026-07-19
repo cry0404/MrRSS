@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed FreshRSS-synced feeds remaining after the FreshRSS integration is disabled. (#797)
 - Fixed lazy-loaded article images, XML encoding detection, proxy usage during full-text fetching, and content loading states for article rendering. (#655, #804, #853, #875, #876)
 - Fixed RSSHub route query preservation and subscription failures for some feeds. (#631, #894)
-- Fixed AI and translation provider compatibility issues, including Tencent, LibreTranslate, DeepSeek, Ollama, and newsletter sender handling. (#750, #911, #912, #920, #942)
+- Fixed AI and translation provider compatibility issues, including Tencent, LibreTranslate, DeepSeek, Ollama, and newsletter sender handling. (#750, #911, #912, #919, #920, #942) (@atoz03)
 - Fixed window state and close behavior issues on macOS. (#643, #716, #770, #913)
 - Fixed compact/card layout visual jumps during initial settings load. (#663)
 
