@@ -1163,10 +1163,13 @@ const zh: TranslationMessages = {
     pressKey: '按下按键...',
     toggle: {
       contentView: '内容视图',
+      favoritesFilter: '切换收藏过滤',
       filter: '切换文章过滤器',
+      readLaterFilter: '切换稍后阅读过滤',
       readLaterStatus: '切换稍后阅读',
       readStatus: '切换已读状态',
       sidebar: '切换侧边栏',
+      unreadFilter: '切换未读过滤',
     },
   },
 

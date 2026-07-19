@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added targeted refresh actions for the current article, feed, and category. (#555, #594)
+- Added keyboard shortcuts for toggling unread, favorites, and read-later article filters. (#590)
 - Added support for using RSS-provided summaries directly. (#910)
 - Added per-feed refresh interval support and Turkish translation options. (#695, #902)
 - Added controls to disable update notifications and open article links in the system browser. (#801, #903)

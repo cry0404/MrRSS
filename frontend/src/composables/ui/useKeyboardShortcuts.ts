@@ -20,6 +20,9 @@ interface KeyboardShortcuts {
   addFeed: string;
   focusSearch: string;
   toggleFilter: string;
+  toggleUnreadFilter: string;
+  toggleFavoritesFilter: string;
+  toggleReadLaterFilter: string;
   goToAllArticles: string;
   goToUnread: string;
   goToFavorites: string;
@@ -54,6 +57,9 @@ export function useKeyboardShortcuts(callbacks: KeyboardShortcutCallbacks) {
     addFeed: 'a',
     focusSearch: '/',
     toggleFilter: 'f',
+    toggleUnreadFilter: 'Alt+r',
+    toggleFavoritesFilter: 'Alt+s',
+    toggleReadLaterFilter: 'Alt+l',
     goToAllArticles: '1',
     goToUnread: '2',
     goToFavorites: '3',
@@ -175,6 +181,10 @@ export function useKeyboardShortcuts(callbacks: KeyboardShortcutCallbacks) {
     if (searchInput) {
       searchInput.focus();
     }
+  }
+
+  function toggleListFilter(filter: 'unread' | 'favorites' | 'readLater'): void {
+    store.setFilter(store.currentFilter === filter ? 'all' : filter);
   }
 
   // Check if an article detail panel is open and scrollable
@@ -398,6 +408,15 @@ export function useKeyboardShortcuts(callbacks: KeyboardShortcutCallbacks) {
         break;
       case 'toggleFilter':
         window.dispatchEvent(new CustomEvent('toggle-filter'));
+        break;
+      case 'toggleUnreadFilter':
+        toggleListFilter('unread');
+        break;
+      case 'toggleFavoritesFilter':
+        toggleListFilter('favorites');
+        break;
+      case 'toggleReadLaterFilter':
+        toggleListFilter('readLater');
         break;
       case 'goToAllArticles':
         store.setFilter('all');

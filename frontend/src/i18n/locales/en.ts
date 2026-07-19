@@ -1186,10 +1186,13 @@ const en: TranslationMessages = {
     pressKey: 'Press key...',
     toggle: {
       contentView: 'Content View',
+      favoritesFilter: 'Toggle Favorites Filter',
       filter: 'Toggle Article Filter',
+      readLaterFilter: 'Toggle Read Later Filter',
       readLaterStatus: 'Toggle Read Later',
       readStatus: 'Toggle Read Status',
       sidebar: 'Toggle Sidebar',
+      unreadFilter: 'Toggle Unread Filter',
     },
   },
 

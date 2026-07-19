@@ -79,6 +79,9 @@ interface Shortcuts {
   addFeed: string;
   focusSearch: string;
   toggleFilter: string;
+  toggleUnreadFilter: string;
+  toggleFavoritesFilter: string;
+  toggleReadLaterFilter: string;
   goToAllArticles: string;
   goToUnread: string;
   goToFavorites: string;
@@ -108,6 +111,9 @@ const defaultShortcuts: Shortcuts = {
   addFeed: 'a',
   focusSearch: '/',
   toggleFilter: 'f',
+  toggleUnreadFilter: 'Alt+r',
+  toggleFavoritesFilter: 'Alt+s',
+  toggleReadLaterFilter: 'Alt+l',
   goToAllArticles: '1',
   goToUnread: '2',
   goToFavorites: '3',
@@ -179,6 +185,13 @@ const shortcutGroups = computed<Array<{ label: string; items: ShortcutItemData[]
       { key: 'addFeed', label: t('setting.shortcut.addFeedShortcut'), icon: PhPlus },
       { key: 'focusSearch', label: t('setting.shortcut.focusFeedSearch'), icon: PhMagnifyingGlass },
       { key: 'toggleFilter', label: t('shortcut.toggle.filter'), icon: PhFunnel },
+      { key: 'toggleUnreadFilter', label: t('shortcut.toggle.unreadFilter'), icon: PhCircle },
+      { key: 'toggleFavoritesFilter', label: t('shortcut.toggle.favoritesFilter'), icon: PhHeart },
+      {
+        key: 'toggleReadLaterFilter',
+        label: t('shortcut.toggle.readLaterFilter'),
+        icon: PhClockCountdown,
+      },
     ],
   },
 ]);
