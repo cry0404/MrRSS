@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed summary card layout jumps by reserving space before automatic summary generation starts. (#654)
 - Fixed the image gallery "view article" action so it opens the selected article in the regular reader. (#572)
 - Added a shortcut from the article feed name back to that feed in the regular article list. (#561)
+- Added per-article reading position restoration when reopening articles. (#445)
 
 ## [1.3.24] - 2026-07-19
 
