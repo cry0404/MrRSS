@@ -35,6 +35,7 @@ const en: TranslationMessages = {
       refresh: 'Refresh',
       refreshFeed: 'Refresh Feed',
       refreshFeedsShortcut: 'Refresh Feeds',
+      reloadContent: 'Reload Article Content',
       refreshing: 'Refreshing',
       removeFromFavorite: 'Remove from Favorites',
       removeFromFavorites: 'Remove from Favorites',
@@ -193,6 +194,7 @@ const en: TranslationMessages = {
       failedToCopy: 'Failed to copy',
       failedToOpenLink: 'Failed to open link',
       failedToTransformRSSHubURL: 'Failed to transform RSSHub URL',
+      fetchingArticleContent: 'Failed to reload article content',
       fetchingFullArticle: 'Failed to fetch full article content',
       invalidURLScheme: 'Invalid URL scheme',
       networkErrorCheckingUpdates:

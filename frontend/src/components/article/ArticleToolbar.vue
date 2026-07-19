@@ -14,6 +14,7 @@ import {
   PhArrowSquareOut,
   PhLinkSimple,
   PhTranslate,
+  PhArrowClockwise,
 } from '@phosphor-icons/vue';
 import type { Article } from '@/types/models';
 import { copyArticleLink } from '@/utils/clipboard';
@@ -49,6 +50,7 @@ defineEmits<{
   toggleReadLater: [];
   openOriginal: [];
   toggleTranslations: [];
+  reloadContent: [];
   exportToObsidian: [];
   exportToNotion: [];
   exportToZotero: [];
@@ -166,6 +168,13 @@ async function copyLink(article: Article) {
         @click="copyLink(article)"
       >
         <PhLinkSimple :size="18" class="sm:w-5 sm:h-5" />
+      </button>
+      <button
+        class="action-btn"
+        :title="t('article.action.reloadContent')"
+        @click="$emit('reloadContent')"
+      >
+        <PhArrowClockwise :size="18" class="sm:w-5 sm:h-5" />
       </button>
       <button
         v-if="settings.obsidian_enabled"

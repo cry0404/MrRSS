@@ -67,6 +67,44 @@ func HandleGetArticleContent(h *core.Handler, w http.ResponseWriter, r *http.Req
 	})
 }
 
+// HandleReloadArticleContent clears cached content for a single article.
+// @Summary      Reload article content
+// @Description  Clear cached RSS content for an article so the next content request reloads it
+// @Tags         articles
+// @Accept       json
+// @Produce      json
+// @Param        id   query     int64   true  "Article ID"
+// @Success      200  {object}  map[string]string  "Reload status"
+// @Failure      400  {object}  map[string]string  "Bad request (invalid article ID)"
+// @Failure      404  {object}  map[string]string  "Article not found"
+// @Failure      500  {object}  map[string]string  "Internal server error"
+// @Router       /articles/reload-content [post]
+func HandleReloadArticleContent(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		response.Error(w, nil, http.StatusMethodNotAllowed)
+		return
+	}
+
+	articleIDStr := r.URL.Query().Get("id")
+	articleID, err := strconv.ParseInt(articleIDStr, 10, 64)
+	if err != nil {
+		response.Error(w, nil, http.StatusBadRequest)
+		return
+	}
+
+	if _, err := h.DB.GetArticleByID(articleID); err != nil {
+		response.Error(w, err, http.StatusNotFound)
+		return
+	}
+
+	if err := h.DB.DeleteArticleContent(articleID); err != nil {
+		response.Error(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	response.JSON(w, map[string]string{"status": "reloading"})
+}
+
 // HandleFetchFullArticle fetches the full article content from the original URL using readability.
 // @Summary      Fetch full article content
 // @Description  Fetch the full article content from the original URL using readability extraction (requires full_text_fetch_enabled setting)

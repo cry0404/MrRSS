@@ -25,6 +25,7 @@ const {
   toggleReadLater,
   openOriginal,
   toggleContentView,
+  reloadArticleContent,
   closeImageViewer,
   attachImageEventListeners,
   exportToObsidian,
@@ -105,6 +106,7 @@ onBeforeUnmount(() => {
         @toggle-read-later="toggleReadLater"
         @open-original="openOriginal"
         @toggle-translations="toggleTranslations"
+        @reload-content="reloadArticleContent"
         @export-to-obsidian="exportToObsidian"
         @export-to-notion="exportToNotion"
         @export-to-zotero="exportToZotero"

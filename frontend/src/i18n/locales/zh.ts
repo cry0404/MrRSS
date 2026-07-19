@@ -33,6 +33,7 @@ const zh: TranslationMessages = {
       refresh: '刷新',
       refreshFeed: '刷新订阅',
       refreshFeedsShortcut: '刷新订阅',
+      reloadContent: '重新加载文章内容',
       refreshing: '刷新中',
       removeFromFavorite: '取消收藏',
       removeFromFavorites: '从收藏中移除',
@@ -188,6 +189,7 @@ const zh: TranslationMessages = {
       failedToCopy: '复制失败',
       failedToOpenLink: '打开链接失败',
       failedToTransformRSSHubURL: '转换 RSSHub URL 失败',
+      fetchingArticleContent: '重新加载文章内容失败',
       fetchingFullArticle: '获取完整文章内容失败',
       invalidURLScheme: '无效的 URL 格式',
       networkErrorCheckingUpdates:

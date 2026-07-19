@@ -322,6 +322,33 @@ export function useArticleDetail() {
     }
   }
 
+  async function reloadArticleContent() {
+    if (!article.value) return;
+
+    const reloadingArticleId = article.value.id;
+    articleContent.value = '';
+    currentArticleId.value = null;
+    isLoadingContent.value = true;
+
+    try {
+      const res = await fetch(`/api/articles/reload-content?id=${reloadingArticleId}`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        throw new Error(`Reload content failed: ${res.status}`);
+      }
+      if (store.currentArticleId === reloadingArticleId) {
+        await fetchArticleContent();
+      }
+    } catch (e) {
+      console.error('Error reloading article content:', e);
+      window.showToast(t('common.errors.fetchingArticleContent'), 'error');
+      if (store.currentArticleId === reloadingArticleId) {
+        isLoadingContent.value = false;
+      }
+    }
+  }
+
   // Unwrap images from hyperlinks
   // This ensures images can be clicked directly without triggering link navigation
   // Works on both main content and translated content
@@ -900,6 +927,7 @@ export function useArticleDetail() {
     toggleReadLater,
     openOriginal,
     toggleContentView,
+    reloadArticleContent,
     closeImageViewer,
     copyImage,
     downloadImage,

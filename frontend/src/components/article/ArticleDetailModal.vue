@@ -309,6 +309,7 @@ function handleOverlayClick(e: MouseEvent) {
           @toggle-read-later="emit('toggleReadLater')"
           @open-original="openOriginal"
           @toggle-translations="toggleTranslations"
+          @reload-content="handleRetryLoadContent"
           @export-to-obsidian="exportToObsidian"
           @export-to-notion="exportToNotion"
           @export-to-zotero="exportToZotero"
